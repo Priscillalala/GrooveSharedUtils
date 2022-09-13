@@ -128,6 +128,16 @@ namespace GrooveSharedUtils
             }
             return new string(chars);
         }
+        public static void ClearDotStacksForType(this DotController dotController, DotController.DotIndex dotIndex)
+        {
+            for(int i = dotController.dotStackList.Count - 1; i >= 0; i--)
+            {
+                if(dotController.dotStackList[i].dotIndex == dotIndex)
+                {
+                    dotController.RemoveDotStackAtServer(i);
+                }
+            }
+        }
         public static bool IsSpecialCharacter(this char character)
         {
             return specialCharacters.Contains(character);

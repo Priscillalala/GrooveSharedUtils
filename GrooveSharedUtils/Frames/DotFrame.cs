@@ -22,8 +22,7 @@ namespace GrooveSharedUtils.Frames
         public DotAPI.CustomDotBehaviour customDotBehaviour = null;
         public DotAPI.CustomDotVisual customDotVisual = null;
         public float damageCoefficientPerSecond = 1f;
-        public DamageColorIndex damageColorIndex = DamageColorIndex.Default;
-        public ModdedDamageColorDef overrideModdedDamageColor = null;
+        public DamageColorIndex damageColorIndex = DamageColorIndex.Default;        
         public float interval = 1f;
         public bool resetTimerOnAdd = false;
         public BuffDef terminalTimedBuff = null;
@@ -44,7 +43,7 @@ namespace GrooveSharedUtils.Frames
             ModdedDotDef.damageCoefficient = damageCoefficientPerSecond * interval;
             ModdedDotDef.damageColorIndex = damageColorIndex;
             ModdedDotDef.interval = interval;
-            ModdedDotDef.moddedDamageColor = overrideModdedDamageColor;
+            ModdedDotDef.moddedDamageColor = null;
             ModdedDotDef.resetTimerOnAdd = false;
             ModdedDotDef.terminalTimedBuff = terminalTimedBuff;
             ModdedDotDef.terminalTimedBuffDuration = terminalTimedBuffDuration;
