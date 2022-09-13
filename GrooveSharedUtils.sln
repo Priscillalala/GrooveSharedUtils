@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.32228.343
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrooveSharedUtils", "GrooveSharedUtils\GrooveSharedUtils.csproj", "{29EA2CF9-B021-4AE8-92AF-1317D26D0750}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrooveSUPatcher", "..\GrooveSUPatcher\GrooveSUPatcher\GrooveSUPatcher.csproj", "{59A59FA2-ACB1-475E-8489-4A12E4168E3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrooveSUPatcher", "GrooveSUPatcher\GrooveSUPatcher.csproj", "{4505134E-E835-41DD-ACAA-EF8D8FB53C66}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{29EA2CF9-B021-4AE8-92AF-1317D26D0750}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{29EA2CF9-B021-4AE8-92AF-1317D26D0750}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{29EA2CF9-B021-4AE8-92AF-1317D26D0750}.Release|Any CPU.Build.0 = Release|Any CPU
-		{59A59FA2-ACB1-475E-8489-4A12E4168E3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{59A59FA2-ACB1-475E-8489-4A12E4168E3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{59A59FA2-ACB1-475E-8489-4A12E4168E3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{59A59FA2-ACB1-475E-8489-4A12E4168E3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4505134E-E835-41DD-ACAA-EF8D8FB53C66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4505134E-E835-41DD-ACAA-EF8D8FB53C66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4505134E-E835-41DD-ACAA-EF8D8FB53C66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4505134E-E835-41DD-ACAA-EF8D8FB53C66}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
