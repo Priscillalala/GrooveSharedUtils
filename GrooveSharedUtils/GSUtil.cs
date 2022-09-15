@@ -162,6 +162,14 @@ namespace GrooveSharedUtils
             }
             LanguageAPI.Add(token, value, specificLanguage);
         }
+        public static string EnsurePrefix(this string str, string prefix)
+        {
+            if (str.StartsWith(prefix))
+            {
+                return str;
+            }
+            return string.Concat(prefix, str);
+        }
         public static void CopyTo<T>(this T src, T dest, bool copyFields = true, bool copyProperties = false) where T : ScriptableObject
         {
             if (copyFields)

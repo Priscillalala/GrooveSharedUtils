@@ -30,7 +30,7 @@ namespace GrooveSharedUtils.Frames
         public string overrideLoreToken = null;
         public Sprite icon = null;
         public GameObject pickupModelPrefab = null;
-        public ItemTier itemTier = ItemTier.NoTier;
+        public ItemTier itemTier = ItemTier.AssignedAtRuntime;
         public ItemTierDef overrideItemTierDef = null;
         public bool canRemove = true;
         public bool hidden = false;

@@ -62,6 +62,12 @@ namespace GrooveSharedUtils
         public List<ConfigFile> configFiles = new List<ConfigFile>();
         public ContentPack contentPack = new ContentPack();
         public List<BaseModModule> moduleOrder;
+
+        [Obsolete(".Config should not be used. Refer to GSUtil.GetOrCreateConfig instead.", false)]
+        public new ConfigFile Config
+        {
+            get => base.Config;
+        }
         public PluginInfo SetupPluginInfo()
         {
             PluginInfo pluginInfo = new PluginInfo();
@@ -89,7 +95,6 @@ namespace GrooveSharedUtils
             pluginInfo.TypeName = type.FullName;
 
             Assembly assembly = type.Assembly;
-
             AssemblyName assemblyName = assembly.GetReferencedAssemblies().FirstOrDefault((AssemblyName name) => name.Name == "BepInEx");
             pluginInfo.TargettedBepInExVersion = (assemblyName != null ? assemblyName.Version : null) ?? new Version();
 
@@ -115,7 +120,6 @@ namespace GrooveSharedUtils
         public virtual void Awake()
         {
             ContentManager.collectContentPackProviders += this.ContentManager_collectContentPackProviders;
-
 
             assembly = base.GetType().Assembly;
             GrooveSharedUtilsPlugin.AssemblyInfo info = GrooveSharedUtilsPlugin.GetAssemblyInfo(assembly);
@@ -191,6 +195,11 @@ namespace GrooveSharedUtils
             {
                 return;
             }
+            assetName = assetName.FormatCharacters((char c) => !char.IsWhiteSpace(c));
+            if (GrooveSharedUtilsPlugin.GetAssemblyInfo(assembly).assetFieldLocator.TryGetValue((assetName, assetType), out FieldInfo field))
+            {
+                field.SetValue(null, asset);
+            }
             HashSet<string> commonPrefixes = GrooveSharedUtilsPlugin.typeToPossiblePrefixesCache.GetOrCreateValue(assetType, () => 
             {
                 HashSet<string> prefixes = new HashSet<string>();
@@ -214,15 +223,14 @@ namespace GrooveSharedUtils
             {
                 if (assetName.StartsWith(commonPrefix))
                 {
-                    assetName = assetName.Remove(0, commonPrefix.Length);
+                    if (GrooveSharedUtilsPlugin.GetAssemblyInfo(assembly).assetFieldLocator.TryGetValue((assetName.Remove(0, commonPrefix.Length), assetType), out FieldInfo fieldFromPrefix))
+                    {
+                        fieldFromPrefix.SetValue(null, asset);
+                    }
                 }
             }
 
-            if (GrooveSharedUtilsPlugin.GetAssemblyInfo(assembly).assetFieldLocator.TryGetValue((assetName.FormatCharacters((char c) => { return !char.IsWhiteSpace(c); }), assetType), out FieldInfo field))//.ToLower
-            {
-                GSUtil.Log(assetName +": assigned to asset field");
-                field.SetValue(null, asset);
-            }
+
         }
         public virtual string GetAssetName<TAsset>(TAsset asset)
         {

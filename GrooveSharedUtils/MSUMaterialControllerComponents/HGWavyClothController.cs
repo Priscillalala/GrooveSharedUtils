@@ -16,6 +16,7 @@ The above copyright notice and this permission notice shall be included in all c
 All rights are reserved. */
     public class HGWavyClothController : MaterialController
     {
+        public override Shader AssociatedShader => Common.Shaders.wavyCloth;
 
         public Vector4 _Color;
         [Range(0f, 1f)]

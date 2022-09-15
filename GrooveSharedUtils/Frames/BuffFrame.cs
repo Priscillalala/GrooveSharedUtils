@@ -31,11 +31,8 @@ namespace GrooveSharedUtils.Frames
         internal override void BuildInternal()
         {
             BuffDef = ScriptableObject.CreateInstance<BuffDef>();
-            if (!name.StartsWith("bd"))
-            {
-                name = "bd" + name;
-            }
-            BuffDef.name = name;
+
+            BuffDef.name = name.EnsurePrefix("bd");
             BuffDef.buffColor = buffColor;
             BuffDef.canStack = showStacks;
             BuffDef.eliteDef = eliteDef;

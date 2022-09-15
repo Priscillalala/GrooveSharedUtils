@@ -18,6 +18,7 @@ using HG;
 using BepInEx.Configuration;
 using System.Runtime.CompilerServices;
 using UnityEngine.Networking;
+using static R2API.RecalculateStatsAPI;
 
 namespace GrooveSharedUtils
 {
@@ -26,8 +27,9 @@ namespace GrooveSharedUtils
         [SystemInitializer]
         public static void Init()
         {
-            On.RoR2.GlobalEventManager.OnHitEnemy += Events.GlobalEventManager_OnHitEnemy;
+            On.RoR2.GlobalEventManager.OnHitEnemy += Events.GlobalEventManager_OnHitEnemy;        
         }
+
         public static class Dependencies
         {
             public const string R2API = "com.bepis.r2api";
@@ -55,7 +57,8 @@ namespace GrooveSharedUtils
                     }
                 }
             }
-            public static event Action<DamageInfo, GameObject> onHitEnemyServer;
+            public delegate void OnHitEnemyServerDelegate(DamageInfo damageInfo, GameObject victim);
+            public static event OnHitEnemyServerDelegate onHitEnemyServer;
         }
         public static class Shaders
         {
@@ -69,6 +72,7 @@ namespace GrooveSharedUtils
             public static Shader distantWater = Addressables.LoadAssetAsync<Shader>("d48a4aa52cd665f45a89801d053c38de").WaitForCompletion();
             public static Shader triplanarTerrain = Addressables.LoadAssetAsync<Shader>("cd44d5076b47fbc4d8872b2a500b78f8").WaitForCompletion();
             public static Shader snowTopped = Addressables.LoadAssetAsync<Shader>("ec2c273472427df41846b25c110155c2").WaitForCompletion();
+            public static Shader wavyCloth = Addressables.LoadAssetAsync<Shader>("69d9da0a01c9f774e8e80f16ecd381b0").WaitForCompletion();
         }
     }
         

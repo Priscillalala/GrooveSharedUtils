@@ -15,10 +15,11 @@ using R2API.Utils;
 using R2API;
 using BepInEx.Configuration;
 using System.Runtime.CompilerServices;
+using GrooveSharedUtils.Interfaces;
 
 namespace GrooveSharedUtils
 {
-    [R2APISubmoduleDependency(nameof(LanguageAPI))]
+    [R2APISubmoduleDependency(nameof(LanguageAPI), nameof(RecalculateStatsAPI))]
     public class GrooveSharedUtilsPlugin : BaseModPlugin
     {
         static GrooveSharedUtilsPlugin()
@@ -58,6 +59,22 @@ namespace GrooveSharedUtils
         public static Dictionary<Type, HashSet<string>> typeToPossiblePrefixesCache = new Dictionary<Type, HashSet<string>>();
         public static HashSet<Type> configDisabledModuleTypes = new HashSet<Type>();
         public static Dictionary<string, Shader> globalStubbedShaderPairs = new Dictionary<string, Shader>();
+        [SystemInitializer]
+        public static void Init()
+        {
+            RecalculateStatsAPI.GetStatCoefficients += RecalculateStatsAPI_GetStatCoefficients;
+        }
+
+        private static void RecalculateStatsAPI_GetStatCoefficients(CharacterBody sender, RecalculateStatsAPI.StatHookEventArgs args)
+        {
+            List<IOnGetStatCoefficientsReciever> getStatCoefficientsRecievers = GetComponentsCache<IOnGetStatCoefficientsReciever>.GetGameObjectComponents(sender.gameObject);
+            foreach (IOnGetStatCoefficientsReciever reciever in getStatCoefficientsRecievers)
+            {
+                reciever.OnGetStatCoefficients(args);
+            }
+            GetComponentsCache<IOnGetStatCoefficientsReciever>.ReturnBuffer(getStatCoefficientsRecievers);
+        }
+
         public override string PLUGIN_ModName => "GrooveSharedUtils";
         public override string PLUGIN_AuthorName => "groovesalad";
         public override string PLUGIN_VersionNumber => "1.0.0";

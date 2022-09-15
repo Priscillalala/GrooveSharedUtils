@@ -16,7 +16,7 @@ The above copyright notice and this permission notice shall be included in all c
 All rights are reserved. */
     public class HGIntersectionController : MaterialController
     {
-
+        public override Shader AssociatedShader => Common.Shaders.intersectionCloudRemap;
         public enum _SrcBlendFloatEnum
         {
             Zero = 0,

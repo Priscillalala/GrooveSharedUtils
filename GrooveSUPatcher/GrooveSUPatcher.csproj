@@ -33,7 +33,7 @@
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Risk of Rain 2\Risk of Rain 2_Data\Managed\HGCSharpUtils.dll</HintPath>
     </Reference>
     <Reference Include="MMHOOK_BepInEx">
-      <HintPath>..\..\..\..\Desktop\[modding\assemblies\MMHOOK_BepInEx.dll</HintPath>
+      <HintPath>libs\MMHOOK_BepInEx.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Risk of Rain 2\BepInEx\core\Mono.Cecil.dll</HintPath>

@@ -16,6 +16,8 @@ The above copyright notice and this permission notice shall be included in all c
 All rights are reserved. */
     public class HGSnowToppedController : MaterialController
     {
+        public override Shader AssociatedShader => Common.Shaders.snowTopped;
+
 
         public Color _Color;
         public Texture _MainTex;

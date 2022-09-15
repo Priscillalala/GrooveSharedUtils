@@ -24,7 +24,7 @@ namespace GrooveSharedUtils.Frames
         internal override void BuildInternal()
         {
             NetworkSoundEventDef = ScriptableObject.CreateInstance<NetworkSoundEventDef>();
-            NetworkSoundEventDef.name = name;
+            NetworkSoundEventDef.name = name.EnsurePrefix("nse");
             NetworkSoundEventDef.eventName = eventName;
         }
     }

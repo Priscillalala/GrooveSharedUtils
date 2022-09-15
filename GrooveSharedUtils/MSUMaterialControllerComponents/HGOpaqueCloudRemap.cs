@@ -16,6 +16,7 @@ The above copyright notice and this permission notice shall be included in all c
 All rights are reserved. */
     public class HGOpaqueCloudRemap : MaterialController
     {
+        public override Shader AssociatedShader => Common.Shaders.opaqueCloudRemap;
 
         public Color _TintColor;
         public Color _EmissionColor;

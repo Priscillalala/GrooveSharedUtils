@@ -16,7 +16,7 @@ The above copyright notice and this permission notice shall be included in all c
 All rights are reserved. */
     public class HGCloudRemapController : MaterialController
     {
-
+        public override Shader AssociatedShader => Common.Shaders.cloudRemap;
         public enum _BlendEnums
         {
             Zero = 0,
