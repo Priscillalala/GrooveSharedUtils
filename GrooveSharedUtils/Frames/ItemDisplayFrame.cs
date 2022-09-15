@@ -24,7 +24,7 @@ namespace GrooveSharedUtils.Frames
         public string[] idrValuesToParse = Array.Empty<string>();
         public ItemDisplayRuleDict ItemDisplayRuleDict { get; private set; }
         internal override object[] Assets => new object[] { ItemDisplayRuleDict };
-        internal override void BuildInternal()
+        internal override void BuildInternal(BaseModPlugin callingMod)
         {
             ItemDisplayRuleDict = new ItemDisplayRuleDict();
         }

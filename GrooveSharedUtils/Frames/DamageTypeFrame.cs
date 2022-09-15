@@ -20,7 +20,7 @@ namespace GrooveSharedUtils.Frames
         public string name;
         public ModdedDamageTypeDef ModdedDamageTypeDef { get; private set;}
         internal override object[] Assets => new object[] { ModdedDamageTypeDef };
-        internal override void BuildInternal()
+        internal override void BuildInternal(BaseModPlugin callingMod)
         {
             ModdedDamageTypeDef = ScriptableObject.CreateInstance<ModdedDamageTypeDef>();
             ModdedDamageTypeDef.cachedName = name;

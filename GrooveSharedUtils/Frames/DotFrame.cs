@@ -29,7 +29,7 @@ namespace GrooveSharedUtils.Frames
         public float terminalTimedBuffDuration;
         public ModdedDotDef ModdedDotDef { get; private set; }
         internal override object[] Assets => new object[] { ModdedDotDef };
-        internal override void BuildInternal()
+        internal override void BuildInternal(BaseModPlugin callingMod)
         {
             ModdedDotDef = ScriptableObject.CreateInstance<ModdedDotDef>();
             ModdedDotDef.cachedName = name;

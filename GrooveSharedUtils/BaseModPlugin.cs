@@ -50,6 +50,7 @@ namespace GrooveSharedUtils
         public virtual string ENVIRONMENT_OverrideAssetBundleFolder { get; } = null;
         public virtual ExpansionDef ENVIRONMENT_DefaultExpansionDef { get; } = null;
         public virtual string ENVIRONMENT_DefaultConfigName { get; } = null;
+        public virtual string ENVIRONMENT_GeneratedTokensPrefix { get; } = null;
         public virtual ConfigStructure ENVIRONMENT_ConfigStructure { get; } = ConfigStructure.ModulesAsCategories;
         public virtual bool ENVIRONMENT_TrimConfigNamespaces { get; } = true;
         public virtual bool ENVIRONMENT_AutoSwapStubbedShaders { get; } = true;
@@ -62,6 +63,13 @@ namespace GrooveSharedUtils
         public List<ConfigFile> configFiles = new List<ConfigFile>();
         public ContentPack contentPack = new ContentPack();
         public List<BaseModModule> moduleOrder;
+        public string getGeneratedTokensPrefix
+        {
+            get
+            {
+                return string.IsNullOrEmpty(ENVIRONMENT_GeneratedTokensPrefix) ? string.Empty : ENVIRONMENT_GeneratedTokensPrefix.ToUpper();
+            }
+        }
 
         [Obsolete(".Config should not be used. Refer to GSUtil.GetOrCreateConfig instead.", false)]
         public new ConfigFile Config

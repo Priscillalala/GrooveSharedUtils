@@ -13,6 +13,7 @@ using R2API.ScriptableObjects;
 using R2API;
 using UnityEngine.AddressableAssets;
 using HG;
+using RoR2.ExpansionManagement;
 
 namespace GrooveSharedUtils.Frames
 {
@@ -37,20 +38,22 @@ namespace GrooveSharedUtils.Frames
         public ItemTag[] itemTags = Array.Empty<ItemTag>();
         public UnlockableDef unlockableDef = null;
         public ItemDef[] itemsToCorrupt = Array.Empty<ItemDef>();
+        public ExpansionDef requiredExpansion = null;
 
         internal override object[] Assets => new object[] { ItemDef, ItemRelationshipProviders };
 
-        internal override void BuildInternal()
+        internal override void BuildInternal(BaseModPlugin callingMod)
         {
             //Util.Log("name: " + name);
             //string safeName = name.FormatCharacters((char c) => { return true; /*!c.IsSpecialCharacter() && !char.IsWhiteSpace(c);*/ });
             string token = name.ToUpperInvariant();
+            string tokenPrefix = callingMod.getGeneratedTokensPrefix;
             ItemDef = ScriptableObject.CreateInstance<ItemDef>();
             ItemDef.name = name;
-            ItemDef.nameToken = overrideNameToken ?? string.Format("ITEM_{0}_NAME", token);
-            ItemDef.pickupToken = overridePickupToken ?? string.Format("ITEM_{0}_PICKUP", token);
-            ItemDef.descriptionToken = overrideDescriptionToken ?? string.Format("ITEM_{0}_DESC", token);
-            ItemDef.loreToken = overrideLoreToken ?? string.Format("ITEM_{0}_LORE", token);
+            ItemDef.nameToken = overrideNameToken ?? string.Format("{1}ITEM_{0}_NAME", token, tokenPrefix);
+            ItemDef.pickupToken = overridePickupToken ?? string.Format("{1}ITEM_{0}_PICKUP", token, tokenPrefix);
+            ItemDef.descriptionToken = overrideDescriptionToken ?? string.Format("{1}ITEM_{0}_DESC", token, tokenPrefix);
+            ItemDef.loreToken = overrideLoreToken ?? string.Format("{1}ITEM_{0}_LORE", token, tokenPrefix);
             ItemDef.pickupIconSprite = icon;
             ItemDef.pickupModelPrefab = pickupModelPrefab;
             if (overrideItemTierDef)
@@ -65,7 +68,7 @@ namespace GrooveSharedUtils.Frames
             ItemDef.hidden = hidden;
             ItemDef.tags = itemTags;
             ItemDef.unlockableDef = unlockableDef;
-
+            ItemDef.requiredExpansion = requiredExpansion ?? callingMod.ENVIRONMENT_DefaultExpansionDef;
             ItemRelationshipProvider[] itemRelationships = Array.Empty<ItemRelationshipProvider>();
             if (itemsToCorrupt.Length > 0)
             {

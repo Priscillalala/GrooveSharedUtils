@@ -21,13 +21,13 @@ namespace GrooveSharedUtils.Frames
         internal abstract object[] Assets { get; }
         public T Build()
         {
-            BuildInternal();
+            BuildInternal(GrooveSharedUtilsPlugin.GetAssemblyInfo(Assembly.GetCallingAssembly()).plugin);
             return this as T;
         }
         public IEnumerator GetEnumerator()
         {
             return Assets.GetEnumerator();
         }
-        internal abstract void BuildInternal();
+        internal abstract void BuildInternal(BaseModPlugin callingMod);
     }
 }

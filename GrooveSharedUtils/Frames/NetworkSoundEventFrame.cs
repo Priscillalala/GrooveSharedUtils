@@ -21,7 +21,7 @@ namespace GrooveSharedUtils.Frames
         public string eventName;
         public NetworkSoundEventDef NetworkSoundEventDef { get; private set; }
         internal override object[] Assets => new object[] { NetworkSoundEventDef };
-        internal override void BuildInternal()
+        internal override void BuildInternal(BaseModPlugin callingMod)
         {
             NetworkSoundEventDef = ScriptableObject.CreateInstance<NetworkSoundEventDef>();
             NetworkSoundEventDef.name = name.EnsurePrefix("nse");

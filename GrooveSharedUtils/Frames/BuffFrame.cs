@@ -28,7 +28,7 @@ namespace GrooveSharedUtils.Frames
         public NetworkSoundEventDef startSfx = null;
         public BuffDef BuffDef { get; private set;}
         internal override object[] Assets => new object[] { BuffDef };
-        internal override void BuildInternal()
+        internal override void BuildInternal(BaseModPlugin callingMod)
         {
             BuffDef = ScriptableObject.CreateInstance<BuffDef>();
 
