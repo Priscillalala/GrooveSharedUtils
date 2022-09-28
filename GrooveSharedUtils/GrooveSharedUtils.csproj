@@ -35,9 +35,6 @@
     <Reference Include="LegacyResourcesAPI">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Risk of Rain 2\Risk of Rain 2_Data\Managed\LegacyResourcesAPI.dll</HintPath>
     </Reference>
-    <Reference Include="MMHOOK_BepInEx">
-      <HintPath>..\..\..\..\Desktop\[modding\assemblies\MMHOOK_BepInEx.dll</HintPath>
-    </Reference>
     <Reference Include="MMHOOK_RoR2">
       <HintPath>..\..\..\..\Desktop\[modding\assemblies\MMHOOK_RoR2.dll</HintPath>
     </Reference>

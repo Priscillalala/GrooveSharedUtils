@@ -21,6 +21,7 @@ using System.Collections;
 using System.Text;
 using BepInEx.Configuration;
 using HG;
+using UnityEngine.Networking;
 
 namespace GrooveSharedUtils
 {
@@ -55,6 +56,35 @@ namespace GrooveSharedUtils
         {
             return new Color(rUnscaled / 255f, gUnscaled / 255f, bUnscaled / 255f, a);
         }
+        public static bool HasItem(this CharacterBody characterBody, ItemDef itemDef, out int stack)
+        {
+            return HasItem(characterBody, itemDef.itemIndex, out stack);
+        }
+        public static bool HasItem(this CharacterBody characterBody, ItemIndex itemIndex, out int stack)
+        {
+            if (characterBody && characterBody.inventory)
+            {
+                stack = characterBody.inventory.GetItemCount(itemIndex);
+                return true;
+            }
+            stack = 0;
+            return false;
+        }
+        public static bool HasItem(this CharacterMaster characterMaster, ItemDef itemDef, out int stack)
+        {
+            return HasItem(characterMaster, itemDef.itemIndex, out stack);
+        }
+        public static bool HasItem(this CharacterMaster characterMaster, ItemIndex itemIndex, out int stack)
+        {
+            if (characterMaster && characterMaster.inventory)
+            {
+                stack = characterMaster.inventory.GetItemCount(itemIndex);
+                return true;
+            }
+            stack = 0;
+            return false;
+        }
+
         public static float StackScaling(float baseValue, float stackValue, int stack)
         {
             if (stack > 0)
@@ -70,6 +100,15 @@ namespace GrooveSharedUtils
                 return baseValue + ((stack - 1) * stackValue);
             }
             return 0;
+        }
+        public static GameObject EmptyPrefab(string name, bool registerNetwork = false)
+        {
+            GameObject g = new GameObject(name);
+            if (registerNetwork)
+            {
+                g.AddComponent<NetworkIdentity>();
+            }
+            return PrefabAPI.InstantiateClone(g, name, registerNetwork);
         }
         public static string FormatCharacters(this string original, Func<char, bool> predicate)
         {
@@ -204,7 +243,7 @@ namespace GrooveSharedUtils
         }
         internal static void LogInternal(LogLevel level, object data, Assembly callingAssembly)
         {
-            BaseModPlugin plugin = GrooveSharedUtilsPlugin.GetAssemblyInfo(callingAssembly).plugin;
+            BaseModPlugin plugin = AssemblyInfo.Get(callingAssembly).plugin;
             if (plugin)
             {
                 plugin.Logger.Log(level, data);
@@ -276,7 +315,7 @@ namespace GrooveSharedUtils
             {
                 return null;
             }
-            Dictionary<string, ConfigFile> configFiles = GrooveSharedUtilsPlugin.GetAssemblyInfo(assembly).configFiles;
+            Dictionary<string, ConfigFile> configFiles = AssemblyInfo.Get(assembly).configFiles;
             return configFiles.GetOrCreateValue(name, () =>
             {
                 string path = System.IO.Path.Combine(Paths.ConfigPath, name + ".cfg");
@@ -289,13 +328,13 @@ namespace GrooveSharedUtils
         public static void AddDisplayAsset<TAsset>(TAsset asset, Assembly assembly = null)
         {
             assembly = assembly ?? Assembly.GetCallingAssembly();
-            GrooveSharedUtilsPlugin.AssemblyInfo assemblyInfo = GrooveSharedUtilsPlugin.GetAssemblyInfo(assembly);
+            AssemblyInfo assemblyInfo = AssemblyInfo.Get(assembly);
             if (assemblyInfo.plugin)
             {
                 assemblyInfo.plugin.AddDisplayAsset(asset);
                 return;
             }
-            assemblyInfo.pendingDisplayAssets.Add(asset);
+            assemblyInfo.pendingDisplayAssets.Enqueue(asset);
         }
     }
 }

@@ -18,7 +18,7 @@ All rights are reserved. */
     {
         public override Shader AssociatedShader => Common.Shaders.wavyCloth;
 
-        public Vector4 _Color;
+        public Color _Color;
         [Range(0f, 1f)]
         public float _Cutoff;
         public Texture _MainTex;

@@ -46,7 +46,7 @@ namespace GrooveSharedUtils.Frames
         internal override void BuildInternal(BaseModPlugin callingMod)
         {
             string token = name.ToUpperInvariant();
-            string tokenPrefix = callingMod.getGeneratedTokensPrefix;
+            string tokenPrefix = callingMod.adjustedGeneratedTokensPrefix;
             EquipmentDef = ScriptableObject.CreateInstance<EquipmentDef>();
             EquipmentDef.name = name;
             EquipmentDef.nameToken = overrideNameToken ?? string.Format("{1}EQUIPMENT_{0}_NAME", token, tokenPrefix);

@@ -14,7 +14,7 @@ using R2API;
 
 namespace GrooveSharedUtils.ScriptableObjects
 {
-    [CreateAssetMenu(menuName = "GrooveSharedUtils")]
+    [CreateAssetMenu(menuName = "GrooveSharedUtils/ExtendedSerializableContentPack")]
     public class ExtendedSerializableContentPack : R2APISerializableContentPack
     {
         [Space(5)]

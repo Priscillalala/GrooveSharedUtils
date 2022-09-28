@@ -14,7 +14,7 @@ using R2API;
 
 namespace GrooveSharedUtils.ScriptableObjects
 {
-    [CreateAssetMenu(menuName = "GrooveSharedUtils")]
+    [CreateAssetMenu(menuName = "GrooveSharedUtils/ModdedDamageTypeDef")]
     public class ModdedDamageTypeDef : ModdedScriptableObject
     {
         public DamageAPI.ModdedDamageType damageTypeIndex { get; set; }

@@ -163,7 +163,7 @@ namespace GrooveSharedUtils
                 Type type = types[i];
                 if (type.GetCustomAttribute<AssetDisplayCaseAttribute>() != null)
                 {
-                    FindAssetFields(type, GrooveSharedUtilsPlugin.GetAssemblyInfo(assembly).assetFieldLocator);
+                    FindAssetFields(type, AssemblyInfo.Get(assembly).assetFieldLocator);
                 }
 
                 if (!type.IsAbstract && type.IsSubclassOf(typeof(BaseModPlugin)))
@@ -243,7 +243,7 @@ namespace GrooveSharedUtils
             {
                 if(!attribute.BindToType(type, configFile, info.configStructure, info.trimConfigNameSpaces))
                 {
-                    GrooveSharedUtilsPlugin.configDisabledModuleTypes.Add(type);
+                    AssemblyInfo.Get(assembly).configDisabledModuleTypes.Add(type);
                 }
             }
             else if (targetsFieldInfo)

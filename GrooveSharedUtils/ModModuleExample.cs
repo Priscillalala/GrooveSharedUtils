@@ -24,7 +24,7 @@ using GrooveSharedUtils.Interfaces;
 namespace GrooveSharedUtils
 {
     [AssetDisplayCase]
-    //[IgnoreModule]
+    [IgnoreModule]
     public class ModModuleExample : BaseModModule<ModModuleExample>
     {
         public static ItemDef SoulTaker;

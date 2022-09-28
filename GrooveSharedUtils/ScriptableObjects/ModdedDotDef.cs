@@ -14,7 +14,7 @@ using R2API;
 
 namespace GrooveSharedUtils.ScriptableObjects
 {
-    [CreateAssetMenu(menuName = "GrooveSharedUtils")]
+    [CreateAssetMenu(menuName = "GrooveSharedUtils/ModdedDotDef")]
     public class ModdedDotDef : ModdedScriptableObject
     {
         public DotController.DotIndex dotIndex { get; set; }

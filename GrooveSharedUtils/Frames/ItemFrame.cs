@@ -47,7 +47,7 @@ namespace GrooveSharedUtils.Frames
             //Util.Log("name: " + name);
             //string safeName = name.FormatCharacters((char c) => { return true; /*!c.IsSpecialCharacter() && !char.IsWhiteSpace(c);*/ });
             string token = name.ToUpperInvariant();
-            string tokenPrefix = callingMod.getGeneratedTokensPrefix;
+            string tokenPrefix = callingMod.adjustedGeneratedTokensPrefix;
             ItemDef = ScriptableObject.CreateInstance<ItemDef>();
             ItemDef.name = name;
             ItemDef.nameToken = overrideNameToken ?? string.Format("{1}ITEM_{0}_NAME", token, tokenPrefix);

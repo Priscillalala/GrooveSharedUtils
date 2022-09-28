@@ -18,7 +18,7 @@ All rights are reserved. */
     {
         public override Shader AssociatedShader => Common.Shaders.solidParallax;
 
-        public Vector4 _Color;
+        public Color _Color;
 
         public Texture _MainTex;
         public Vector2 _MainTexScale;

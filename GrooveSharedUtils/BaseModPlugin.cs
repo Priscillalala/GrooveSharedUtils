@@ -39,6 +39,31 @@ namespace GrooveSharedUtils
     }
     public abstract class BaseModPlugin : BaseUnityPlugin, IContentPackProvider
     {
+        static Dictionary<string, Shader> _globalStubbedShaderPairs = new Dictionary<string, Shader>();
+        static Dictionary<Type, string> _globalTypeToCommonPrefix = new Dictionary<Type, string>();
+
+        public static ReadOnlyDictionary<string, Shader> globalStubbedShaderPairs = new ReadOnlyDictionary<string, Shader>(_globalStubbedShaderPairs);
+        public static ReadOnlyDictionary<Type, string> globalTypeToCommonPrefix = new ReadOnlyDictionary<Type, string>(_globalTypeToCommonPrefix);
+        static BaseModPlugin()
+        {
+            _globalStubbedShaderPairs["StubbedShader/deferred/standard"] = Common.Shaders.standard;
+            _globalStubbedShaderPairs["StubbedShader/fx/hgcloudremap"] = Common.Shaders.cloudRemap;
+            _globalStubbedShaderPairs["StubbedShader/fx/hgopaquecloudremap"] = Common.Shaders.opaqueCloudRemap;
+            _globalStubbedShaderPairs["StubbedShader/fx/cloudintersectionremap"] = Common.Shaders.intersectionCloudRemap;
+            _globalStubbedShaderPairs["StubbedShader/fx/hgdistortion"] = Common.Shaders.distortion;
+            _globalStubbedShaderPairs["StubbedShader/fx/solidparallax"] = Common.Shaders.solidParallax;
+            _globalStubbedShaderPairs["StubbedShader/fx/hgforwardplanet"] = Common.Shaders.forwardPlanet;
+            _globalStubbedShaderPairs["StubbedShader/fx/distantwater"] = Common.Shaders.distantWater;
+            _globalStubbedShaderPairs["StubbedShader/fx/hgtriplanarterrainblend"] = Common.Shaders.triplanarTerrain;
+            _globalStubbedShaderPairs["StubbedShader/fx/hgsnowtopped"] = Common.Shaders.snowTopped;
+            _globalTypeToCommonPrefix[typeof(NetworkSoundEventDef)] = "nse";
+            _globalTypeToCommonPrefix[typeof(BuffDef)] = "bd";
+            _globalTypeToCommonPrefix[typeof(EliteDef)] = "ed";
+            _globalTypeToCommonPrefix[typeof(DirectorCardCategorySelection)] = "dccs";
+            _globalTypeToCommonPrefix[typeof(DccsPool)] = "dp";
+            _globalTypeToCommonPrefix[typeof(ItemDisplayRuleSet)] = "idrs";
+        }
+        static Dictionary<Type, HashSet<string>> typeToPossiblePrefixesCache = new Dictionary<Type, HashSet<string>>();
         public abstract string PLUGIN_ModName { get; }
         public abstract string PLUGIN_AuthorName { get; }
         public abstract string PLUGIN_VersionNumber { get; }
@@ -59,11 +84,12 @@ namespace GrooveSharedUtils
         public string identifier => generatedGUID;
         public string generatedGUID;
         public Assembly assembly;
+        public AssemblyInfo assemblyInfo;
         public List<AssetBundle> assetBundles = new List<AssetBundle>();
         public List<ConfigFile> configFiles = new List<ConfigFile>();
         public ContentPack contentPack = new ContentPack();
         public List<BaseModModule> moduleOrder;
-        public string getGeneratedTokensPrefix
+        public string adjustedGeneratedTokensPrefix
         {
             get
             {
@@ -130,12 +156,12 @@ namespace GrooveSharedUtils
             ContentManager.collectContentPackProviders += this.ContentManager_collectContentPackProviders;
 
             assembly = base.GetType().Assembly;
-            GrooveSharedUtilsPlugin.AssemblyInfo info = GrooveSharedUtilsPlugin.GetAssemblyInfo(assembly);
-            info.plugin = this;
+            assemblyInfo = AssemblyInfo.Get(assembly);
+            assemblyInfo.plugin = this;
 
-            foreach (object asset in info.pendingDisplayAssets)
+            while(assemblyInfo.pendingDisplayAssets.Count > 0)
             {
-                AddDisplayAsset(asset);
+                AddDisplayAsset(assemblyInfo.pendingDisplayAssets.Dequeue());
             }
             string directoryPath = System.IO.Path.GetDirectoryName(assembly.Location);
             if (!string.IsNullOrEmpty(ENVIRONMENT_OverrideAssetBundleFolder))
@@ -177,7 +203,7 @@ namespace GrooveSharedUtils
         }
         public virtual bool IsModuleEnabled(Type type)
         {
-            return type.GetCustomAttribute<IgnoreModuleAttribute>() == null && !GrooveSharedUtilsPlugin.configDisabledModuleTypes.Contains(type);
+            return type.GetCustomAttribute<IgnoreModuleAttribute>() == null && !assemblyInfo.configDisabledModuleTypes.Contains(type);
             
         }
         public virtual BaseModModule CreateModule(Type type)
@@ -204,14 +230,14 @@ namespace GrooveSharedUtils
                 return;
             }
             assetName = assetName.FormatCharacters((char c) => !char.IsWhiteSpace(c));
-            if (GrooveSharedUtilsPlugin.GetAssemblyInfo(assembly).assetFieldLocator.TryGetValue((assetName, assetType), out FieldInfo field))
+            if (AssemblyInfo.Get(assembly).assetFieldLocator.TryGetValue((assetName, assetType), out FieldInfo field))
             {
                 field.SetValue(null, asset);
             }
-            HashSet<string> commonPrefixes = GrooveSharedUtilsPlugin.typeToPossiblePrefixesCache.GetOrCreateValue(assetType, () => 
+            HashSet<string> commonPrefixes = typeToPossiblePrefixesCache.GetOrCreateValue(assetType, () => 
             {
                 HashSet<string> prefixes = new HashSet<string>();
-                foreach(KeyValuePair<Type, string> pair in GrooveSharedUtilsPlugin.globalTypeToCommonPrefix)
+                foreach(KeyValuePair<Type, string> pair in globalTypeToCommonPrefix)
                 {
                     if (pair.Key.IsAssignableFrom(assetType))
                     {
@@ -231,7 +257,7 @@ namespace GrooveSharedUtils
             {
                 if (assetName.StartsWith(commonPrefix))
                 {
-                    if (GrooveSharedUtilsPlugin.GetAssemblyInfo(assembly).assetFieldLocator.TryGetValue((assetName.Remove(0, commonPrefix.Length), assetType), out FieldInfo fieldFromPrefix))
+                    if (AssemblyInfo.Get(assembly).assetFieldLocator.TryGetValue((assetName.Remove(0, commonPrefix.Length), assetType), out FieldInfo fieldFromPrefix))
                     {
                         fieldFromPrefix.SetValue(null, asset);
                     }
@@ -332,7 +358,7 @@ namespace GrooveSharedUtils
                             {
                                 return fromEnvShader;
                             }
-                            if (GrooveSharedUtilsPlugin.globalStubbedShaderPairs.TryGetValue(name, out Shader fromGlobalShader))
+                            if (globalStubbedShaderPairs.TryGetValue(name, out Shader fromGlobalShader))
                             {
                                 return fromGlobalShader;
                             }

@@ -15,7 +15,7 @@ using HG;
 
 namespace GrooveSharedUtils.ScriptableObjects
 {
-    [CreateAssetMenu(menuName = "GrooveSharedUtils")]
+    [CreateAssetMenu(menuName = "GrooveSharedUtils/ModdedDamageColorDef")]
     public class ModdedDamageColorDef : ModdedScriptableObject
     {
         public Color color;

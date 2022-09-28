@@ -27,7 +27,8 @@ namespace GrooveSharedUtils
         [SystemInitializer]
         public static void Init()
         {
-            On.RoR2.GlobalEventManager.OnHitEnemy += Events.GlobalEventManager_OnHitEnemy;        
+            On.RoR2.GlobalEventManager.OnHitEnemy += Events.GlobalEventManager_OnHitEnemy;
+            IL.RoR2.HealthComponent.TakeDamage += Events.HealthComponent_TakeDamage;
         }
 
         public static class Dependencies
@@ -57,8 +58,41 @@ namespace GrooveSharedUtils
                     }
                 }
             }
-            public delegate void OnHitEnemyServerDelegate(DamageInfo damageInfo, GameObject victim);
-            public static event OnHitEnemyServerDelegate onHitEnemyServer;
+            internal static void HealthComponent_TakeDamage(ILContext il)
+            {
+                ILCursor c = new ILCursor(il);
+
+                int damageLocIndex = -1;
+
+                bool ILFound = c.TryGotoNext(MoveType.After,
+                    x => x.MatchStloc(out damageLocIndex),
+                    x => x.MatchLdarg(1),
+                    x => x.MatchLdcI4(7),
+                    x => x.MatchStfld<DamageInfo>(nameof(DamageInfo.damageColorIndex))
+                    );
+
+                if (ILFound)
+                {
+                    c.MoveAfterLabels();
+                    c.Emit(OpCodes.Ldarg_0);
+                    c.Emit(OpCodes.Ldarg_1);
+                    c.Emit(OpCodes.Ldloc, damageLocIndex);
+                    c.EmitDelegate<Func<HealthComponent, DamageInfo, float, float>>((victim, damageInfo, damage) =>
+                    {
+                        if (onProcessDamageServer != null)
+                        {
+                            onProcessDamageServer.Invoke(victim, damageInfo, ref damage);
+                        }
+                        return damage;
+                    });
+                    c.Emit(OpCodes.Stloc, damageLocIndex);
+                }
+                else { GSUtil.Log(BepInEx.Logging.LogLevel.Error, "Take Damage IL hook failed!"); }
+            }
+            public delegate void OnHitEnemyDelegate(DamageInfo damageInfo, GameObject victim);
+            public delegate void ProcessDamageDelegate(HealthComponent victim, DamageInfo damageInfo, ref float damage);
+            public static event OnHitEnemyDelegate onHitEnemyServer;
+            public static event ProcessDamageDelegate onProcessDamageServer;
         }
         public static class Shaders
         {
