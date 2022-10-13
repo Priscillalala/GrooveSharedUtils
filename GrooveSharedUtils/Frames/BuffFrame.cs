@@ -15,7 +15,8 @@ using GrooveSharedUtils.ScriptableObjects;
 
 namespace GrooveSharedUtils.Frames
 {
-    public class BuffFrame : BaseFrame<BuffFrame>
+    public class BuffFrame : BuffFrame<BuffDef> { }
+    public class BuffFrame<IBuffDef> : BaseFrame<BuffFrame<IBuffDef>> where IBuffDef : BuffDef
     {
         public string name;
         public Color buffColor = Color.white;
@@ -26,11 +27,11 @@ namespace GrooveSharedUtils.Frames
         public bool isDebuff = false;
         public bool isHidden = false;
         public NetworkSoundEventDef startSfx = null;
-        public BuffDef BuffDef { get; private set;}
+        public IBuffDef BuffDef { get; private set;}
         internal override object[] Assets => new object[] { BuffDef };
         internal override void BuildInternal(BaseModPlugin callingMod)
         {
-            BuffDef = ScriptableObject.CreateInstance<BuffDef>();
+            BuffDef = ScriptableObject.CreateInstance<IBuffDef>();
 
             BuffDef.name = name.EnsurePrefix("bd");
             BuffDef.buffColor = buffColor;

@@ -17,10 +17,11 @@ using RoR2.ExpansionManagement;
 
 namespace GrooveSharedUtils.Frames
 {
-    public class EquipmentFrame : BaseFrame<EquipmentFrame>
+    public class EquipmentFrame : EquipmentFrame<EquipmentDef> { }
+    public class EquipmentFrame<TEquipmentDef> : BaseFrame<EquipmentFrame<TEquipmentDef>> where TEquipmentDef : EquipmentDef
     {
 
-        public EquipmentDef EquipmentDef { get; private set; }
+        public TEquipmentDef EquipmentDef { get; private set; }
         public string name;
         public string overrideNameToken = null;
         public string overridePickupToken = null;
@@ -47,7 +48,7 @@ namespace GrooveSharedUtils.Frames
         {
             string token = name.ToUpperInvariant();
             string tokenPrefix = callingMod.adjustedGeneratedTokensPrefix;
-            EquipmentDef = ScriptableObject.CreateInstance<EquipmentDef>();
+            EquipmentDef = ScriptableObject.CreateInstance<TEquipmentDef>();
             EquipmentDef.name = name;
             EquipmentDef.nameToken = overrideNameToken ?? string.Format("{1}EQUIPMENT_{0}_NAME", token, tokenPrefix);
             EquipmentDef.pickupToken = overridePickupToken ?? string.Format("{1}EQUIPMENT_{0}_PICKUP", token, tokenPrefix);

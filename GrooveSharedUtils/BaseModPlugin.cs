@@ -22,6 +22,7 @@ using UnityEngine.AddressableAssets;
 using System.Threading.Tasks;
 using Unity.Jobs;
 using RoR2.ExpansionManagement;
+using RoR2.Skills;
 
 namespace GrooveSharedUtils
 {
@@ -279,6 +280,10 @@ namespace GrooveSharedUtils
             if (asset is Component c)
             {
                 return c.gameObject.name;
+            }
+            if(asset is SkillDef sd && !string.IsNullOrEmpty(sd.skillName))
+            {
+                return sd.skillName;
             }
             if (asset is UnityEngine.Object obj)
             {

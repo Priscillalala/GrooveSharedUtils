@@ -17,11 +17,12 @@ using RoR2.ExpansionManagement;
 
 namespace GrooveSharedUtils.Frames
 {
-    public class ItemFrame : BaseFrame<ItemFrame>
+    public class ItemFrame : ItemFrame<ItemDef> { }
+    public class ItemFrame<TItemDef> : BaseFrame<ItemFrame<TItemDef>> where TItemDef : ItemDef
     {
         public static ItemRelationshipType contagiousItemRelationshipType = GSUtil.LegacyLoad<ItemRelationshipType>("ItemRelationships/ContagiousItem");
 
-        public ItemDef ItemDef { get; private set; }
+        public TItemDef ItemDef { get; private set; }
         public ItemRelationshipProvider[] ItemRelationshipProviders { get; private set; }
 
         public string name;
@@ -44,11 +45,9 @@ namespace GrooveSharedUtils.Frames
 
         internal override void BuildInternal(BaseModPlugin callingMod)
         {
-            //Util.Log("name: " + name);
-            //string safeName = name.FormatCharacters((char c) => { return true; /*!c.IsSpecialCharacter() && !char.IsWhiteSpace(c);*/ });
             string token = name.ToUpperInvariant();
             string tokenPrefix = callingMod.adjustedGeneratedTokensPrefix;
-            ItemDef = ScriptableObject.CreateInstance<ItemDef>();
+            ItemDef = ScriptableObject.CreateInstance<TItemDef>();
             ItemDef.name = name;
             ItemDef.nameToken = overrideNameToken ?? string.Format("{1}ITEM_{0}_NAME", token, tokenPrefix);
             ItemDef.pickupToken = overridePickupToken ?? string.Format("{1}ITEM_{0}_PICKUP", token, tokenPrefix);

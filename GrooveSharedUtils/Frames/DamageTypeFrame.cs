@@ -15,14 +15,15 @@ using GrooveSharedUtils.ScriptableObjects;
 
 namespace GrooveSharedUtils.Frames
 {
-    public class DamageTypeFrame : BaseFrame<DamageTypeFrame>
+    public class DamageTypeFrame : DamageTypeFrame<ModdedDamageTypeDef> { }
+    public class DamageTypeFrame<IModdedDamageTypeDef> : BaseFrame<DamageTypeFrame<IModdedDamageTypeDef>> where IModdedDamageTypeDef : ModdedDamageTypeDef
     {
         public string name;
-        public ModdedDamageTypeDef ModdedDamageTypeDef { get; private set;}
+        public IModdedDamageTypeDef ModdedDamageTypeDef { get; private set;}
         internal override object[] Assets => new object[] { ModdedDamageTypeDef };
         internal override void BuildInternal(BaseModPlugin callingMod)
         {
-            ModdedDamageTypeDef = ScriptableObject.CreateInstance<ModdedDamageTypeDef>();
+            ModdedDamageTypeDef = ScriptableObject.CreateInstance<IModdedDamageTypeDef>();
             ModdedDamageTypeDef.cachedName = name;
         }
     }
