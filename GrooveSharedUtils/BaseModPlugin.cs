@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using Unity.Jobs;
 using RoR2.ExpansionManagement;
 using RoR2.Skills;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace GrooveSharedUtils
 {
@@ -40,14 +41,17 @@ namespace GrooveSharedUtils
     }
     public abstract class BaseModPlugin : BaseUnityPlugin, IContentPackProvider
     {
-        static Dictionary<string, Shader> _globalStubbedShaderPairs = new Dictionary<string, Shader>();
+        //static Dictionary<string, Shader> _globalStubbedShaderPairs = new Dictionary<string, Shader>();
+        static List<Task> swapShadersTasks = new List<Task>();
+        static Dictionary<Shader, Shader> stubbedToRealShaderCache = new Dictionary<Shader, Shader>();
+
         static Dictionary<Type, string> _globalTypeToCommonPrefix = new Dictionary<Type, string>();
 
-        public static ReadOnlyDictionary<string, Shader> globalStubbedShaderPairs = new ReadOnlyDictionary<string, Shader>(_globalStubbedShaderPairs);
+        //public static ReadOnlyDictionary<string, Shader> globalStubbedShaderPairs = new ReadOnlyDictionary<string, Shader>(_globalStubbedShaderPairs);
         public static ReadOnlyDictionary<Type, string> globalTypeToCommonPrefix = new ReadOnlyDictionary<Type, string>(_globalTypeToCommonPrefix);
         static BaseModPlugin()
         {
-            _globalStubbedShaderPairs["StubbedShader/deferred/standard"] = Common.Shaders.standard;
+            /*_globalStubbedShaderPairs["StubbedShader/deferred/standard"] = Common.Shaders.standard;
             _globalStubbedShaderPairs["StubbedShader/fx/hgcloudremap"] = Common.Shaders.cloudRemap;
             _globalStubbedShaderPairs["StubbedShader/fx/hgopaquecloudremap"] = Common.Shaders.opaqueCloudRemap;
             _globalStubbedShaderPairs["StubbedShader/fx/cloudintersectionremap"] = Common.Shaders.intersectionCloudRemap;
@@ -56,32 +60,39 @@ namespace GrooveSharedUtils
             _globalStubbedShaderPairs["StubbedShader/fx/hgforwardplanet"] = Common.Shaders.forwardPlanet;
             _globalStubbedShaderPairs["StubbedShader/fx/distantwater"] = Common.Shaders.distantWater;
             _globalStubbedShaderPairs["StubbedShader/fx/hgtriplanarterrainblend"] = Common.Shaders.triplanarTerrain;
-            _globalStubbedShaderPairs["StubbedShader/fx/hgsnowtopped"] = Common.Shaders.snowTopped;
+            _globalStubbedShaderPairs["StubbedShader/fx/hgsnowtopped"] = Common.Shaders.snowTopped;*/
             _globalTypeToCommonPrefix[typeof(NetworkSoundEventDef)] = "nse";
             _globalTypeToCommonPrefix[typeof(BuffDef)] = "bd";
             _globalTypeToCommonPrefix[typeof(EliteDef)] = "ed";
             _globalTypeToCommonPrefix[typeof(DirectorCardCategorySelection)] = "dccs";
             _globalTypeToCommonPrefix[typeof(DccsPool)] = "dp";
             _globalTypeToCommonPrefix[typeof(ItemDisplayRuleSet)] = "idrs";
+            RoR2Application.onLoad = (Action)Delegate.Combine(RoR2Application.onLoad, new Action(delegate 
+            {
+                Task.WaitAll(swapShadersTasks.ToArray());
+                swapShadersTasks = null;
+                stubbedToRealShaderCache = null;
+            }));
         }
         static Dictionary<Type, HashSet<string>> typeToPossiblePrefixesCache = new Dictionary<Type, HashSet<string>>();
         public abstract string PLUGIN_ModName { get; }
         public abstract string PLUGIN_AuthorName { get; }
         public abstract string PLUGIN_VersionNumber { get; }
-        public virtual string PLUGIN_OverrideModPrefix { get; } = null;
+        public virtual string PLUGIN_OverridePluginGUID { get; } = null;
+        public virtual bool PLUGIN_BepInExIgnored { get; } = false;
         public virtual string[] PLUGIN_HardDependencyStrings { get; } = Array.Empty<string>();
         public virtual string[] PLUGIN_SoftDependencyStrings { get; } = Array.Empty<string>();
         public virtual string[] PLUGIN_IncompatabilityStrings { get; } = Array.Empty<string>();
         public virtual string[] PLUGIN_OverrideProcessNames { get; } = Array.Empty<string>();
-        public virtual string ENVIRONMENT_OverrideAssetBundleFolder { get; } = null;
-        public virtual ExpansionDef ENVIRONMENT_DefaultExpansionDef { get; } = null;
-        public virtual string ENVIRONMENT_DefaultConfigName { get; } = null;
-        public virtual string ENVIRONMENT_GeneratedTokensPrefix { get; } = null;
-        public virtual ConfigStructure ENVIRONMENT_ConfigStructure { get; } = ConfigStructure.ModulesAsCategories;
-        public virtual bool ENVIRONMENT_TrimConfigNamespaces { get; } = true;
-        public virtual bool ENVIRONMENT_AutoSwapStubbedShaders { get; } = true;
-        public virtual Dictionary<Type, string> ENVIRONMENT_AdditionalCommonTypePrefixes { get; } = new Dictionary<Type, string>();
-        public virtual Dictionary<string, Shader> ENVIRONMENT_AdditionalStubbedShaderPairs { get; } = new Dictionary<string, Shader>();
+        public virtual string ENV_OverrideAssetBundleFolder { get; } = null;
+        public virtual ExpansionDef ENV_DefaultExpansionDef { get; } = null;
+        public virtual string ENV_DefaultConfigName { get; } = null;
+        public virtual string ENV_GeneratedTokensPrefix { get; } = null;
+        public virtual ConfigStructure ENV_ConfigStructure { get; } = ConfigStructure.ModulesAsCategories;
+        public virtual bool ENV_TrimConfigNamespaces { get; } = true;
+        public virtual bool ENV_AutoSwapStubbedShaders { get; } = true;
+        public virtual Dictionary<Type, string> ENV_AdditionalCommonTypePrefixes { get; } = new Dictionary<Type, string>();
+        //public virtual Dictionary<string, Shader> ENV_AdditionalStubbedShaderPairs { get; } = new Dictionary<string, Shader>();
         public string identifier => generatedGUID;
         public string generatedGUID;
         public Assembly assembly;
@@ -94,7 +105,7 @@ namespace GrooveSharedUtils
         {
             get
             {
-                return string.IsNullOrEmpty(ENVIRONMENT_GeneratedTokensPrefix) ? string.Empty : ENVIRONMENT_GeneratedTokensPrefix.ToUpper();
+                return string.IsNullOrEmpty(ENV_GeneratedTokensPrefix) ? string.Empty : ENV_GeneratedTokensPrefix.ToUpper();
             }
         }
 
@@ -113,8 +124,7 @@ namespace GrooveSharedUtils
             string authorName = PLUGIN_AuthorName.ToLower();
             string modName = PLUGIN_ModName;
             string version = PLUGIN_VersionNumber;
-            string prefix = string.IsNullOrEmpty(PLUGIN_OverrideModPrefix) ? "com" : PLUGIN_OverrideModPrefix;
-            generatedGUID = string.Format("{0}.{1}.{2}", prefix, authorName, modName);
+            generatedGUID = string.IsNullOrEmpty(PLUGIN_OverridePluginGUID) ? string.Format("com.{0}.{1}", authorName, modName) : PLUGIN_OverridePluginGUID;
             BepInPlugin bepInPlugin = new BepInPlugin(generatedGUID, modName, version);
             pluginInfo.Metadata = bepInPlugin;
 
@@ -165,9 +175,9 @@ namespace GrooveSharedUtils
                 AddDisplayAsset(assemblyInfo.pendingDisplayAssets.Dequeue());
             }
             string directoryPath = System.IO.Path.GetDirectoryName(assembly.Location);
-            if (!string.IsNullOrEmpty(ENVIRONMENT_OverrideAssetBundleFolder))
+            if (!string.IsNullOrEmpty(ENV_OverrideAssetBundleFolder))
             {
-                directoryPath = System.IO.Path.Combine(directoryPath, ENVIRONMENT_OverrideAssetBundleFolder);
+                directoryPath = System.IO.Path.Combine(directoryPath, ENV_OverrideAssetBundleFolder);
             }
             foreach (string path in Directory.EnumerateFiles(directoryPath))
             {
@@ -181,9 +191,10 @@ namespace GrooveSharedUtils
                         {
                             assetBundles.Add(assetBundle);
                             AddDisplayAsset(assetBundle);
-                            if (ENVIRONMENT_AutoSwapStubbedShaders)
+                            if (ENV_AutoSwapStubbedShaders)
                             {
                                 Task t = SwapStubbedShaders(assetBundle);
+                                swapShadersTasks.Add(t);
                             }
                         }
                     }
@@ -221,10 +232,13 @@ namespace GrooveSharedUtils
             }
             return baseModule;
         }
-        public virtual void AddDisplayAsset<TAsset>(TAsset asset)
+        public virtual void AddDisplayAsset(object asset)
         {
+            if(asset == null)
+            {
+                return;
+            }
             Type assetType = asset.GetType();
-            GSUtil.Log("try map asset: " + asset);
             string assetName = GetAssetName(asset);
             if (string.IsNullOrEmpty(assetName))
             {
@@ -245,7 +259,7 @@ namespace GrooveSharedUtils
                         prefixes.Add(pair.Value);
                     }
                 }
-                foreach (KeyValuePair<Type, string> pair in ENVIRONMENT_AdditionalCommonTypePrefixes)
+                foreach (KeyValuePair<Type, string> pair in ENV_AdditionalCommonTypePrefixes)
                 {
                     if (pair.Key.IsAssignableFrom(assetType))
                     {
@@ -267,11 +281,11 @@ namespace GrooveSharedUtils
 
 
         }
-        public virtual string GetAssetName<TAsset>(TAsset asset)
+        public virtual string GetAssetName(object asset)
         {
             if (asset is Type t)
             {
-                return t.FullName;
+                return t.Name;
             }
             if (asset is EffectDef effectDef)
             {
@@ -344,22 +358,42 @@ namespace GrooveSharedUtils
         }
         public async Task SwapStubbedShaders(AssetBundle assetBundle)
         {
-            await Task.Run((Action)(() => 
+            await Task.Run((() => 
             {
                 AssetBundleRequest request = assetBundle.LoadAllAssetsAsync<Material>();
                 request.completed += (operation) =>
                 {
                     int length = request.allAssets.Length;
                     GSUtil.LogInternal(LogLevel.Info, string.Format("Swapping stubbed shaders for {0} materials", length), assembly);
-                    Dictionary<Shader, Shader> stubbedToRealShaderCache = new Dictionary<Shader, Shader>();
+                    //Dictionary<Shader, Shader> stubbedToRealShaderCache = new Dictionary<Shader, Shader>();
                     for(int i = 0; i < length; i++)
                     {
                         Material mat = (Material)request.allAssets[i];
                         Shader shader = stubbedToRealShaderCache.GetOrCreateValue(mat.shader, (Func<Shader>)(() =>
                         {
+                            Shader realShader = null;
                             string name = mat.shader.name;
-                            GSUtil.Log(name);
-                            if(ENVIRONMENT_AdditionalStubbedShaderPairs.TryGetValue(name, out Shader fromEnvShader))
+                            if (name.StartsWith("Stubbed"))
+                            {
+                                AsyncOperationHandle<Shader> asyncOperationHandle = default;
+
+                                string path = name.Substring(7) + ".shader";
+                                GSUtil.Log(name);
+                                GSUtil.Log(path);
+                                try
+                                {
+                                    asyncOperationHandle = Addressables.LoadAssetAsync<Shader>(path);
+                                }
+                                finally
+                                {
+                                    if (asyncOperationHandle.IsValid())
+                                    {
+                                        realShader = asyncOperationHandle.WaitForCompletion();
+                                    }                                    
+                                }
+                            }
+                            return realShader;
+                            /*if(ENV_AdditionalStubbedShaderPairs.TryGetValue(name, out Shader fromEnvShader))
                             {
                                 return fromEnvShader;
                             }
@@ -367,12 +401,9 @@ namespace GrooveSharedUtils
                             {
                                 return fromGlobalShader;
                             }
-                            return null;
+                            return null;*/
                         }));
-                        if (shader != null)
-                        {
-                            mat.shader = shader;
-                        }
+                        mat.shader = shader ?? mat.shader;
                     }
                     stubbedToRealShaderCache = null;
                 };

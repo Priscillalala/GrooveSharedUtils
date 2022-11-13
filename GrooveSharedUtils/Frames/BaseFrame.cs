@@ -13,21 +13,34 @@ using R2API.ScriptableObjects;
 using R2API;
 using System.Runtime.CompilerServices;
 using System.Collections;
+using GrooveSharedUtils.Frames;
+using GrooveSharedUtils;
+
+public static partial class _GSExtensions
+{
+    public static TFrame Build<TFrame>(this TFrame frame) where TFrame : BaseFrame
+    {
+        frame.BuildInternal(AssemblyInfo.Get(Assembly.GetCallingAssembly()).plugin);
+        return frame;
+    }
+}
 
 namespace GrooveSharedUtils.Frames
 {
-    public abstract class BaseFrame<T> : IEnumerable where T : BaseFrame<T>
+    public abstract class BaseFrame : IEnumerable
     {
-        internal abstract object[] Assets { get; }
-        public T Build()
+
+        protected abstract IEnumerable<object> Assets { get; }
+        /*public T Build()
         {
             BuildInternal(AssemblyInfo.Get(Assembly.GetCallingAssembly()).plugin);
             return this as T;
-        }
+        }*/
+
         public IEnumerator GetEnumerator()
         {
             return Assets.GetEnumerator();
         }
-        internal abstract void BuildInternal(BaseModPlugin callingMod);
+        protected internal abstract void BuildInternal(BaseModPlugin callingMod);
     }
 }

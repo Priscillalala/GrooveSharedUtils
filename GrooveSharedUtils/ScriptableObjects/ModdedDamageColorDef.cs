@@ -20,7 +20,7 @@ namespace GrooveSharedUtils.ScriptableObjects
     {
         public Color color;
         public DamageColorIndex damageColorIndex { get; set; }
-        internal override void RegisterInternal()
+        protected override void RegisterInternal()
         {
 			ArrayUtils.ArrayAppend(ref DamageColor.colors, color);
 			DamageColorIndex index = (DamageColorIndex)DamageColor.colors.Length - 1;

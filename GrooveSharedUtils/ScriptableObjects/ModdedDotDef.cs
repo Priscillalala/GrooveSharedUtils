@@ -29,7 +29,7 @@ namespace GrooveSharedUtils.ScriptableObjects
 		public DotAPI.CustomDotBehaviour customDotBehaviour = null;
 		public DotAPI.CustomDotVisual customDotVisual = null;
 
-        internal override void RegisterInternal()
+		protected override void RegisterInternal()
         {
 			DotController.DotDef dotDef = new DotController.DotDef
 			{

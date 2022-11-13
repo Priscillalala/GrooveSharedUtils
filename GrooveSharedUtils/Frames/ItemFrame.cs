@@ -18,7 +18,7 @@ using RoR2.ExpansionManagement;
 namespace GrooveSharedUtils.Frames
 {
     public class ItemFrame : ItemFrame<ItemDef> { }
-    public class ItemFrame<TItemDef> : BaseFrame<ItemFrame<TItemDef>> where TItemDef : ItemDef
+    public class ItemFrame<TItemDef> : BaseFrame where TItemDef : ItemDef
     {
         public static ItemRelationshipType contagiousItemRelationshipType = GSUtil.LegacyLoad<ItemRelationshipType>("ItemRelationships/ContagiousItem");
 
@@ -41,9 +41,9 @@ namespace GrooveSharedUtils.Frames
         public ItemDef[] itemsToCorrupt = Array.Empty<ItemDef>();
         public ExpansionDef requiredExpansion = null;
 
-        internal override object[] Assets => new object[] { ItemDef, ItemRelationshipProviders };
+        protected override IEnumerable<object> Assets => new object[] { ItemDef, ItemRelationshipProviders };
 
-        internal override void BuildInternal(BaseModPlugin callingMod)
+        protected internal override void BuildInternal(BaseModPlugin callingMod)
         {
             string token = name.ToUpperInvariant();
             string tokenPrefix = callingMod.adjustedGeneratedTokensPrefix;
@@ -67,7 +67,7 @@ namespace GrooveSharedUtils.Frames
             ItemDef.hidden = hidden;
             ItemDef.tags = itemTags;
             ItemDef.unlockableDef = unlockableDef;
-            ItemDef.requiredExpansion = requiredExpansion ?? callingMod.ENVIRONMENT_DefaultExpansionDef;
+            ItemDef.requiredExpansion = requiredExpansion ?? callingMod.ENV_DefaultExpansionDef;
             ItemRelationshipProvider[] itemRelationships = Array.Empty<ItemRelationshipProvider>();
             if (itemsToCorrupt.Length > 0)
             {

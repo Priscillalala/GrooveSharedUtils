@@ -58,7 +58,7 @@ namespace GrooveSharedUtils
                 namedAssetCollection.ResolveHashDisgusting(type);
             }
         }
-        public void TryMapAsset<TAsset>(TAsset asset)
+        public void TryMapAsset(object asset)
         {
             Type assetType = asset.GetType();
             if(assetTypeActionsCache.TryGetValue(assetType, out Action<object> action))

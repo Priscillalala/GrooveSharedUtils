@@ -16,7 +16,7 @@ using GrooveSharedUtils.ScriptableObjects;
 namespace GrooveSharedUtils.Frames
 {
     public class DotFrame : DotFrame<ModdedDotDef> { }
-    public class DotFrame<IModdedDotDef> : BaseFrame<DotFrame<IModdedDotDef>> where IModdedDotDef : ModdedDotDef
+    public class DotFrame<IModdedDotDef> : BaseFrame where IModdedDotDef : ModdedDotDef
     {
         public string name;
         public BuffDef associatedBuff = null;
@@ -29,8 +29,8 @@ namespace GrooveSharedUtils.Frames
         public BuffDef terminalTimedBuff = null;
         public float terminalTimedBuffDuration;
         public IModdedDotDef ModdedDotDef { get; private set; }
-        internal override object[] Assets => new object[] { ModdedDotDef };
-        internal override void BuildInternal(BaseModPlugin callingMod)
+        protected override IEnumerable<object> Assets => new object[] { ModdedDotDef };
+        protected internal override void BuildInternal(BaseModPlugin callingMod)
         {
             ModdedDotDef = ScriptableObject.CreateInstance<IModdedDotDef>();
             ModdedDotDef.cachedName = name;

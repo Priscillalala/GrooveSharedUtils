@@ -25,7 +25,7 @@ namespace GrooveSharedUtils.ScriptableObjects
 				registered = true;
             }
 		}
-		internal abstract void RegisterInternal();
+		protected abstract void RegisterInternal();
 		private void Awake()
 		{
 			this._cachedName = base.name;

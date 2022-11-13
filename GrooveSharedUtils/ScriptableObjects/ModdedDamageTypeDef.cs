@@ -18,7 +18,7 @@ namespace GrooveSharedUtils.ScriptableObjects
     public class ModdedDamageTypeDef : ModdedScriptableObject
     {
         public DamageAPI.ModdedDamageType damageTypeIndex { get; set; }
-        internal override void RegisterInternal()
+        protected override void RegisterInternal()
         {
 			damageTypeIndex = DamageAPI.ReserveDamageType();
 		}

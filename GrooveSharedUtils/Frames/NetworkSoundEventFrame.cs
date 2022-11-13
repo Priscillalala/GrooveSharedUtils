@@ -16,15 +16,15 @@ using GrooveSharedUtils.ScriptableObjects;
 namespace GrooveSharedUtils.Frames
 {
     public class NetworkSoundEventFrame : NetworkSoundEventFrame<NetworkSoundEventDef> { }
-    public class NetworkSoundEventFrame<TNetworkSoundEventDef> : BaseFrame<NetworkSoundEventFrame<TNetworkSoundEventDef>> where TNetworkSoundEventDef : NetworkSoundEventDef
+    public class NetworkSoundEventFrame<TSkillDef> : BaseFrame where TSkillDef : NetworkSoundEventDef
     {
         public string name;
         public string eventName;
-        public TNetworkSoundEventDef NetworkSoundEventDef { get; private set; }
-        internal override object[] Assets => new object[] { NetworkSoundEventDef };
-        internal override void BuildInternal(BaseModPlugin callingMod)
+        public TSkillDef NetworkSoundEventDef { get; private set; }
+        protected override IEnumerable<object> Assets => new object[] { NetworkSoundEventDef };
+        protected internal override void BuildInternal(BaseModPlugin callingMod)
         {
-            NetworkSoundEventDef = ScriptableObject.CreateInstance<TNetworkSoundEventDef>();
+            NetworkSoundEventDef = ScriptableObject.CreateInstance<TSkillDef>();
             NetworkSoundEventDef.name = name.EnsurePrefix("nse");
             NetworkSoundEventDef.eventName = eventName;
         }

@@ -74,16 +74,24 @@ namespace GrooveSharedUtils
             {
                 ItemAPI.Add((CustomEquipment)obj);
             };
+            map[typeof(Type)] = (object obj) =>
+            {
+                Type t = (Type)obj;
+                if (t.IsSubclassOf(typeof(EntityStates.EntityState)))
+                {
+                    contentPack.entityStateTypes.AddHash(t);
+                }
+            };
         }
         internal void ResolveMap()
         {
             map.ResolveAllAssetCollections();
         }
-        public void Add<TAsset>(params TAsset[] assets)
+        public void Add(params object[] assets)
         {
-            Add(assets);
+            Add(asset: assets);
         }
-        public void Add<TAsset>(TAsset asset)
+        public void Add(object asset)
         {
             if (asset is IEnumerable enumerable)
             {

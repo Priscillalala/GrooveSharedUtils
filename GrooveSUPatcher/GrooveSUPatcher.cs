@@ -26,7 +26,7 @@ namespace GrooveSharedUtils
         internal static ManualLogSource logger = Logger.CreateLogSource("GrooveSharedUtilsPatcher");
         public static IEnumerable<string> TargetDLLs { get; } = new string[] { };
 
-        internal static Dictionary<string, PluginInfo> controlledPlugins = new Dictionary<string, PluginInfo>();
+        internal static Dictionary<string, PluginInfo> controlledBepInExPlugins = new Dictionary<string, PluginInfo>();
         internal static HashSet<Type> assetCollectionScannedTypes = new HashSet<Type>();
         internal static Dictionary<Assembly, PluginConfigInformation> tempConfigPluginInformation = new Dictionary<Assembly, PluginConfigInformation>();
 
@@ -125,7 +125,7 @@ namespace GrooveSharedUtils
                 c.Emit(OpCodes.Ldloc, pluginDictLocIndex);
                 c.EmitDelegate<Func<Dictionary<string, List<PluginInfo>>, Dictionary<string, List<PluginInfo>>>>((pluginDict) =>
                 {
-                    foreach (KeyValuePair<string, PluginInfo> pair in controlledPlugins)
+                    foreach (KeyValuePair<string, PluginInfo> pair in controlledBepInExPlugins)
                     {
                         List<PluginInfo> previousPluginInfos = pluginDict.GetOrCreateValue(pair.Key);
                         try
@@ -157,8 +157,8 @@ namespace GrooveSharedUtils
             int length = types.Length;
             //logger.LogInfo(length);
             bool foundBasePlugin = false;
-            
-            for(int i = 0; i < length; i++)
+            HG.Reflection.SearchableAttribute.ScanAssembly(assembly);
+            for (int i = 0; i < length; i++)
             {
                 Type type = types[i];
                 if (type.GetCustomAttribute<AssetDisplayCaseAttribute>() != null)
@@ -175,17 +175,19 @@ namespace GrooveSharedUtils
                     else
                     {
                         foundBasePlugin = true;
-                        HG.Reflection.SearchableAttribute.ScanAssembly(assembly);
                         BaseModPlugin baseModPlugin = (BaseModPlugin)Activator.CreateInstance(type);
 
                         PluginInfo info = baseModPlugin.Info;
-                        controlledPlugins[path] = info;
+                        if (!baseModPlugin.PLUGIN_BepInExIgnored)
+                        {
+                            controlledBepInExPlugins[path] = info;
+                        }
                         tempConfigPluginInformation[assembly] = new PluginConfigInformation
                         {
                             bepInPlugin = info.Metadata,
-                            defaultConfigName = baseModPlugin.ENVIRONMENT_DefaultConfigName,
-                            configStructure = baseModPlugin.ENVIRONMENT_ConfigStructure,
-                            trimConfigNameSpaces = baseModPlugin.ENVIRONMENT_TrimConfigNamespaces,
+                            defaultConfigName = baseModPlugin.ENV_DefaultConfigName,
+                            configStructure = baseModPlugin.ENV_ConfigStructure,
+                            trimConfigNameSpaces = baseModPlugin.ENV_TrimConfigNamespaces,
                         };
 
                         UnityEngine.Object.DestroyImmediate(baseModPlugin);

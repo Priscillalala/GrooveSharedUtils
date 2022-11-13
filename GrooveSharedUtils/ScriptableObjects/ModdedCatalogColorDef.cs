@@ -20,7 +20,7 @@ namespace GrooveSharedUtils.ScriptableObjects
     {
         public Color color;
         public ColorCatalog.ColorIndex colorCatalogIndex { get; set; }
-        internal override void RegisterInternal()
+        protected override void RegisterInternal()
         {
 			ColorCatalog.ColorIndex index = (ColorCatalog.ColorIndex)ColorCatalog.indexToColor32.Length;
 			ArrayUtils.ArrayAppend(ref ColorCatalog.indexToColor32, color);

@@ -22,6 +22,7 @@ using System.Text;
 using BepInEx.Configuration;
 using HG;
 using UnityEngine.Networking;
+using RoR2.Skills;
 
 namespace GrooveSharedUtils
 {
@@ -84,7 +85,14 @@ namespace GrooveSharedUtils
             stack = 0;
             return false;
         }
-
+        public static SkillFamily FindSkillFamily(GameObject bodyPrefab, SkillSlot slot)
+        {
+            if(bodyPrefab.TryGetComponent(out SkillLocator skillLocator))
+            {
+                return skillLocator.GetSkill(slot)?.skillFamily;
+            }
+            return null;
+        }
         public static float StackScaling(float baseValue, float stackValue, int stack)
         {
             if (stack > 0)
@@ -203,6 +211,10 @@ namespace GrooveSharedUtils
         }
         public static string EnsurePrefix(this string str, string prefix)
         {
+            if(str == null)
+            {
+                return null;
+            }
             if (str.StartsWith(prefix))
             {
                 return str;
@@ -305,7 +317,28 @@ namespace GrooveSharedUtils
             }
             return value;
         }
+        public static Dictionary<string, ConfigFile> configFileByName = new Dictionary<string, ConfigFile>();
+
         public static ConfigFile GetOrCreateConfig(string name, BepInPlugin owner = null)
+        {
+            return GetOrCreateConfig(name, Assembly.GetCallingAssembly(), owner);
+        }
+        public static ConfigFile GetOrCreateConfig(string name, Assembly assembly, BepInPlugin owner = null)
+        {
+            if (name.IsNullOrWhiteSpace())
+            {
+                return null;
+            }
+            return configFileByName.GetOrCreateValue(name, () =>
+            {
+                string path = System.IO.Path.Combine(Paths.ConfigPath, name + ".cfg");
+                ConfigFile configFile = new ConfigFile(path, true, owner);
+                AddDisplayAsset(configFile, assembly);
+                return configFile;
+            });
+
+        }
+        /*public static ConfigFile GetOrCreateConfig(string name, BepInPlugin owner = null)
         {
             return GetOrCreateConfig(name, Assembly.GetCallingAssembly(), owner);
         }
@@ -324,7 +357,7 @@ namespace GrooveSharedUtils
                 return configFile;
             });
 
-        }
+        }*/
         public static void AddDisplayAsset<TAsset>(TAsset asset, Assembly assembly = null)
         {
             assembly = assembly ?? Assembly.GetCallingAssembly();

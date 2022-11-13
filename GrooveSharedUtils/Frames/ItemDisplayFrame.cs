@@ -15,7 +15,7 @@ using GrooveSharedUtils.ScriptableObjects;
 
 namespace GrooveSharedUtils.Frames
 {
-    public class ItemDisplayFrame : BaseFrame<ItemDisplayFrame>
+    public class ItemDisplayFrame : BaseFrame
     {
         public UnityEngine.Object keyAsset;
         public ItemDisplayRuleType ruleType = ItemDisplayRuleType.ParentedPrefab;
@@ -23,8 +23,8 @@ namespace GrooveSharedUtils.Frames
         public GameObject displayPrefab;
         public string[] idrValuesToParse = Array.Empty<string>();
         public ItemDisplayRuleDict ItemDisplayRuleDict { get; private set; }
-        internal override object[] Assets => new object[] { ItemDisplayRuleDict };
-        internal override void BuildInternal(BaseModPlugin callingMod)
+        protected override IEnumerable<object> Assets => new object[] { ItemDisplayRuleDict };
+        protected internal override void BuildInternal(BaseModPlugin callingMod)
         {
             ItemDisplayRuleDict = new ItemDisplayRuleDict();
         }

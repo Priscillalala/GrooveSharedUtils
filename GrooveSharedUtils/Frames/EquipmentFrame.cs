@@ -18,7 +18,7 @@ using RoR2.ExpansionManagement;
 namespace GrooveSharedUtils.Frames
 {
     public class EquipmentFrame : EquipmentFrame<EquipmentDef> { }
-    public class EquipmentFrame<TEquipmentDef> : BaseFrame<EquipmentFrame<TEquipmentDef>> where TEquipmentDef : EquipmentDef
+    public class EquipmentFrame<TEquipmentDef> : BaseFrame where TEquipmentDef : EquipmentDef
     {
 
         public TEquipmentDef EquipmentDef { get; private set; }
@@ -42,9 +42,9 @@ namespace GrooveSharedUtils.Frames
         public ExpansionDef requiredExpansion = null;
         public UnlockableDef unlockableDef = null;
 
-        internal override object[] Assets => new object[] { EquipmentDef };
+        protected override IEnumerable<object> Assets => new object[] { EquipmentDef };
 
-        internal override void BuildInternal(BaseModPlugin callingMod)
+        protected override internal void BuildInternal(BaseModPlugin callingMod)
         {
             string token = name.ToUpperInvariant();
             string tokenPrefix = callingMod.adjustedGeneratedTokensPrefix;
@@ -78,7 +78,7 @@ namespace GrooveSharedUtils.Frames
                     EquipmentDef.isBoss = true;
                     break;
             }
-            EquipmentDef.requiredExpansion = requiredExpansion ?? callingMod.ENVIRONMENT_DefaultExpansionDef;
+            EquipmentDef.requiredExpansion = requiredExpansion ?? callingMod.ENV_DefaultExpansionDef;
             EquipmentDef.unlockableDef = unlockableDef;
 
             if(performEquipmentAction != null)
