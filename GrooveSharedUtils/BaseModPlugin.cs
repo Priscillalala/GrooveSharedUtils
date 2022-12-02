@@ -24,20 +24,31 @@ using Unity.Jobs;
 using RoR2.ExpansionManagement;
 using RoR2.Skills;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using HG;
 
 namespace GrooveSharedUtils
 {
     public abstract class BaseModPlugin<T> : BaseModPlugin where T : class
     {
         public static T instance { get; private set; }
-        public BaseModPlugin()
+
+        public override void Awake()
+        {
+            if(instance == null)
+            {
+                instance = this as T;
+            }
+            base.Awake();
+        }
+
+        /*public BaseModPlugin()
         {
             if (instance != null)
             {
                 return;
             }
             instance = this as T;
-        }
+        }*/
     }
     public abstract class BaseModPlugin : BaseUnityPlugin, IContentPackProvider
     {
@@ -45,10 +56,18 @@ namespace GrooveSharedUtils
         static List<Task> swapShadersTasks = new List<Task>();
         static Dictionary<Shader, Shader> stubbedToRealShaderCache = new Dictionary<Shader, Shader>();
 
-        static Dictionary<Type, string> _globalTypeToCommonPrefix = new Dictionary<Type, string>();
+        static (Type, string)[] _globalTypeToCommonPrefix = new (Type, string)[]
+        {
+            (typeof(NetworkSoundEventDef), "nse"),
+            (typeof(BuffDef), "bd"),
+            (typeof(EliteDef), "ed"),
+            (typeof(DirectorCardCategorySelection), "dccs"),
+            (typeof(DccsPool), "dp"),
+            (typeof(ItemDisplayRuleSet), "idrs"),
+        };
 
         //public static ReadOnlyDictionary<string, Shader> globalStubbedShaderPairs = new ReadOnlyDictionary<string, Shader>(_globalStubbedShaderPairs);
-        public static ReadOnlyDictionary<Type, string> globalTypeToCommonPrefix = new ReadOnlyDictionary<Type, string>(_globalTypeToCommonPrefix);
+        public static ReadOnlyArray<(Type, string)> globalTypeToCommonPrefix = new ReadOnlyArray<(Type, string)>(_globalTypeToCommonPrefix);
         static BaseModPlugin()
         {
             /*_globalStubbedShaderPairs["StubbedShader/deferred/standard"] = Common.Shaders.standard;
@@ -60,13 +79,13 @@ namespace GrooveSharedUtils
             _globalStubbedShaderPairs["StubbedShader/fx/hgforwardplanet"] = Common.Shaders.forwardPlanet;
             _globalStubbedShaderPairs["StubbedShader/fx/distantwater"] = Common.Shaders.distantWater;
             _globalStubbedShaderPairs["StubbedShader/fx/hgtriplanarterrainblend"] = Common.Shaders.triplanarTerrain;
-            _globalStubbedShaderPairs["StubbedShader/fx/hgsnowtopped"] = Common.Shaders.snowTopped;*/
+            _globalStubbedShaderPairs["StubbedShader/fx/hgsnowtopped"] = Common.Shaders.snowTopped;
             _globalTypeToCommonPrefix[typeof(NetworkSoundEventDef)] = "nse";
             _globalTypeToCommonPrefix[typeof(BuffDef)] = "bd";
             _globalTypeToCommonPrefix[typeof(EliteDef)] = "ed";
             _globalTypeToCommonPrefix[typeof(DirectorCardCategorySelection)] = "dccs";
             _globalTypeToCommonPrefix[typeof(DccsPool)] = "dp";
-            _globalTypeToCommonPrefix[typeof(ItemDisplayRuleSet)] = "idrs";
+            _globalTypeToCommonPrefix[typeof(ItemDisplayRuleSet)] = "idrs";*/
             RoR2Application.onLoad = (Action)Delegate.Combine(RoR2Application.onLoad, new Action(delegate 
             {
                 Task.WaitAll(swapShadersTasks.ToArray());
@@ -84,16 +103,17 @@ namespace GrooveSharedUtils
         public virtual string[] PLUGIN_SoftDependencyStrings { get; } = Array.Empty<string>();
         public virtual string[] PLUGIN_IncompatabilityStrings { get; } = Array.Empty<string>();
         public virtual string[] PLUGIN_OverrideProcessNames { get; } = Array.Empty<string>();
-        public virtual string ENV_OverrideAssetBundleFolder { get; } = null;
+        public virtual string ENV_RelativeAssetBundleFolder { get; } = string.Empty;
         public virtual ExpansionDef ENV_DefaultExpansionDef { get; } = null;
         public virtual string ENV_DefaultConfigName { get; } = null;
         public virtual string ENV_GeneratedTokensPrefix { get; } = null;
         public virtual ConfigStructure ENV_ConfigStructure { get; } = ConfigStructure.ModulesAsCategories;
         public virtual bool ENV_TrimConfigNamespaces { get; } = true;
         public virtual bool ENV_AutoSwapStubbedShaders { get; } = true;
-        public virtual Dictionary<Type, string> ENV_AdditionalCommonTypePrefixes { get; } = new Dictionary<Type, string>();
+        public virtual (Type, string)[] ENV_AdditionalCommonTypePrefixes { get; } = Array.Empty<(Type, string)>();
         //public virtual Dictionary<string, Shader> ENV_AdditionalStubbedShaderPairs { get; } = new Dictionary<string, Shader>();
         public string identifier => generatedGUID;
+        public GameObject moduleManagerObject;
         public string generatedGUID;
         public Assembly assembly;
         public AssemblyInfo assemblyInfo;
@@ -101,13 +121,7 @@ namespace GrooveSharedUtils
         public List<ConfigFile> configFiles = new List<ConfigFile>();
         public ContentPack contentPack = new ContentPack();
         public List<BaseModModule> moduleOrder;
-        public string adjustedGeneratedTokensPrefix
-        {
-            get
-            {
-                return string.IsNullOrEmpty(ENV_GeneratedTokensPrefix) ? string.Empty : ENV_GeneratedTokensPrefix.ToUpper();
-            }
-        }
+        public string adjustedGeneratedTokensPrefix => string.IsNullOrEmpty(ENV_GeneratedTokensPrefix) ? string.Empty : ENV_GeneratedTokensPrefix.ToUpper();
 
         [Obsolete(".Config should not be used. Refer to GSUtil.GetOrCreateConfig instead.", false)]
         public new ConfigFile Config
@@ -170,38 +184,39 @@ namespace GrooveSharedUtils
             assemblyInfo = AssemblyInfo.Get(assembly);
             assemblyInfo.plugin = this;
 
+            moduleManagerObject = new GameObject(PLUGIN_ModName + "_ModuleManager");
+            DontDestroyOnLoad(moduleManagerObject);
+
             while(assemblyInfo.pendingDisplayAssets.Count > 0)
             {
                 AddDisplayAsset(assemblyInfo.pendingDisplayAssets.Dequeue());
             }
-            string directoryPath = System.IO.Path.GetDirectoryName(assembly.Location);
-            if (!string.IsNullOrEmpty(ENV_OverrideAssetBundleFolder))
+            if (ENV_RelativeAssetBundleFolder != null)
             {
-                directoryPath = System.IO.Path.Combine(directoryPath, ENV_OverrideAssetBundleFolder);
-            }
-            foreach (string path in Directory.EnumerateFiles(directoryPath))
-            {
-                try
+                string directoryPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(assembly.Location), ENV_RelativeAssetBundleFolder);
+                foreach (string path in Directory.EnumerateFiles(directoryPath))
                 {
-                    string extension = System.IO.Path.GetExtension(path);
-                    if (string.IsNullOrEmpty(extension) || extension == "bundle")
+                    try
                     {
-                        AssetBundle assetBundle = AssetBundle.LoadFromFile(path);
-                        if (assetBundle)
+                        string extension = System.IO.Path.GetExtension(path);
+                        if (string.IsNullOrEmpty(extension) || extension == "bundle")
                         {
-                            assetBundles.Add(assetBundle);
-                            AddDisplayAsset(assetBundle);
-                            if (ENV_AutoSwapStubbedShaders)
+                            AssetBundle assetBundle = AssetBundle.LoadFromFile(path);
+                            if (assetBundle)
                             {
-                                Task t = SwapStubbedShaders(assetBundle);
-                                swapShadersTasks.Add(t);
+                                assetBundles.Add(assetBundle);
+                                AddDisplayAsset(assetBundle);
+                                if (ENV_AutoSwapStubbedShaders)
+                                {
+                                    Task t = SwapStubbedShaders(assetBundle);
+                                    swapShadersTasks.Add(t);
+                                }
                             }
                         }
                     }
+                    catch { }
                 }
-                catch { }
             }
-
             BeginModInit();
 
             Type baseModuleType = typeof(BaseModModule);
@@ -221,7 +236,7 @@ namespace GrooveSharedUtils
         public virtual BaseModModule CreateModule(Type type)
         {
             GSUtil.Log("creating module: " + type.Name);
-            BaseModModule baseModule = (BaseModModule)Activator.CreateInstance(type);
+            BaseModModule baseModule = (BaseModModule)moduleManagerObject.AddComponent(type);
             try
             {
                 baseModule.OnModInit();
@@ -244,7 +259,7 @@ namespace GrooveSharedUtils
             {
                 return;
             }
-            assetName = assetName.FormatCharacters((char c) => !char.IsWhiteSpace(c));
+            //assetName = assetName.FormatCharacters((char c) => !char.IsWhiteSpace(c));
             if (AssemblyInfo.Get(assembly).assetFieldLocator.TryGetValue((assetName, assetType), out FieldInfo field))
             {
                 field.SetValue(null, asset);
@@ -252,34 +267,32 @@ namespace GrooveSharedUtils
             HashSet<string> commonPrefixes = typeToPossiblePrefixesCache.GetOrCreateValue(assetType, () => 
             {
                 HashSet<string> prefixes = new HashSet<string>();
-                foreach(KeyValuePair<Type, string> pair in globalTypeToCommonPrefix)
+                foreach((Type, string) pair in globalTypeToCommonPrefix)
                 {
-                    if (pair.Key.IsAssignableFrom(assetType))
+                    if (pair.Item1.IsAssignableFrom(assetType))
                     {
-                        prefixes.Add(pair.Value);
+                        prefixes.Add(pair.Item2);
                     }
                 }
-                foreach (KeyValuePair<Type, string> pair in ENV_AdditionalCommonTypePrefixes)
+                foreach ((Type, string) pair in ENV_AdditionalCommonTypePrefixes)
                 {
-                    if (pair.Key.IsAssignableFrom(assetType))
+                    if (pair.Item1.IsAssignableFrom(assetType))
                     {
-                        prefixes.Add(pair.Value);
+                        prefixes.Add(pair.Item2);
                     }
                 }
                 return prefixes;
             });
             foreach(string commonPrefix in commonPrefixes)
             {
-                if (assetName.StartsWith(commonPrefix))
+                if (assetName.StartsWith(commonPrefix, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (AssemblyInfo.Get(assembly).assetFieldLocator.TryGetValue((assetName.Remove(0, commonPrefix.Length), assetType), out FieldInfo fieldFromPrefix))
+                    if (AssemblyInfo.Get(assembly).assetFieldLocator.TryGetValue((assetName.Substring(commonPrefix.Length), assetType), out FieldInfo fieldFromPrefix))
                     {
                         fieldFromPrefix.SetValue(null, asset);
                     }
                 }
             }
-
-
         }
         public virtual string GetAssetName(object asset)
         {
@@ -358,7 +371,7 @@ namespace GrooveSharedUtils
         }
         public async Task SwapStubbedShaders(AssetBundle assetBundle)
         {
-            await Task.Run((() => 
+            await Task.Run(() => 
             {
                 AssetBundleRequest request = assetBundle.LoadAllAssetsAsync<Material>();
                 request.completed += (operation) =>
@@ -407,7 +420,7 @@ namespace GrooveSharedUtils
                     }
                     stubbedToRealShaderCache = null;
                 };
-            }));
+            });
         }
     }
 }

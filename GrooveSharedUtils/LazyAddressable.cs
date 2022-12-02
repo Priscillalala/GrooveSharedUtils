@@ -25,9 +25,6 @@ namespace GrooveSharedUtils
     public struct LazyAddressable<T> where T : UnityEngine.Object
     {
         public string key;
-        public bool neverCached;
-
-        AsyncOperationHandle<T> loadOperation;
 
         T _cachedObject;
 
@@ -37,8 +34,23 @@ namespace GrooveSharedUtils
             {
                 return lazyAddressable._cachedObject;
             }
-            lazyAddressable.RequestLoadAsync();
-            return lazyAddressable._cachedObject = lazyAddressable.loadOperation.WaitForCompletion();
+            if (string.IsNullOrEmpty(lazyAddressable.key))
+            {
+                return null;
+            }
+            AsyncOperationHandle<T> asyncOperationHandle = default;
+            try
+            {
+                asyncOperationHandle = Addressables.LoadAssetAsync<T>(lazyAddressable.key);
+            }
+            finally
+            {
+                if (asyncOperationHandle.IsValid())
+                {
+                    lazyAddressable._cachedObject = asyncOperationHandle.WaitForCompletion();
+                }
+            }
+            return lazyAddressable._cachedObject;
         }
         public static implicit operator LazyAddressable<T>(string key)
         {
@@ -47,15 +59,12 @@ namespace GrooveSharedUtils
                 key = key
             };
         }
-
-        public void RequestLoadAsync()
+        public LazyAddressable(string key)
         {
-            if (_cachedObject || loadOperation.IsValid())
-            {
-                return;
-            }
-            loadOperation = Addressables.LoadAssetAsync<T>(key);
+            this.key = key;
+            this._cachedObject = null;
         }
+        
 
     }
 }

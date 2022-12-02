@@ -39,11 +39,31 @@ namespace GrooveSharedUtils
             {
                 return false;
             }
-            return x2 == y2 && x1.Length == y1.Length && string.Compare(x1, y1, StringComparison.OrdinalIgnoreCase) == 0; ;
+            if(x2 != y2)
+            {
+                return false;
+            }
+            x1 = WithoutSpaces(x1);
+            y1 = WithoutSpaces(y1);
+            return x1.Length == y1.Length && string.Compare(x1, y1, StringComparison.OrdinalIgnoreCase) == 0;
+        }
+        //https://stackoverflow.com/questions/2182459/fastest-way-to-remove-chars-from-string
+        public static string WithoutSpaces(string s)
+        {
+            int len = s.Length;
+            char[] s2 = new char[len];
+            int i2 = 0;
+            for (int i = 0; i < len; i++)
+            {
+                char c = s[i];
+                if (!char.IsWhiteSpace(c) && c != '.' && c != '_')
+                    s2[i2++] = c;
+            }
+            return new string(s2, 0, i2);
         }
         public int GetHashCode((string, Type) obj)
         {
-            return CombineHashCodes(StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Item1), obj.Item2.GetHashCode());
+            return CombineHashCodes(StringComparer.OrdinalIgnoreCase.GetHashCode(WithoutSpaces(obj.Item1)), obj.Item2.GetHashCode());
         }
         public static int CombineHashCodes(int h1, int h2)
         {

@@ -20,7 +20,7 @@ namespace GrooveSharedUtils.Frames
     {
         public string name;
         public Color buffColor = Color.white;
-        public bool showStacks = false;
+        public bool canStack = false;
         public EliteDef eliteDef = null;
         public Sprite icon = null;
         public bool isCooldown = false;
@@ -35,7 +35,7 @@ namespace GrooveSharedUtils.Frames
 
             BuffDef.name = name.EnsurePrefix("bd");
             BuffDef.buffColor = buffColor;
-            BuffDef.canStack = showStacks;
+            BuffDef.canStack = canStack;
             BuffDef.eliteDef = eliteDef;
             BuffDef.iconSprite = icon;
             BuffDef.isCooldown = isCooldown;

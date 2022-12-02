@@ -23,6 +23,7 @@ using BepInEx.Configuration;
 using HG;
 using UnityEngine.Networking;
 using RoR2.Skills;
+using HG.GeneralSerializer;
 
 namespace GrooveSharedUtils
 {
@@ -57,34 +58,44 @@ namespace GrooveSharedUtils
         {
             return new Color(rUnscaled / 255f, gUnscaled / 255f, bUnscaled / 255f, a);
         }
-        public static bool HasItem(this CharacterBody characterBody, ItemDef itemDef, out int stack)
+        public static AssetBundle LoadAssetBundleRelative(string relativePath = "", Assembly assembly = null)
         {
-            return HasItem(characterBody, itemDef.itemIndex, out stack);
+            assembly = assembly ?? Assembly.GetCallingAssembly();
+            return AssetBundle.LoadFromFile(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(assembly.Location), relativePath));
         }
+        public static AssetBundleCreateRequest LoadAssetBundleRelativeAsync(string relativePath = "", Assembly assembly = null)
+        {
+            assembly = assembly ?? Assembly.GetCallingAssembly();
+            return AssetBundle.LoadFromFileAsync(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(assembly.Location), relativePath));
+        }
+        //with stack
+        public static bool HasItem(this CharacterBody characterBody, ItemDef itemDef, out int stack) => HasItem(characterBody, itemDef.itemIndex, out stack);
         public static bool HasItem(this CharacterBody characterBody, ItemIndex itemIndex, out int stack)
         {
             if (characterBody && characterBody.inventory)
             {
                 stack = characterBody.inventory.GetItemCount(itemIndex);
-                return true;
+                return stack > 0;
             }
             stack = 0;
             return false;
         }
-        public static bool HasItem(this CharacterMaster characterMaster, ItemDef itemDef, out int stack)
-        {
-            return HasItem(characterMaster, itemDef.itemIndex, out stack);
-        }
+        public static bool HasItem(this CharacterMaster characterMaster, ItemDef itemDef, out int stack) => HasItem(characterMaster, itemDef.itemIndex, out stack);
         public static bool HasItem(this CharacterMaster characterMaster, ItemIndex itemIndex, out int stack)
         {
             if (characterMaster && characterMaster.inventory)
             {
                 stack = characterMaster.inventory.GetItemCount(itemIndex);
-                return true;
+                return stack > 0;
             }
             stack = 0;
             return false;
         }
+        //no stack
+        public static bool HasItem(this CharacterBody characterBody, ItemDef itemDef) => HasItem(characterBody, itemDef.itemIndex);
+        public static bool HasItem(this CharacterBody characterBody, ItemIndex itemIndex) => characterBody && characterBody.inventory && characterBody.inventory.GetItemCount(itemIndex) > 0;
+        public static bool HasItem(this CharacterMaster characterMaster, ItemDef itemDef) => HasItem(characterMaster, itemDef.itemIndex);
+        public static bool HasItem(this CharacterMaster characterMaster, ItemIndex itemIndex) => characterMaster && characterMaster.inventory && characterMaster.inventory.GetItemCount(itemIndex) > 0;
         public static SkillFamily FindSkillFamily(GameObject bodyPrefab, SkillSlot slot)
         {
             if(bodyPrefab.TryGetComponent(out SkillLocator skillLocator))
@@ -208,6 +219,22 @@ namespace GrooveSharedUtils
                 return;
             }
             LanguageAPI.Add(token, value, specificLanguage);
+        }
+        public static bool TryModifyFieldValue<T>(this EntityStateConfiguration entityStateConfiguration, string fieldName, T value)
+        {
+            ref SerializedField serializedField = ref entityStateConfiguration.serializedFieldsCollection.GetOrCreateField(fieldName);
+            Type type = typeof(T);
+            if (serializedField.fieldValue.objectValue && serializedField.fieldValue.objectValue.GetType().IsAssignableFrom(type))
+            {
+                serializedField.fieldValue.objectValue = value as UnityEngine.Object;
+                return true;
+            }
+            else if (StringSerializer.CanSerializeType(type))
+            {
+                serializedField.fieldValue.stringValue = StringSerializer.Serialize(type, value);
+                return true;
+            }
+            return false;
         }
         public static string EnsurePrefix(this string str, string prefix)
         {

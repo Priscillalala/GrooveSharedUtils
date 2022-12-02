@@ -20,10 +20,18 @@ using System.Collections;
 namespace GrooveSharedUtils
 {
 
-    public abstract class BaseModModule<T> : BaseModModule
+    public abstract class BaseModModule<T> : BaseModModule where T : class
     {
         public static T instance { get; private set; }
-        public BaseModModule()
+        public override void Awake()
+        {
+            if (instance == null)
+            {
+                instance = this as T;
+            }
+            base.Awake();
+        }
+        /*public BaseModModule()
         {
             if(instance != null)
             {
@@ -33,10 +41,11 @@ namespace GrooveSharedUtils
             {
                 instance = t;
             }
-        }
+        }*/
     }
-    public abstract class BaseModModule
+    public abstract class BaseModModule : MonoBehaviour
     {
+        public virtual void Awake() { }
         public abstract void OnModInit();
         public abstract void OnCollectContent(AssetStream sasset);
     }
