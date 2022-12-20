@@ -8,7 +8,6 @@ using BepInEx.Bootstrap;
 using Mono.Cecil.Cil;
 using System.Collections.Generic;
 using System.Linq;
-using R2API.Utils;
 using BepInEx.Logging;
 using BepInEx.Configuration;
 using System.Collections.ObjectModel;
@@ -25,6 +24,7 @@ using RoR2.ExpansionManagement;
 using RoR2.Skills;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using HG;
+using R2API.ScriptableObjects;
 
 namespace GrooveSharedUtils
 {
@@ -40,19 +40,9 @@ namespace GrooveSharedUtils
             }
             base.Awake();
         }
-
-        /*public BaseModPlugin()
-        {
-            if (instance != null)
-            {
-                return;
-            }
-            instance = this as T;
-        }*/
     }
     public abstract class BaseModPlugin : BaseUnityPlugin, IContentPackProvider
     {
-        //static Dictionary<string, Shader> _globalStubbedShaderPairs = new Dictionary<string, Shader>();
         static List<Task> swapShadersTasks = new List<Task>();
         static Dictionary<Shader, Shader> stubbedToRealShaderCache = new Dictionary<Shader, Shader>();
 
@@ -66,26 +56,9 @@ namespace GrooveSharedUtils
             (typeof(ItemDisplayRuleSet), "idrs"),
         };
 
-        //public static ReadOnlyDictionary<string, Shader> globalStubbedShaderPairs = new ReadOnlyDictionary<string, Shader>(_globalStubbedShaderPairs);
         public static ReadOnlyArray<(Type, string)> globalTypeToCommonPrefix = new ReadOnlyArray<(Type, string)>(_globalTypeToCommonPrefix);
         static BaseModPlugin()
         {
-            /*_globalStubbedShaderPairs["StubbedShader/deferred/standard"] = Common.Shaders.standard;
-            _globalStubbedShaderPairs["StubbedShader/fx/hgcloudremap"] = Common.Shaders.cloudRemap;
-            _globalStubbedShaderPairs["StubbedShader/fx/hgopaquecloudremap"] = Common.Shaders.opaqueCloudRemap;
-            _globalStubbedShaderPairs["StubbedShader/fx/cloudintersectionremap"] = Common.Shaders.intersectionCloudRemap;
-            _globalStubbedShaderPairs["StubbedShader/fx/hgdistortion"] = Common.Shaders.distortion;
-            _globalStubbedShaderPairs["StubbedShader/fx/solidparallax"] = Common.Shaders.solidParallax;
-            _globalStubbedShaderPairs["StubbedShader/fx/hgforwardplanet"] = Common.Shaders.forwardPlanet;
-            _globalStubbedShaderPairs["StubbedShader/fx/distantwater"] = Common.Shaders.distantWater;
-            _globalStubbedShaderPairs["StubbedShader/fx/hgtriplanarterrainblend"] = Common.Shaders.triplanarTerrain;
-            _globalStubbedShaderPairs["StubbedShader/fx/hgsnowtopped"] = Common.Shaders.snowTopped;
-            _globalTypeToCommonPrefix[typeof(NetworkSoundEventDef)] = "nse";
-            _globalTypeToCommonPrefix[typeof(BuffDef)] = "bd";
-            _globalTypeToCommonPrefix[typeof(EliteDef)] = "ed";
-            _globalTypeToCommonPrefix[typeof(DirectorCardCategorySelection)] = "dccs";
-            _globalTypeToCommonPrefix[typeof(DccsPool)] = "dp";
-            _globalTypeToCommonPrefix[typeof(ItemDisplayRuleSet)] = "idrs";*/
             RoR2Application.onLoad = (Action)Delegate.Combine(RoR2Application.onLoad, new Action(delegate 
             {
                 Task.WaitAll(swapShadersTasks.ToArray());
@@ -111,7 +84,6 @@ namespace GrooveSharedUtils
         public virtual bool ENV_TrimConfigNamespaces { get; } = true;
         public virtual bool ENV_AutoSwapStubbedShaders { get; } = true;
         public virtual (Type, string)[] ENV_AdditionalCommonTypePrefixes { get; } = Array.Empty<(Type, string)>();
-        //public virtual Dictionary<string, Shader> ENV_AdditionalStubbedShaderPairs { get; } = new Dictionary<string, Shader>();
         public string identifier => generatedGUID;
         public GameObject moduleManagerObject;
         public string generatedGUID;
@@ -377,12 +349,11 @@ namespace GrooveSharedUtils
                 request.completed += (operation) =>
                 {
                     int length = request.allAssets.Length;
-                    GSUtil.LogInternal(LogLevel.Info, string.Format("Swapping stubbed shaders for {0} materials", length), assembly);
-                    //Dictionary<Shader, Shader> stubbedToRealShaderCache = new Dictionary<Shader, Shader>();
+                    Logger.LogInfo($"Swapping stubbed shaders for {length} materials from {assetBundle.name}");
                     for(int i = 0; i < length; i++)
                     {
                         Material mat = (Material)request.allAssets[i];
-                        Shader shader = stubbedToRealShaderCache.GetOrCreateValue(mat.shader, (Func<Shader>)(() =>
+                        Shader shader = stubbedToRealShaderCache.GetOrCreateValue(mat.shader, () =>
                         {
                             Shader realShader = null;
                             string name = mat.shader.name;
@@ -401,10 +372,12 @@ namespace GrooveSharedUtils
                                 {
                                     if (asyncOperationHandle.IsValid())
                                     {
+                                        GSUtil.Log("Valid!");
                                         realShader = asyncOperationHandle.WaitForCompletion();
                                     }                                    
                                 }
                             }
+                            GSUtil.Log(realShader != null);
                             return realShader;
                             /*if(ENV_AdditionalStubbedShaderPairs.TryGetValue(name, out Shader fromEnvShader))
                             {
@@ -415,12 +388,32 @@ namespace GrooveSharedUtils
                                 return fromGlobalShader;
                             }
                             return null;*/
-                        }));
+                        });
+                        GSUtil.Log(shader != null);
                         mat.shader = shader ?? mat.shader;
+                        GSUtil.Log("Final Shader: " +  mat.shader.name);
                     }
-                    stubbedToRealShaderCache = null;
                 };
             });
         }
     }
 }
+//static Dictionary<string, Shader> _globalStubbedShaderPairs = new Dictionary<string, Shader>();
+//public static ReadOnlyDictionary<string, Shader> globalStubbedShaderPairs = new ReadOnlyDictionary<string, Shader>(_globalStubbedShaderPairs);
+
+/*_globalStubbedShaderPairs["StubbedShader/deferred/standard"] = Common.Shaders.standard;
+_globalStubbedShaderPairs["StubbedShader/fx/hgcloudremap"] = Common.Shaders.cloudRemap;
+_globalStubbedShaderPairs["StubbedShader/fx/hgopaquecloudremap"] = Common.Shaders.opaqueCloudRemap;
+_globalStubbedShaderPairs["StubbedShader/fx/cloudintersectionremap"] = Common.Shaders.intersectionCloudRemap;
+_globalStubbedShaderPairs["StubbedShader/fx/hgdistortion"] = Common.Shaders.distortion;
+_globalStubbedShaderPairs["StubbedShader/fx/solidparallax"] = Common.Shaders.solidParallax;
+_globalStubbedShaderPairs["StubbedShader/fx/hgforwardplanet"] = Common.Shaders.forwardPlanet;
+_globalStubbedShaderPairs["StubbedShader/fx/distantwater"] = Common.Shaders.distantWater;
+_globalStubbedShaderPairs["StubbedShader/fx/hgtriplanarterrainblend"] = Common.Shaders.triplanarTerrain;
+_globalStubbedShaderPairs["StubbedShader/fx/hgsnowtopped"] = Common.Shaders.snowTopped;
+_globalTypeToCommonPrefix[typeof(NetworkSoundEventDef)] = "nse";
+_globalTypeToCommonPrefix[typeof(BuffDef)] = "bd";
+_globalTypeToCommonPrefix[typeof(EliteDef)] = "ed";
+_globalTypeToCommonPrefix[typeof(DirectorCardCategorySelection)] = "dccs";
+_globalTypeToCommonPrefix[typeof(DccsPool)] = "dp";
+_globalTypeToCommonPrefix[typeof(ItemDisplayRuleSet)] = "idrs";*/

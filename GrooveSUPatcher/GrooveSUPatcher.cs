@@ -93,13 +93,15 @@ namespace GrooveSharedUtils
             {
                 try
                 {
-                    if ( !path.Contains("MMHOOK"))
+                    if (!path.Contains("MMHOOK") && !path.Contains("R2API"))
                     {
                         HandleAssembly(path);
                     }
                 }
                 catch (Exception ex) { logger.LogError(ex.ToString()); }
             }
+
+            LanguageCollectionManager.Init();
             List<ConfigurableAttribute> configurableAttributes = new List<ConfigurableAttribute>();
             HG.Reflection.SearchableAttribute.GetInstances(configurableAttributes);
             foreach (ConfigurableAttribute attribute in configurableAttributes)
@@ -157,7 +159,7 @@ namespace GrooveSharedUtils
             int length = types.Length;
             //logger.LogInfo(length);
             bool foundBasePlugin = false;
-            HG.Reflection.SearchableAttribute.ScanAssembly(assembly);
+            //HG.Reflection.SearchableAttribute.;
             for (int i = 0; i < length; i++)
             {
                 Type type = types[i];
@@ -225,9 +227,14 @@ namespace GrooveSharedUtils
             Type type = attribute.target as Type;
             FieldInfo fieldInfo = attribute.target as FieldInfo;
             bool targetsType = type != null && typeof(BaseModModule).IsAssignableFrom(type) && !type.IsAbstract;
-            bool targetsFieldInfo = fieldInfo != null && fieldInfo.IsStatic;
+            bool targetsFieldInfo = fieldInfo != null;
             if (!targetsType && !targetsFieldInfo)
             {
+                return;
+            }
+            if(targetsFieldInfo && !fieldInfo.IsStatic)
+            {
+                logger.LogWarning($"Configurable attribute targets field {fieldInfo.Name} which MUST be static!");
                 return;
             }
             Assembly assembly = (type ?? fieldInfo.DeclaringType).Assembly;

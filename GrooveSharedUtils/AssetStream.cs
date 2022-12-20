@@ -66,6 +66,26 @@ namespace GrooveSharedUtils
             {
                 ((ModdedScriptableObject)obj).Register();
             };
+            if (GSUtil.ModLoadedCached("com.bepis.r2api.items"))
+            {
+                AddItemAPIToMap(map);
+            }
+            if (GSUtil.ModLoadedCached("com.bepis.r2api.colors"))
+            {
+                AddColorAPIToMap(map);
+            }
+            map[typeof(Type)] = (object obj) =>
+            {
+                Type t = (Type)obj;
+                if (t.IsSubclassOf(typeof(EntityStates.EntityState)))
+                {
+                    contentPack.entityStateTypes.AddHash(t);
+                }
+            };
+        }
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        internal void AddItemAPIToMap(AssetToContentMap map)
+        {
             map[typeof(CustomItem)] = (object obj) =>
             {
                 ItemAPI.Add((CustomItem)obj);
@@ -74,13 +94,17 @@ namespace GrooveSharedUtils
             {
                 ItemAPI.Add((CustomEquipment)obj);
             };
-            map[typeof(Type)] = (object obj) =>
+        }
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        internal void AddColorAPIToMap(AssetToContentMap map)
+        {
+            map[typeof(SerializableDamageColor)] = (object obj) =>
             {
-                Type t = (Type)obj;
-                if (t.IsSubclassOf(typeof(EntityStates.EntityState)))
-                {
-                    contentPack.entityStateTypes.AddHash(t);
-                }
+                ColorsAPI.AddSerializableDamageColor((SerializableDamageColor)obj);
+            };
+            map[typeof(SerializableColorCatalogEntry)] = (object obj) =>
+            {
+                ColorsAPI.AddSerializableColor((SerializableColorCatalogEntry)obj);
             };
         }
         internal void ResolveMap()
@@ -101,10 +125,26 @@ namespace GrooveSharedUtils
                 }
                 return;
             }
+            plugin.AddDisplayAsset(asset);
+            map.TryMapAsset(asset);
+            if (GSUtil.ModLoadedCached("com.bepis.r2api.content_management") && CheckForR2APISerializableContentPack(asset))
+            {
+                return;
+            }
+            if (asset is GameObject gameObject && gameObject.GetComponent<EffectComponent>())
+            {
+                Add(new EffectDef(gameObject));
+                return;
+            }
+
+        }
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        internal bool CheckForR2APISerializableContentPack(object asset)
+        {
             if (asset is R2APISerializableContentPack serializableContentPack)
             {
                 FieldInfo[] fields = serializableContentPack.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
-                for(int i = 0; i < fields.Length; i++)
+                for (int i = 0; i < fields.Length; i++)
                 {
                     FieldInfo fieldInfo = fields[i];
                     if (typeof(IEnumerable).IsAssignableFrom(fieldInfo.FieldType))
@@ -112,14 +152,11 @@ namespace GrooveSharedUtils
                         Add(fieldInfo.GetValue(serializableContentPack));
                     }
                 }
+                return true;
             }
-            if (asset is GameObject gameObject && gameObject.GetComponent<EffectComponent>())
-            {
-                Add(new EffectDef(gameObject));
-            }
-            plugin.AddDisplayAsset(asset);
-            map.TryMapAsset(asset);
+            return false;
         }
-        
+
+
     }
 }

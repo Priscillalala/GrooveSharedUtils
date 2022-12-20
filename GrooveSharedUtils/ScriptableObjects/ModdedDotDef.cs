@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using RoR2;
 using R2API.ScriptableObjects;
 using R2API;
+using System.Runtime.CompilerServices;
 
 namespace GrooveSharedUtils.ScriptableObjects
 {
@@ -29,6 +30,7 @@ namespace GrooveSharedUtils.ScriptableObjects
 		public DotAPI.CustomDotBehaviour customDotBehaviour = null;
 		public DotAPI.CustomDotVisual customDotVisual = null;
 
+		[MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
 		protected override void RegisterInternal()
         {
 			DotController.DotDef dotDef = new DotController.DotDef

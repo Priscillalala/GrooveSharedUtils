@@ -68,8 +68,9 @@ namespace GrooveSharedUtils
             assembly = assembly ?? Assembly.GetCallingAssembly();
             return AssetBundle.LoadFromFileAsync(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(assembly.Location), relativePath));
         }
+        #region HasItem
         //with stack
-        public static bool HasItem(this CharacterBody characterBody, ItemDef itemDef, out int stack) => HasItem(characterBody, itemDef.itemIndex, out stack);
+        public static bool HasItem(this CharacterBody characterBody, ItemDef itemDef, out int stack) => HasItem(characterBody, itemDef ? itemDef.itemIndex : ItemIndex.None, out stack);
         public static bool HasItem(this CharacterBody characterBody, ItemIndex itemIndex, out int stack)
         {
             if (characterBody && characterBody.inventory)
@@ -80,7 +81,7 @@ namespace GrooveSharedUtils
             stack = 0;
             return false;
         }
-        public static bool HasItem(this CharacterMaster characterMaster, ItemDef itemDef, out int stack) => HasItem(characterMaster, itemDef.itemIndex, out stack);
+        public static bool HasItem(this CharacterMaster characterMaster, ItemDef itemDef, out int stack) => HasItem(characterMaster, itemDef ? itemDef.itemIndex : ItemIndex.None, out stack);
         public static bool HasItem(this CharacterMaster characterMaster, ItemIndex itemIndex, out int stack)
         {
             if (characterMaster && characterMaster.inventory)
@@ -96,6 +97,7 @@ namespace GrooveSharedUtils
         public static bool HasItem(this CharacterBody characterBody, ItemIndex itemIndex) => characterBody && characterBody.inventory && characterBody.inventory.GetItemCount(itemIndex) > 0;
         public static bool HasItem(this CharacterMaster characterMaster, ItemDef itemDef) => HasItem(characterMaster, itemDef.itemIndex);
         public static bool HasItem(this CharacterMaster characterMaster, ItemIndex itemIndex) => characterMaster && characterMaster.inventory && characterMaster.inventory.GetItemCount(itemIndex) > 0;
+        #endregion
         public static SkillFamily FindSkillFamily(GameObject bodyPrefab, SkillSlot slot)
         {
             if(bodyPrefab.TryGetComponent(out SkillLocator skillLocator))
@@ -119,15 +121,6 @@ namespace GrooveSharedUtils
                 return baseValue + ((stack - 1) * stackValue);
             }
             return 0;
-        }
-        public static GameObject EmptyPrefab(string name, bool registerNetwork = false)
-        {
-            GameObject g = new GameObject(name);
-            if (registerNetwork)
-            {
-                g.AddComponent<NetworkIdentity>();
-            }
-            return PrefabAPI.InstantiateClone(g, name, registerNetwork);
         }
         public static string FormatCharacters(this string original, Func<char, bool> predicate)
         {
@@ -220,6 +213,27 @@ namespace GrooveSharedUtils
             }
             LanguageAPI.Add(token, value, specificLanguage);
         }
+        #region ModEnabled
+        public static bool ModLoaded(string guid)
+        {
+            if (!Chainloader._loaded)
+            {
+                Debug.LogWarning($"Cannot determine if {guid} is loaded, the Chainloader has not yet loaded!");
+                return false;
+            }
+            return Chainloader.PluginInfos.ContainsKey(guid);
+        }
+        internal static Dictionary<string, bool> modLoadedCache = new Dictionary<string, bool>();
+        public static bool ModLoadedCached(string guid)
+        {
+            if (!Chainloader._loaded)
+            {
+                Debug.LogWarning($"Cannot determine if {guid} is loaded, the Chainloader has not yet loaded!");
+                return false;
+            }
+            return modLoadedCache.GetOrCreateValue(guid, () => Chainloader.PluginInfos.ContainsKey(guid));
+        }
+        #endregion
         public static bool TryModifyFieldValue<T>(this EntityStateConfiguration entityStateConfiguration, string fieldName, T value)
         {
             ref SerializedField serializedField = ref entityStateConfiguration.serializedFieldsCollection.GetOrCreateField(fieldName);
@@ -229,7 +243,7 @@ namespace GrooveSharedUtils
                 serializedField.fieldValue.objectValue = value as UnityEngine.Object;
                 return true;
             }
-            else if (StringSerializer.CanSerializeType(type))
+            else if (serializedField.fieldValue.stringValue != null && StringSerializer.CanSerializeType(type))
             {
                 serializedField.fieldValue.stringValue = StringSerializer.Serialize(type, value);
                 return true;
@@ -287,7 +301,12 @@ namespace GrooveSharedUtils
             {
                 plugin.Logger.Log(level, data);
             }
+            else
+            {
+                Debug.Log(data);
+            }
         }
+        #region Asset Collection Hash
         internal static ConditionalWeakTable<NamedAssetCollection, HashSet<object>> internalAssetCollectionToHash = new ConditionalWeakTable<NamedAssetCollection, HashSet<object>>();
         internal struct ResolveHashTypeInfo
         {
@@ -335,6 +354,7 @@ namespace GrooveSharedUtils
                 internalAssetCollectionToHash.Remove(namedAssetCollection);
             }
         }
+        #endregion
         public static TValue GetOrCreateValue<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, Func<TValue> createValueDelegate = null)
         {
             if (!dict.TryGetValue(key, out TValue value))
@@ -344,6 +364,7 @@ namespace GrooveSharedUtils
             }
             return value;
         }
+        #region Config
         public static Dictionary<string, ConfigFile> configFileByName = new Dictionary<string, ConfigFile>();
 
         public static ConfigFile GetOrCreateConfig(string name, BepInPlugin owner = null)
@@ -385,6 +406,7 @@ namespace GrooveSharedUtils
             });
 
         }*/
+        #endregion
         public static void AddDisplayAsset<TAsset>(TAsset asset, Assembly assembly = null)
         {
             assembly = assembly ?? Assembly.GetCallingAssembly();

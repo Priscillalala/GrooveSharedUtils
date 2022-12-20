@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using RoR2;
 using R2API.ScriptableObjects;
 using R2API;
+using System.Runtime.CompilerServices;
 
 namespace GrooveSharedUtils.ScriptableObjects
 {
@@ -18,9 +19,10 @@ namespace GrooveSharedUtils.ScriptableObjects
     public class ModdedDamageTypeDef : ModdedScriptableObject
     {
         public DamageAPI.ModdedDamageType damageTypeIndex { get; set; }
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         protected override void RegisterInternal()
         {
-			damageTypeIndex = DamageAPI.ReserveDamageType();
+            damageTypeIndex = DamageAPI.ReserveDamageType();
 		}
-	}
+    }
 }
