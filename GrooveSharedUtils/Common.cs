@@ -23,24 +23,24 @@ namespace GrooveSharedUtils
 {
     public static partial class Common
     {
-        [SystemInitializer]
-        public static void Init()
-        {
-            On.RoR2.GlobalEventManager.OnHitEnemy += Events.GlobalEventManager_OnHitEnemy;
-            IL.RoR2.HealthComponent.TakeDamage += Events.HealthComponent_TakeDamage;
-        }
 
-        public static partial class Dependencies
+        /*public static partial class Dependencies
         {
             public const string R2API = "com.bepis.r2api";
             public const string GrooveSharedUtils = "com.groovesalad.GrooveSharedUtils";
             public const string MoonstormSharedUtils = "com.TeamMoonstorm.MoonstormSharedUtils";
-        }
-        public static partial class Events
+        }*/
+        public static class Events
         {
+            static Events()
+            {
+                On.RoR2.GlobalEventManager.OnHitEnemy += GlobalEventManager_OnHitEnemy;
+                IL.RoR2.HealthComponent.TakeDamage += HealthComponent_TakeDamage;
+            }
             internal static void GlobalEventManager_OnHitEnemy(On.RoR2.GlobalEventManager.orig_OnHitEnemy orig, GlobalEventManager self, DamageInfo damageInfo, GameObject victim)
             {
-                orig(self, damageInfo, victim);
+                orig(self, damageInfo, victim); 
+
                 if (damageInfo.procCoefficient == 0f || damageInfo.rejected)
                 {
                     return;
@@ -51,10 +51,7 @@ namespace GrooveSharedUtils
                 }
                 if (damageInfo.attacker && damageInfo.procCoefficient > 0f)
                 {
-                    if (onHitEnemyServer != null)
-                    {
-                        onHitEnemyServer.Invoke(damageInfo, victim);
-                    }
+                    onHitEnemyServer?.Invoke(damageInfo, victim);
                 }
             }
             internal static void HealthComponent_TakeDamage(ILContext il)
@@ -78,10 +75,7 @@ namespace GrooveSharedUtils
                     c.Emit(OpCodes.Ldloc, damageLocIndex);
                     c.EmitDelegate<Func<HealthComponent, DamageInfo, float, float>>((victim, damageInfo, damage) =>
                     {
-                        if (onProcessDamageServer != null)
-                        {
-                            onProcessDamageServer.Invoke(victim, damageInfo, ref damage);
-                        }
+                        onProcessDamageServer?.Invoke(victim, damageInfo, ref damage);
                         return damage;
                     });
                     c.Emit(OpCodes.Stloc, damageLocIndex);
@@ -93,9 +87,8 @@ namespace GrooveSharedUtils
             public static event OnHitEnemyDelegate onHitEnemyServer;
             public static event ProcessDamageDelegate onProcessDamageServer;
         }
-        public static partial class Shaders
+        public static class Shaders
         {
-            //public static LazyAddressable<Shader> standard = "48dca5b99d113b8d11006bab44295342";
             public static Shader standard => Addressables.LoadAssetAsync<Shader>("48dca5b99d113b8d11006bab44295342").WaitForCompletion();
             public static Shader cloudRemap => Addressables.LoadAssetAsync<Shader>("bbffe49749c91724d819563daf91445d").WaitForCompletion();
             public static Shader opaqueCloudRemap => Addressables.LoadAssetAsync<Shader>("a035a371a79a19c468ec4e6dc40911c5").WaitForCompletion();

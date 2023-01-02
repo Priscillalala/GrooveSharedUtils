@@ -28,8 +28,7 @@ namespace GrooveSharedUtils.ScriptableObjects
 			colorCatalogIndex = index;
 			moddedCatalogColorIndices.Add(index);
 		}
-        [SystemInitializer]
-        public static void Init()
+        internal static void Init()
         {
             if (moddedCatalogColorIndices.Count > 0)
             {

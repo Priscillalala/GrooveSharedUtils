@@ -27,7 +27,7 @@ namespace GrooveSharedUtils
 		{
 			typeof(ItemCatalog)
 		})]
-		private static void Init()
+		internal static void Init()
 		{
 			List<BaseItemBodyBehavior.ItemTypePair> server = new List<BaseItemBodyBehavior.ItemTypePair>();
 			List<BaseItemBodyBehavior.ItemTypePair> client = new List<BaseItemBodyBehavior.ItemTypePair>();

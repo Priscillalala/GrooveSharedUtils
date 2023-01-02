@@ -52,8 +52,8 @@ namespace GrooveSharedUtils
             ("COMMANDO_BODY_NAME", $"Test string...{5+7:P}"),
         };*/
 
-        public static Dictionary<string, List<MethodInfo>> languageToProviders = new Dictionary<string, List<MethodInfo>>(); 
-        public static void Init()
+        public static Dictionary<string, List<MethodInfo>> languageToProviders = new Dictionary<string, List<MethodInfo>>();
+        internal static void Init()
         {
             Type expectedReturnType = typeof(LanguageCollection);
             List<LanguageCollectionProviderAttribute> languageCollectionProviderAttributes = new List<LanguageCollectionProviderAttribute>();
@@ -98,7 +98,12 @@ namespace GrooveSharedUtils
                     {
                         for(int i = 0; i < collection.Count; i++)
                         {
-                            self.SetStringByToken(collection[i].token, collection[i].localizedString);
+                            string token = collection[i].token;
+                            string localizedString = collection[i].localizedString;
+                            if (token != null && localizedString != null) 
+                            {
+                                self.SetStringByToken(token, localizedString);
+                            }
                         }
                     }
                 }

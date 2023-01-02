@@ -101,7 +101,7 @@ namespace GrooveSharedUtils
                 catch (Exception ex) { logger.LogError(ex.ToString()); }
             }
 
-            LanguageCollectionManager.Init();
+            ManualInitializer.Init();
             List<ConfigurableAttribute> configurableAttributes = new List<ConfigurableAttribute>();
             HG.Reflection.SearchableAttribute.GetInstances(configurableAttributes);
             foreach (ConfigurableAttribute attribute in configurableAttributes)

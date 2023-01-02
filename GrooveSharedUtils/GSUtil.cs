@@ -238,7 +238,7 @@ namespace GrooveSharedUtils
         {
             ref SerializedField serializedField = ref entityStateConfiguration.serializedFieldsCollection.GetOrCreateField(fieldName);
             Type type = typeof(T);
-            if (serializedField.fieldValue.objectValue && serializedField.fieldValue.objectValue.GetType().IsAssignableFrom(type))
+            if (serializedField.fieldValue.objectValue && typeof(UnityEngine.Object).IsAssignableFrom(type))
             {
                 serializedField.fieldValue.objectValue = value as UnityEngine.Object;
                 return true;

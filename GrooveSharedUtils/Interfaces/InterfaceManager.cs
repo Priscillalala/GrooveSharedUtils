@@ -23,8 +23,7 @@ namespace GrooveSharedUtils.Interfaces
 {
     public static class InterfaceManager
     {
-        [SystemInitializer]
-        public static void Init()
+        internal static void Init()
         {
             RecalculateStatsAPI.GetStatCoefficients += RecalculateStatsAPI_GetStatCoefficients;
         }

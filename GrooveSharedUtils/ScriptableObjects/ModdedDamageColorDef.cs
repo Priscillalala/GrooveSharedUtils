@@ -27,8 +27,7 @@ namespace GrooveSharedUtils.ScriptableObjects
 			damageColorIndex = index;
 			moddedDamageColorIndices.Add(damageColorIndex);
 		}
-        [SystemInitializer]
-        public static void Init()
+        internal static void Init()
         {
             if (moddedDamageColorIndices.Count > 0)
             {

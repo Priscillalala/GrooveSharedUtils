@@ -93,6 +93,7 @@ namespace GrooveSharedUtils
         public List<ConfigFile> configFiles = new List<ConfigFile>();
         public ContentPack contentPack = new ContentPack();
         public List<BaseModModule> moduleOrder;
+        public HashSet<Type> enabledModuleTypes;
         public string adjustedGeneratedTokensPrefix => string.IsNullOrEmpty(ENV_GeneratedTokensPrefix) ? string.Empty : ENV_GeneratedTokensPrefix.ToUpper();
 
         [Obsolete(".Config should not be used. Refer to GSUtil.GetOrCreateConfig instead.", false)]
@@ -192,7 +193,8 @@ namespace GrooveSharedUtils
             BeginModInit();
 
             Type baseModuleType = typeof(BaseModModule);
-            List<Type> orderedModulesTypes = assembly.GetTypes().Where((Type t) => t.IsSubclassOf(baseModuleType) && !t.IsAbstract && IsModuleEnabled(t)).OrderByDescending(new Func<Type, int>(GetModuleTypePriority)).ToList();
+            List<Type> orderedModulesTypes = assembly.GetTypes().Where((Type t) => t.IsSubclassOf(baseModuleType) && !t.IsAbstract && ShouldEnableModuleType(t)).OrderByDescending(new Func<Type, int>(GetModuleTypePriority)).ToList();
+            enabledModuleTypes = new HashSet<Type>(orderedModulesTypes);
             moduleOrder = orderedModulesTypes.Select((Type t) => CreateModule(t)).ToList(); //(from t in orderedModulesTypes select CreateModule(t));
         }
         public virtual int GetModuleTypePriority(Type t)
@@ -200,10 +202,9 @@ namespace GrooveSharedUtils
             ModuleOrderPriorityAttribute moduleLoadPriorityAttribute = t.GetCustomAttribute<ModuleOrderPriorityAttribute>();
             return moduleLoadPriorityAttribute != null ? moduleLoadPriorityAttribute.priority : 0;
         }
-        public virtual bool IsModuleEnabled(Type type)
+        public virtual bool ShouldEnableModuleType(Type type)
         {
             return type.GetCustomAttribute<IgnoreModuleAttribute>() == null && !assemblyInfo.configDisabledModuleTypes.Contains(type);
-            
         }
         public virtual BaseModModule CreateModule(Type type)
         {
@@ -219,6 +220,8 @@ namespace GrooveSharedUtils
             }
             return baseModule;
         }
+        public bool ModuleEnabled<T>() where T:BaseModModule => ModuleEnabled(typeof(T));
+        public virtual bool ModuleEnabled(Type type) => enabledModuleTypes.Contains(type);
         public virtual void AddDisplayAsset(object asset)
         {
             if(asset == null)

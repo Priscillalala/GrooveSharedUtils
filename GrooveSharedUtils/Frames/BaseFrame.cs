@@ -15,6 +15,7 @@ using System.Runtime.CompilerServices;
 using System.Collections;
 using GrooveSharedUtils.Frames;
 using GrooveSharedUtils;
+using System.Linq;
 
 public static partial class _GSExtensions
 {
@@ -39,6 +40,10 @@ namespace GrooveSharedUtils.Frames
 
         public IEnumerator GetEnumerator()
         {
+            if(Assets.Any(obj => obj == null))
+            {
+                GSUtil.Log(BepInEx.Logging.LogLevel.Warning, $"One or more assets from {this.GetType().Name} are null. Did you forget to Build?");
+            }
             return Assets.GetEnumerator();
         }
         protected internal abstract void BuildInternal(BaseModPlugin callingMod);

@@ -25,6 +25,10 @@ namespace GrooveSharedUtils
 {
     public class LanguageCollection : List<(string token, string localizedString)>
     {
-        public static implicit operator LanguageCollection((string, string)[] array) => (LanguageCollection)array.ToList();
+        public LanguageCollection(IEnumerable<(string token, string localizedString)> collection) : base(collection)
+        {
+
+        }
+        public static implicit operator LanguageCollection((string token, string localizedString)[] array) => new LanguageCollection(array);
     }
 }

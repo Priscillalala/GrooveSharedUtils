@@ -26,8 +26,7 @@ namespace GrooveSharedUtils
         public delegate bool PerformEquipmentActionDelegate(EquipmentSlot equipmentSlot);
 
         internal static Dictionary<EquipmentDef, PerformEquipmentActionDelegate> equipmentToAction = new Dictionary<EquipmentDef, PerformEquipmentActionDelegate>();
-        [SystemInitializer]
-        public static void Init()
+        internal static void Init()
         {
             On.RoR2.EquipmentSlot.PerformEquipmentAction += EquipmentSlot_PerformEquipmentAction;  
         }
