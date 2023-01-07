@@ -36,6 +36,7 @@ namespace GrooveSharedUtils
             ScriptableObjects.ModdedDamageColorDef.Init();
             BaseEquipmentMasterBehavior.Init();
             BaseItemMasterBehavior.Init();
+            EliteTierManager.Init();
             EquipmentActionCatalog.Init();
 
         }

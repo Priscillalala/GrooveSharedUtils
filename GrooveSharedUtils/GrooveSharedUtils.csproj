@@ -76,6 +76,9 @@
     <Reference Include="R2API.Dot">
       <HintPath>..\..\..\..\AppData\Roaming\r2modmanPlus-local\RiskOfRain2\profiles\testing\BepInEx\plugins\RiskofThunder-R2API_Dot\R2API.Dot\R2API.Dot.dll</HintPath>
     </Reference>
+    <Reference Include="R2API.Elites">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Risk of Rain 2\BepInEx\plugins\R2API Modules\RiskofThunder-R2API_Elites\R2API.Elites\R2API.Elites.dll</HintPath>
+    </Reference>
     <Reference Include="R2API.Items">
       <HintPath>..\..\..\..\AppData\Roaming\r2modmanPlus-local\RiskOfRain2\profiles\testing\BepInEx\plugins\RiskofThunder-R2API_Items\R2API.Items\R2API.Items.dll</HintPath>
     </Reference>
