@@ -55,6 +55,14 @@ namespace GrooveSharedUtils
         {
             return CombatDirector.eliteTiers.FirstOrDefault(x => Array.IndexOf(x.eliteTypes, eliteDef) >= 0);
         }
+        public static void TryAdd(EliteDef eliteDef, EliteTier eliteTier)
+        {
+            int tier = (int)eliteTier;
+            if(tier >= 0 && tier < eliteDefsPerTier.Length)
+            {
+                eliteDefsPerTier[tier].Add(eliteDef);
+            }
+        }
     }
         
 }

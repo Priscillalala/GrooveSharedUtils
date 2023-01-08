@@ -38,6 +38,7 @@ namespace GrooveSharedUtils
             BaseItemMasterBehavior.Init();
             EliteTierManager.Init();
             EquipmentActionCatalog.Init();
+            OverlayManager.Init();
 
         }
     }

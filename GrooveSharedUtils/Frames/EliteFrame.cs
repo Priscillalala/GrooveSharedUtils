@@ -94,6 +94,8 @@ namespace GrooveSharedUtils.Frames
                 eliteDef.healthBoostCoefficient = info.healthBoostCoefficient;
                 eliteDef.damageBoostCoefficient = info.damageBoostCoefficient;
 
+                EliteTierManager.TryAdd(eliteDef, info.tier);
+
                 EliteDefs[i] = eliteDef;
             }
             TEliteDef firstEliteDef = EliteDefs.FirstOrDefault();
