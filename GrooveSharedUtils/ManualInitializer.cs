@@ -34,6 +34,7 @@ namespace GrooveSharedUtils
             Interfaces.InterfaceManager.Init();
             ScriptableObjects.ModdedCatalogColorDef.Init();
             ScriptableObjects.ModdedDamageColorDef.Init();
+            BaseBuffBodyBehavior.Init();
             BaseEquipmentMasterBehavior.Init();
             BaseItemMasterBehavior.Init();
             EliteTierManager.Init();

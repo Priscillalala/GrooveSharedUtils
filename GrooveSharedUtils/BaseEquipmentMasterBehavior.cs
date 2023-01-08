@@ -146,6 +146,10 @@ namespace GrooveSharedUtils
 			BaseEquipmentMasterBehavior.server.SetItemTypePairs(server);
 			BaseEquipmentMasterBehavior.client.SetItemTypePairs(client);
 			BaseEquipmentMasterBehavior.shared.SetItemTypePairs(shared);
+			if (BaseEquipmentMasterBehavior.shared.itemTypePairs.Length <= 0)
+			{
+				return;
+			}
 			On.RoR2.CharacterMaster.Awake += CharacterMaster_Awake;
 			On.RoR2.CharacterMaster.OnDestroy += CharacterMaster_OnDestroy;
 			On.RoR2.CharacterMaster.OnInventoryChanged += CharacterMaster_OnInventoryChanged;
