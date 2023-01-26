@@ -18,17 +18,17 @@ using System.Collections;
 namespace GrooveSharedUtils.Frames
 {
     public class DamageTypeFrame : DamageTypeFrame<ModdedDamageTypeDef> { }
-    public class DamageTypeFrame<IModdedDamageTypeDef> : BaseFrame where IModdedDamageTypeDef : ModdedDamageTypeDef
+    public class DamageTypeFrame<TModdedDamageTypeDef> : BaseFrame where TModdedDamageTypeDef : ModdedDamageTypeDef
     {
         public string name;
-        public IModdedDamageTypeDef ModdedDamageTypeDef { get; private set;}
+        public TModdedDamageTypeDef ModdedDamageTypeDef { get; private set;}
         protected override IEnumerable GetAssets()
         {
             yield return ModdedDamageTypeDef;
         }
         protected internal override void BuildInternal([CanBeNull] BaseModPlugin callingMod)
         {
-            ModdedDamageTypeDef = ScriptableObject.CreateInstance<IModdedDamageTypeDef>();
+            ModdedDamageTypeDef = ScriptableObject.CreateInstance<TModdedDamageTypeDef>();
             ModdedDamageTypeDef.cachedName = name;
         }
     }

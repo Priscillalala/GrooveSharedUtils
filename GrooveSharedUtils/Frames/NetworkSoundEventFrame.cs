@@ -18,18 +18,18 @@ using System.Collections;
 namespace GrooveSharedUtils.Frames
 {
     public class NetworkSoundEventFrame : NetworkSoundEventFrame<NetworkSoundEventDef> { }
-    public class NetworkSoundEventFrame<TSkillDef> : BaseFrame where TSkillDef : NetworkSoundEventDef
+    public class NetworkSoundEventFrame<TNetworkSoundEventDef> : BaseFrame where TNetworkSoundEventDef : NetworkSoundEventDef
     {
         public string name;
         public string eventName;
-        public TSkillDef NetworkSoundEventDef { get; private set; }
+        public TNetworkSoundEventDef NetworkSoundEventDef { get; private set; }
         protected override IEnumerable GetAssets()
         {
             yield return NetworkSoundEventDef;
         }
         protected internal override void BuildInternal([CanBeNull] BaseModPlugin callingMod)
         {
-            NetworkSoundEventDef = ScriptableObject.CreateInstance<TSkillDef>();
+            NetworkSoundEventDef = ScriptableObject.CreateInstance<TNetworkSoundEventDef>();
             GSUtil.EnsurePrefix(ref name, "nse");
             NetworkSoundEventDef.name = name;
             NetworkSoundEventDef.eventName = eventName;

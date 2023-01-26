@@ -15,6 +15,7 @@ using GrooveSharedUtils.ScriptableObjects;
 using RoR2.ExpansionManagement;
 using System.Collections;
 using JetBrains.Annotations;
+using System.Runtime.CompilerServices;
 
 namespace GrooveSharedUtils.Frames
 {
@@ -29,6 +30,7 @@ namespace GrooveSharedUtils.Frames
         public GameObject pickupModelPrefab = null;
         public UnlockableDef unlockableDef = null;
         public ExpansionDef requiredExpansion = null;
+        public ArtifactCodeInfo? artifactCode = null;
         public TArtifactDef ArtifactDef { get; private set; }
         protected override IEnumerable GetAssets()
         {
@@ -47,6 +49,17 @@ namespace GrooveSharedUtils.Frames
             ArtifactDef.pickupModelPrefab = pickupModelPrefab;
             ArtifactDef.unlockableDef = unlockableDef;
             ArtifactDef.requiredExpansion = requiredExpansion ?? callingMod?.ENV_DefaultExpansionDef;
+            if(artifactCode != null && GSUtil.ModLoaded("com.bepis.r2api.artifactcode"))
+            {
+                RegisterArtifactCode((ArtifactCodeInfo)artifactCode);
+            }
+        }
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        private void RegisterArtifactCode(ArtifactCodeInfo info)
+        {
+            ArtifactCode code = info.ToArtifactCode();
+            ArtifactCodeAPI.AddCode(ArtifactDef, code);
+            UnityEngine.Object.Destroy(code);
         }
     }
 }

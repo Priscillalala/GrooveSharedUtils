@@ -18,7 +18,7 @@ using System.Collections;
 namespace GrooveSharedUtils.Frames
 {
     public class BuffFrame : BuffFrame<BuffDef> { }
-    public class BuffFrame<IBuffDef> : BaseFrame where IBuffDef : BuffDef
+    public class BuffFrame<TBuffDef> : BaseFrame where TBuffDef : BuffDef
     {
         public string name;
         public Color buffColor = Color.white;
@@ -29,14 +29,14 @@ namespace GrooveSharedUtils.Frames
         public bool isDebuff = false;
         public bool isHidden = false;
         public NetworkSoundEventDef startSfx = null;
-        public IBuffDef BuffDef { get; private set;}
+        public TBuffDef BuffDef { get; private set;}
         protected override IEnumerable GetAssets()
         {
             yield return BuffDef;
         }
         protected internal override void BuildInternal([CanBeNull] BaseModPlugin callingMod)
         {
-            BuffDef = ScriptableObject.CreateInstance<IBuffDef>();
+            BuffDef = ScriptableObject.CreateInstance<TBuffDef>();
             GSUtil.EnsurePrefix(ref name, "bd");
             BuffDef.name = name;
             BuffDef.buffColor = buffColor;

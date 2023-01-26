@@ -18,18 +18,18 @@ using System.Collections;
 namespace GrooveSharedUtils.Frames
 {
     public class CatalogColorFrame : CatalogColorFrame<ModdedCatalogColorDef> { }
-    public class CatalogColorFrame<IModdedCatalogColorDef> : BaseFrame where IModdedCatalogColorDef : ModdedCatalogColorDef
+    public class CatalogColorFrame<TModdedCatalogColorDef> : BaseFrame where TModdedCatalogColorDef : ModdedCatalogColorDef
     {
         public string name;
         public Color color;
-        public IModdedCatalogColorDef ModdedCatalogColorDef { get; private set;}
+        public TModdedCatalogColorDef ModdedCatalogColorDef { get; private set;}
         protected override IEnumerable GetAssets()
         {
             yield return ModdedCatalogColorDef;
         }
         protected internal override void BuildInternal([CanBeNull] BaseModPlugin callingMod)
         {
-            ModdedCatalogColorDef = ScriptableObject.CreateInstance<IModdedCatalogColorDef>();
+            ModdedCatalogColorDef = ScriptableObject.CreateInstance<TModdedCatalogColorDef>();
             ModdedCatalogColorDef.cachedName = name;
             ModdedCatalogColorDef.color = color;
         }

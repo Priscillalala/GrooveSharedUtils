@@ -21,6 +21,7 @@ using RoR2.ContentManagement;
 using RoR2.Projectile;
 using UnityEngine.Networking;
 using GrooveSharedUtils.ScriptableObjects;
+using GrooveSharedUtils.Interfaces;
 
 namespace GrooveSharedUtils
 {
@@ -62,9 +63,9 @@ namespace GrooveSharedUtils
                     AddHash(contentPack.networkedObjectPrefabs, g);
                 }
             };
-            map[typeof(ModdedScriptableObject)] = (object obj) =>
+            map[typeof(IRegisterable)] = (object obj) =>
             {
-                ((ModdedScriptableObject)obj).Register();
+                ((IRegisterable)obj).Register();
             };
             if (GSUtil.ModLoadedCached("com.bepis.r2api.items"))
             {
@@ -73,6 +74,10 @@ namespace GrooveSharedUtils
             if (GSUtil.ModLoadedCached("com.bepis.r2api.colors"))
             {
                 AddColorAPIToMap(map);
+            }
+            if (GSUtil.ModLoadedCached("com.bepis.r2api.artifactcode"))
+            {
+                AddArtifactCodeAPIToMap(map);
             }
             map[typeof(Type)] = (object obj) =>
             {
@@ -105,6 +110,14 @@ namespace GrooveSharedUtils
             map[typeof(SerializableColorCatalogEntry)] = (object obj) =>
             {
                 ColorsAPI.AddSerializableColor((SerializableColorCatalogEntry)obj);
+            };
+        }
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        internal void AddArtifactCodeAPIToMap(AssetToContentMap map)
+        {
+            map[typeof(ArtifactCompoundDef)] = (object obj) =>
+            {
+                ArtifactCodeAPI.AddCompound((ArtifactCompoundDef)obj);
             };
         }
         internal void ResolveMap()

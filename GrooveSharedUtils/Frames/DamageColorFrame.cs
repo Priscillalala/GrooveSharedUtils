@@ -18,18 +18,18 @@ using System.Collections;
 namespace GrooveSharedUtils.Frames
 {
     public class DamageColorFrame : DamageColorFrame<ModdedDamageColorDef> { }
-    public class DamageColorFrame<IModdedDamageColorDef> : BaseFrame where IModdedDamageColorDef : ModdedDamageColorDef
+    public class DamageColorFrame<TModdedDamageColorDef> : BaseFrame where TModdedDamageColorDef : ModdedDamageColorDef
     {
         public string name;
         public Color color;
-        public IModdedDamageColorDef ModdedDamageColorDef { get; private set;}
+        public TModdedDamageColorDef ModdedDamageColorDef { get; private set;}
         protected override IEnumerable GetAssets()
         {
             yield return ModdedDamageColorDef;
         }
         protected internal override void BuildInternal([CanBeNull] BaseModPlugin callingMod)
         {
-            ModdedDamageColorDef = ScriptableObject.CreateInstance<IModdedDamageColorDef>();
+            ModdedDamageColorDef = ScriptableObject.CreateInstance<TModdedDamageColorDef>();
             ModdedDamageColorDef.cachedName = name;
             ModdedDamageColorDef.color = color;
         }

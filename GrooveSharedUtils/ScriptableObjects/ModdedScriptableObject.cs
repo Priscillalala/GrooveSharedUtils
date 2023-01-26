@@ -11,10 +11,11 @@ using System.Collections.Generic;
 using RoR2;
 using R2API.ScriptableObjects;
 using R2API;
+using GrooveSharedUtils.Interfaces;
 
 namespace GrooveSharedUtils.ScriptableObjects
 {
-    public abstract class ModdedScriptableObject : ScriptableObject 
+    public abstract class ModdedScriptableObject : ScriptableObject, IRegisterable
 	{
 		private bool registered;
 		public void Register()

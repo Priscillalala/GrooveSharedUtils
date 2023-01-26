@@ -18,7 +18,7 @@ using System.Collections;
 namespace GrooveSharedUtils.Frames
 {
     public class DifficultyFrame : DifficultyFrame<ModdedDifficultyDef> { }
-    public class DifficultyFrame<IModdedDifficultyDef> : BaseFrame where IModdedDifficultyDef : ModdedDifficultyDef
+    public class DifficultyFrame<TModdedDifficultyDef> : BaseFrame where TModdedDifficultyDef : ModdedDifficultyDef
     {
         public string name;
         public float scalingValue = 2f;
@@ -28,7 +28,7 @@ namespace GrooveSharedUtils.Frames
         public Color color = Color.white;
         public string serverTag;
         public bool countsAsHardMode = false;
-        public IModdedDifficultyDef ModdedDifficultyDef { get; private set; }
+        public TModdedDifficultyDef ModdedDifficultyDef { get; private set; }
         protected override IEnumerable GetAssets()
         {
             yield return ModdedDifficultyDef;
@@ -37,7 +37,7 @@ namespace GrooveSharedUtils.Frames
         {
             string token = name.ToUpperInvariant();
             string tokenPrefix = callingMod ? callingMod.adjustedGeneratedTokensPrefix : string.Empty;
-            ModdedDifficultyDef = ScriptableObject.CreateInstance<IModdedDifficultyDef>();
+            ModdedDifficultyDef = ScriptableObject.CreateInstance<TModdedDifficultyDef>();
             ModdedDifficultyDef.cachedName = name;
             ModdedDifficultyDef.scalingValue = scalingValue;
             ModdedDifficultyDef.nameToken = overrideNameToken ?? $"{tokenPrefix}DIFFICULTY_{token}_NAME";

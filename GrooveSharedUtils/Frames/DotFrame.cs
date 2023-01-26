@@ -18,7 +18,7 @@ using System.Collections;
 namespace GrooveSharedUtils.Frames
 {
     public class DotFrame : DotFrame<ModdedDotDef> { }
-    public class DotFrame<IModdedDotDef> : BaseFrame where IModdedDotDef : ModdedDotDef
+    public class DotFrame<TModdedDotDef> : BaseFrame where TModdedDotDef : ModdedDotDef
     {
         public string name;
         public BuffDef associatedBuff = null;
@@ -30,14 +30,14 @@ namespace GrooveSharedUtils.Frames
         public bool resetTimerOnAdd = false;
         public BuffDef terminalTimedBuff = null;
         public float terminalTimedBuffDuration;
-        public IModdedDotDef ModdedDotDef { get; private set; }
+        public TModdedDotDef ModdedDotDef { get; private set; }
         protected override IEnumerable GetAssets()
         {
             yield return ModdedDotDef;
         }
         protected internal override void BuildInternal([CanBeNull] BaseModPlugin callingMod)
         {
-            ModdedDotDef = ScriptableObject.CreateInstance<IModdedDotDef>();
+            ModdedDotDef = ScriptableObject.CreateInstance<TModdedDotDef>();
             ModdedDotDef.cachedName = name;
             ModdedDotDef.associatedBuff = associatedBuff;
             if(associatedBuff && associatedBuff.isDebuff)
