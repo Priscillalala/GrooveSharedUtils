@@ -14,6 +14,8 @@ using R2API;
 using UnityEngine.AddressableAssets;
 using HG;
 using RoR2.ExpansionManagement;
+using JetBrains.Annotations;
+using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
@@ -41,13 +43,14 @@ namespace GrooveSharedUtils.Frames
         public EquipmentType equipmentType = EquipmentType.Default;
         public ExpansionDef requiredExpansion = null;
         public UnlockableDef unlockableDef = null;
-
-        protected override IEnumerable<object> Assets => new object[] { EquipmentDef };
-
-        protected override internal void BuildInternal(BaseModPlugin callingMod)
+        protected override IEnumerable GetAssets()
+        {
+            yield return EquipmentDef;
+        }
+        protected override internal void BuildInternal([CanBeNull] BaseModPlugin callingMod)
         {
             string token = name.ToUpperInvariant();
-            string tokenPrefix = callingMod.adjustedGeneratedTokensPrefix;
+            string tokenPrefix = callingMod ? callingMod.adjustedGeneratedTokensPrefix : string.Empty;
             EquipmentDef = ScriptableObject.CreateInstance<TEquipmentDef>();
             EquipmentDef.name = name;
             EquipmentDef.nameToken = overrideNameToken ?? string.Format("{1}EQUIPMENT_{0}_NAME", token, tokenPrefix);
@@ -78,7 +81,7 @@ namespace GrooveSharedUtils.Frames
                     EquipmentDef.isBoss = true;
                     break;
             }
-            EquipmentDef.requiredExpansion = requiredExpansion ?? callingMod.ENV_DefaultExpansionDef;
+            EquipmentDef.requiredExpansion = requiredExpansion ?? callingMod?.ENV_DefaultExpansionDef;
             EquipmentDef.unlockableDef = unlockableDef;
 
             if(performEquipmentAction != null)

@@ -16,12 +16,13 @@ using System.Collections;
 using GrooveSharedUtils.Frames;
 using GrooveSharedUtils;
 using System.Linq;
+using JetBrains.Annotations;
 
 public static partial class _GSExtensions
 {
     public static TFrame Build<TFrame>(this TFrame frame) where TFrame : BaseFrame
     {
-        frame.BuildInternal(AssemblyInfo.Get(Assembly.GetCallingAssembly()).plugin);
+        frame.BuildInternal(AssemblyInfo.Get(Assembly.GetCallingAssembly())?.plugin);
         return frame;
     }
 }
@@ -30,8 +31,8 @@ namespace GrooveSharedUtils.Frames
 {
     public abstract class BaseFrame : IEnumerable
     {
-
-        protected abstract IEnumerable<object> Assets { get; }
+        //protected abstract IEnumerable<object> Assets { get; }
+        protected abstract IEnumerable GetAssets();
         /*public T Build()
         {
             BuildInternal(AssemblyInfo.Get(Assembly.GetCallingAssembly()).plugin);
@@ -40,12 +41,13 @@ namespace GrooveSharedUtils.Frames
 
         public IEnumerator GetEnumerator()
         {
-            if(Assets.Any(obj => obj == null))
+            IEnumerable assets = GetAssets();
+            if (assets.Cast<object>().Any(obj => obj == null))
             {
                 GSUtil.Log(BepInEx.Logging.LogLevel.Warning, $"One or more assets from {this.GetType().Name} are null. Did you forget to Build?");
             }
-            return Assets.GetEnumerator();
+            return assets.GetEnumerator();
         }
-        protected internal abstract void BuildInternal(BaseModPlugin callingMod);
+        protected internal abstract void BuildInternal([CanBeNull] BaseModPlugin callingMod);
     }
 }

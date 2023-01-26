@@ -46,17 +46,11 @@ namespace GrooveSharedUtils
                 {
                     Add(type, (object obj) => {
                         GSUtil.Log("add hash: " + obj.GetType());
-                        namedAssetCollection.AddHash(obj); });
+                        AssetStream.AddHash(namedAssetCollection, obj); 
+                    });
                 }
             }
             
-        }
-        public void ResolveAllAssetCollections()
-        {
-            foreach((Type type, NamedAssetCollection namedAssetCollection) in allAssetCollections)
-            {
-                namedAssetCollection.ResolveHashDisgusting(type);
-            }
         }
         public void TryMapAsset(object asset)
         {
@@ -66,7 +60,7 @@ namespace GrooveSharedUtils
                 action.Invoke(asset);
                 return;
             }
-            HashSet<Action<object>> hashSet = new HashSet<Action<object>>();
+            List<Action<object>> assetTypeActions = new List<Action<object>>();
             foreach(KeyValuePair<Type, Action<object>> pair in this)
             {
                 if (pair.Key.IsAssignableFrom(assetType))
@@ -74,10 +68,10 @@ namespace GrooveSharedUtils
                     //Util.Log("mapping asset, found: " + pair.Key);
                     Action<object> value = pair.Value;
                     value.Invoke(asset);
-                    hashSet.Add(value);
+                    assetTypeActions.Add(value);
                 }
             }
-            assetTypeActionsCache.Add(assetType, (Action<object>)Delegate.Combine(hashSet.ToArray()));
+            assetTypeActionsCache.Add(assetType, (Action<object>)Delegate.Combine(assetTypeActions.ToArray()));
         }
     }
 }

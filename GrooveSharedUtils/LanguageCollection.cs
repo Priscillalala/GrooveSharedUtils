@@ -25,6 +25,10 @@ namespace GrooveSharedUtils
 {
     public class LanguageCollection : List<(string token, string localizedString)>
     {
+        public LanguageCollection() : base()
+        {
+
+        }
         public LanguageCollection(IEnumerable<(string token, string localizedString)> collection) : base(collection)
         {
 

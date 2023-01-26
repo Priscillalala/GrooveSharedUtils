@@ -14,6 +14,8 @@ using R2API;
 using UnityEngine.AddressableAssets;
 using HG;
 using RoR2.ExpansionManagement;
+using JetBrains.Annotations;
+using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
@@ -40,13 +42,15 @@ namespace GrooveSharedUtils.Frames
         public UnlockableDef unlockableDef = null;
         public ItemDef[] itemsToCorrupt = Array.Empty<ItemDef>();
         public ExpansionDef requiredExpansion = null;
-
-        protected override IEnumerable<object> Assets => new object[] { ItemDef, ItemRelationshipProviders };
-
-        protected internal override void BuildInternal(BaseModPlugin callingMod)
+        protected override IEnumerable GetAssets()
+        {
+            yield return ItemDef;
+            yield return ItemRelationshipProviders;
+        }
+        protected internal override void BuildInternal([CanBeNull] BaseModPlugin callingMod)
         {
             string token = name.ToUpperInvariant();
-            string tokenPrefix = callingMod.adjustedGeneratedTokensPrefix;
+            string tokenPrefix = callingMod ? callingMod.adjustedGeneratedTokensPrefix : string.Empty;
             ItemDef = ScriptableObject.CreateInstance<TItemDef>();
             ItemDef.name = name;
             ItemDef.nameToken = overrideNameToken ?? string.Format("{1}ITEM_{0}_NAME", token, tokenPrefix);
@@ -67,7 +71,7 @@ namespace GrooveSharedUtils.Frames
             ItemDef.hidden = hidden;
             ItemDef.tags = itemTags;
             ItemDef.unlockableDef = unlockableDef;
-            ItemDef.requiredExpansion = requiredExpansion ?? callingMod.ENV_DefaultExpansionDef;
+            ItemDef.requiredExpansion = requiredExpansion ?? callingMod?.ENV_DefaultExpansionDef;
             ItemRelationshipProvider[] itemRelationships = Array.Empty<ItemRelationshipProvider>();
             if (itemsToCorrupt.Length > 0)
             {

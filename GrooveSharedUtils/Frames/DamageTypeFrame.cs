@@ -12,6 +12,8 @@ using RoR2;
 using R2API.ScriptableObjects;
 using R2API;
 using GrooveSharedUtils.ScriptableObjects;
+using JetBrains.Annotations;
+using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
@@ -20,9 +22,11 @@ namespace GrooveSharedUtils.Frames
     {
         public string name;
         public IModdedDamageTypeDef ModdedDamageTypeDef { get; private set;}
-
-        protected override IEnumerable<object> Assets => new object[] { ModdedDamageTypeDef };
-        protected internal override void BuildInternal(BaseModPlugin callingMod)
+        protected override IEnumerable GetAssets()
+        {
+            yield return ModdedDamageTypeDef;
+        }
+        protected internal override void BuildInternal([CanBeNull] BaseModPlugin callingMod)
         {
             ModdedDamageTypeDef = ScriptableObject.CreateInstance<IModdedDamageTypeDef>();
             ModdedDamageTypeDef.cachedName = name;

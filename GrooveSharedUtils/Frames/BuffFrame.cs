@@ -12,6 +12,8 @@ using RoR2;
 using R2API.ScriptableObjects;
 using R2API;
 using GrooveSharedUtils.ScriptableObjects;
+using JetBrains.Annotations;
+using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
@@ -28,12 +30,15 @@ namespace GrooveSharedUtils.Frames
         public bool isHidden = false;
         public NetworkSoundEventDef startSfx = null;
         public IBuffDef BuffDef { get; private set;}
-        protected override IEnumerable<object> Assets => new object[] { BuffDef };
-        protected internal override void BuildInternal(BaseModPlugin callingMod)
+        protected override IEnumerable GetAssets()
+        {
+            yield return BuffDef;
+        }
+        protected internal override void BuildInternal([CanBeNull] BaseModPlugin callingMod)
         {
             BuffDef = ScriptableObject.CreateInstance<IBuffDef>();
-
-            BuffDef.name = name.EnsurePrefix("bd");
+            GSUtil.EnsurePrefix(ref name, "bd");
+            BuffDef.name = name;
             BuffDef.buffColor = buffColor;
             BuffDef.canStack = canStack;
             BuffDef.eliteDef = eliteDef;

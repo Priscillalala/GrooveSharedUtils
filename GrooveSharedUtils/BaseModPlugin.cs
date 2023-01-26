@@ -76,6 +76,7 @@ namespace GrooveSharedUtils
         public virtual string[] PLUGIN_SoftDependencyStrings { get; } = Array.Empty<string>();
         public virtual string[] PLUGIN_IncompatabilityStrings { get; } = Array.Empty<string>();
         public virtual string[] PLUGIN_OverrideProcessNames { get; } = Array.Empty<string>();
+        public virtual StatusFlags ENV_ModStatus { get; } = StatusFlags.Default;
         public virtual string ENV_RelativeAssetBundleFolder { get; } = string.Empty;
         public virtual ExpansionDef ENV_DefaultExpansionDef { get; } = null;
         public virtual string ENV_DefaultConfigName { get; } = null;
@@ -95,7 +96,8 @@ namespace GrooveSharedUtils
         public List<BaseModModule> moduleOrder;
         public HashSet<Type> enabledModuleTypes;
         public string adjustedGeneratedTokensPrefix => string.IsNullOrEmpty(ENV_GeneratedTokensPrefix) ? string.Empty : ENV_GeneratedTokensPrefix.ToUpper();
-
+        public bool isDebug => (ENV_ModStatus & StatusFlags.Debug) > 0;
+        public bool isWIP => (ENV_ModStatus & StatusFlags.WIP) > 0;
         [Obsolete(".Config should not be used. Refer to GSUtil.GetOrCreateConfig instead.", false)]
         public new ConfigFile Config
         {
@@ -204,17 +206,20 @@ namespace GrooveSharedUtils
         }
         public virtual bool ShouldEnableModuleType(Type type)
         {
-            return type.GetCustomAttribute<IgnoreModuleAttribute>() == null && !assemblyInfo.configDisabledModuleTypes.Contains(type);
+            return type.GetCustomAttribute<IgnoreModuleAttribute>() == null
+                && !assemblyInfo.configDisabledModuleTypes.Contains(type)
+                && (isDebug || type.GetCustomAttribute<DebugModuleAttribute>() == null)
+                && (isWIP || type.GetCustomAttribute<WIPModuleAttribute>() == null);
         }
         public virtual BaseModModule CreateModule(Type type)
         {
-            GSUtil.Log("creating module: " + type.Name);
+            GSUtil.LogDebug(LogLevel.Debug, "Creating Module: " + type.Name, assemblyInfo);
             BaseModModule baseModule = (BaseModModule)moduleManagerObject.AddComponent(type);
             try
             {
                 baseModule.OnModInit();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 GSUtil.Log(LogLevel.Error, ex.ToString());
             }

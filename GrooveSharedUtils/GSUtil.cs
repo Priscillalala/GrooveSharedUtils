@@ -37,23 +37,20 @@ namespace GrooveSharedUtils
         {
             return Addressables.LoadAssetAsync<TAsset>(key).WaitForCompletion();
         }
-        public static void Destroy(UnityEngine.Object obj)
+        /*public static void Destroy(UnityEngine.Object obj)
         {
             UnityEngine.Object.Destroy(obj);
         }
         public static void DestroyImmediate(UnityEngine.Object obj)
         {
             UnityEngine.Object.DestroyImmediate(obj);
-        }
+        }*/
         public static Type[] GetEntityStateTypes(Assembly assembly = null)
         {
             assembly = assembly ?? Assembly.GetCallingAssembly();
             return assembly.GetTypes().Where((Type t) => typeof(EntityStates.EntityState).IsAssignableFrom(t)).ToArray();
         }
-        public static T[] Array<T>(params T[] values)
-        {
-            return values;
-        }
+        public static T[] Array<T>(params T[] values) => values;
         public static Color ColorRGB(float rUnscaled, float gUnscaled, float bUnscaled, float a = 1)
         {
             return new Color(rUnscaled / 255f, gUnscaled / 255f, bUnscaled / 255f, a);
@@ -250,17 +247,12 @@ namespace GrooveSharedUtils
             }
             return false;
         }
-        public static string EnsurePrefix(this string str, string prefix)
+        public static void EnsurePrefix(ref string str, string prefix)
         {
-            if(str == null)
+            if(str != null && !str.StartsWith(prefix))
             {
-                return null;
+                str = string.Concat(prefix, str);
             }
-            if (str.StartsWith(prefix))
-            {
-                return str;
-            }
-            return string.Concat(prefix, str);
         }
         public static void CopyTo<T>(this T src, T dest, bool copyFields = true, bool copyProperties = false) where T : ScriptableObject
         {
@@ -286,17 +278,30 @@ namespace GrooveSharedUtils
                 }
             }
         }
-        public static void Log(LogLevel level, object data)
+        public static void LogDebug(LogLevel level, object data, AssemblyInfo explicitAssembly = null)
         {
-            LogInternal(level, data, Assembly.GetCallingAssembly());
+            AssemblyInfo callingAssemblyInfo = explicitAssembly ?? AssemblyInfo.Get(Assembly.GetCallingAssembly());
+            BaseModPlugin plugin = callingAssemblyInfo?.plugin;
+            if (plugin && plugin.isDebug)
+            {
+                LogInternal(level, data, callingAssemblyInfo);
+            }
+        }
+        public static void LogDebug(object data)
+        {
+            LogDebug(LogLevel.Debug, data, AssemblyInfo.Get(Assembly.GetCallingAssembly()));
+        }
+        public static void Log(LogLevel level, object data, AssemblyInfo explicitAssembly = null)
+        {
+            LogInternal(level, data, explicitAssembly ?? AssemblyInfo.Get(Assembly.GetCallingAssembly()));
         }
         public static void Log(object data)
         {
-            LogInternal(LogLevel.Info, data, Assembly.GetCallingAssembly());
+            Log(LogLevel.Info, data, AssemblyInfo.Get(Assembly.GetCallingAssembly()));
         }
-        internal static void LogInternal(LogLevel level, object data, Assembly callingAssembly)
+        internal static void LogInternal(LogLevel level, object data, AssemblyInfo assemblyInfo)
         {
-            BaseModPlugin plugin = AssemblyInfo.Get(callingAssembly).plugin;
+            BaseModPlugin plugin = assemblyInfo?.plugin;
             if (plugin)
             {
                 plugin.Logger.Log(level, data);
@@ -307,53 +312,14 @@ namespace GrooveSharedUtils
             }
         }
         #region Asset Collection Hash
-        internal static ConditionalWeakTable<NamedAssetCollection, HashSet<object>> internalAssetCollectionToHash = new ConditionalWeakTable<NamedAssetCollection, HashSet<object>>();
-        internal struct ResolveHashTypeInfo
-        {
-            public MethodInfo add;
-            public MethodInfo ofType;
-            public MethodInfo toArray;
-        }
-        internal static Dictionary<Type, ResolveHashTypeInfo> cachedResolvedHashInfo = new Dictionary<Type, ResolveHashTypeInfo>();
-        public static void AddHash(this NamedAssetCollection namedAssetCollection, object asset)
-        {
-            HashSet<object> hashSet = internalAssetCollectionToHash.GetOrCreateValue(namedAssetCollection);
-            hashSet.Add(asset);
-        }
-        /*public static void AddHash<TAsset>(this NamedAssetCollection<TAsset> namedAssetCollection, TAsset asset)
-        {
-            HashSet<object> hashSet = internalAssetCollectionToHash.GetOrCreateValue(namedAssetCollection);
-            hashSet.Add(asset);
-        }*/
-        public static void ResolveHashDisgusting(this NamedAssetCollection namedAssetCollection, Type asType)
-        {
-            if (internalAssetCollectionToHash.TryGetValue(namedAssetCollection, out HashSet<object> hashSet))
-            {
-                ResolveHashTypeInfo info;
-                if (!cachedResolvedHashInfo.TryGetValue(asType, out info))
-                {
-                    info = new ResolveHashTypeInfo
-                    {
-                        ofType = typeof(Enumerable).GetMethod("OfType", BindingFlags.Static | BindingFlags.Public).MakeGenericMethod(asType),
-                        toArray = typeof(Enumerable).GetMethod("ToArray", BindingFlags.Static | BindingFlags.Public).MakeGenericMethod(asType),
-                        add = typeof(NamedAssetCollection<>).MakeGenericType(asType).GetMethod("Add", BindingFlags.Instance | BindingFlags.Public),
-                    };
-                    cachedResolvedHashInfo.Add(asType, info);
-                }
-                object genericHashSet = info.ofType.Invoke(null, new[] { hashSet });
-                object genericArray = info.toArray.Invoke(null, new[] { genericHashSet });
-                info.add.Invoke(namedAssetCollection, new[] { genericArray });
-                internalAssetCollectionToHash.Remove(namedAssetCollection);
-            }
-        }
-        public static void ResolveHash<TAsset>(this NamedAssetCollection<TAsset> namedAssetCollection)
+        /*public static void ResolveHash<TAsset>(this NamedAssetCollection<TAsset> namedAssetCollection)
         {
             if (internalAssetCollectionToHash.TryGetValue(namedAssetCollection, out HashSet<object> hashSet))
             {
                 namedAssetCollection.Add(hashSet.OfType<TAsset>().ToArray());
                 internalAssetCollectionToHash.Remove(namedAssetCollection);
             }
-        }
+        }*/
         #endregion
         public static TValue GetOrCreateValue<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, Func<TValue> createValueDelegate = null)
         {

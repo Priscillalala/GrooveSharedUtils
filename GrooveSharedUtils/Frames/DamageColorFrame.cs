@@ -12,6 +12,8 @@ using RoR2;
 using R2API.ScriptableObjects;
 using R2API;
 using GrooveSharedUtils.ScriptableObjects;
+using JetBrains.Annotations;
+using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
@@ -21,9 +23,11 @@ namespace GrooveSharedUtils.Frames
         public string name;
         public Color color;
         public IModdedDamageColorDef ModdedDamageColorDef { get; private set;}
-
-        protected override IEnumerable<object> Assets => new object[] { ModdedDamageColorDef };
-        protected internal override void BuildInternal(BaseModPlugin callingMod)
+        protected override IEnumerable GetAssets()
+        {
+            yield return ModdedDamageColorDef;
+        }
+        protected internal override void BuildInternal([CanBeNull] BaseModPlugin callingMod)
         {
             ModdedDamageColorDef = ScriptableObject.CreateInstance<IModdedDamageColorDef>();
             ModdedDamageColorDef.cachedName = name;

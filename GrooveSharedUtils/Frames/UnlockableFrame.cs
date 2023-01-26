@@ -14,6 +14,8 @@ using R2API;
 using UnityEngine.AddressableAssets;
 using HG;
 using RoR2.ExpansionManagement;
+using JetBrains.Annotations;
+using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
@@ -29,13 +31,14 @@ namespace GrooveSharedUtils.Frames
         public Sprite achievementIcon;
         public Func<string> getHowToUnlockString = null;
         public Func<string> getUnlockedString = null;
-
-        protected override IEnumerable<object> Assets => new object[] { UnlockableDef };
-
-        protected internal override void BuildInternal(BaseModPlugin callingMod)
+        protected override IEnumerable GetAssets()
+        {
+            yield return UnlockableDef;
+        }
+        protected internal override void BuildInternal([CanBeNull] BaseModPlugin callingMod)
         {
             string token = name.ToUpperInvariant();
-            string tokenPrefix = callingMod.adjustedGeneratedTokensPrefix;
+            string tokenPrefix = callingMod ? callingMod.adjustedGeneratedTokensPrefix : string.Empty;
             UnlockableDef = ScriptableObject.CreateInstance<TUnlockableDef>();
             UnlockableDef.cachedName = name;
             UnlockableDef.nameToken = overrideNameToken ?? string.Format("{1}UNLOCKABLE_{0}_NAME", token, tokenPrefix);

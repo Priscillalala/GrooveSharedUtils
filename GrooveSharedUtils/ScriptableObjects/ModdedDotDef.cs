@@ -19,6 +19,7 @@ namespace GrooveSharedUtils.ScriptableObjects
     public class ModdedDotDef : ModdedScriptableObject
     {
         public DotController.DotIndex dotIndex { get; set; }
+		public DotController.DotDef dotDef { get; set; }
 		public float interval;
 		public float damageCoefficient;
 		public DamageColorIndex damageColorIndex;
@@ -33,7 +34,7 @@ namespace GrooveSharedUtils.ScriptableObjects
 		[MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
 		protected override void RegisterInternal()
         {
-			DotController.DotDef dotDef = new DotController.DotDef
+			dotDef = new DotController.DotDef
 			{
 				interval = interval,
 				damageCoefficient = damageCoefficient,

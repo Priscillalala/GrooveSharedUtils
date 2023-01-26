@@ -13,6 +13,8 @@ using R2API.ScriptableObjects;
 using R2API;
 using GrooveSharedUtils.ScriptableObjects;
 using RoR2.Skills;
+using JetBrains.Annotations;
+using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
@@ -30,13 +32,16 @@ namespace GrooveSharedUtils.Frames
         public SkillFamily[] skillFamiliesToAppend = Array.Empty<SkillFamily>();
         public UnlockableDef unlockableDef = null;
         public TSkillDef SkillDef { get; private set; }
-        protected override IEnumerable<object> Assets => new object[] { SkillDef };
-        protected internal override void BuildInternal(BaseModPlugin callingMod)
+        protected override IEnumerable GetAssets()
+        {
+            yield return SkillDef;
+        }
+        protected internal override void BuildInternal([CanBeNull] BaseModPlugin callingMod)
         {
             SkillDef = ScriptableObject.CreateInstance<TSkillDef>();
             SkillDef.skillName = name;
             string token = name.ToUpperInvariant();
-            string tokenPrefix = callingMod.adjustedGeneratedTokensPrefix;
+            string tokenPrefix = callingMod ? callingMod.adjustedGeneratedTokensPrefix : string.Empty;
             SkillDef.skillNameToken = overrideSkillNameToken ?? $"{tokenPrefix}SKILL_{token}_NAME";
             SkillDef.skillDescriptionToken = overrideSkillDescriptionToken ?? $"{tokenPrefix}SKILL_{token}_DESC";
             SkillDef.icon = icon;

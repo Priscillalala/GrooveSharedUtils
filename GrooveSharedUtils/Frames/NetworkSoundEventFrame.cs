@@ -12,6 +12,8 @@ using RoR2;
 using R2API.ScriptableObjects;
 using R2API;
 using GrooveSharedUtils.ScriptableObjects;
+using JetBrains.Annotations;
+using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
@@ -21,11 +23,15 @@ namespace GrooveSharedUtils.Frames
         public string name;
         public string eventName;
         public TSkillDef NetworkSoundEventDef { get; private set; }
-        protected override IEnumerable<object> Assets => new object[] { NetworkSoundEventDef };
-        protected internal override void BuildInternal(BaseModPlugin callingMod)
+        protected override IEnumerable GetAssets()
+        {
+            yield return NetworkSoundEventDef;
+        }
+        protected internal override void BuildInternal([CanBeNull] BaseModPlugin callingMod)
         {
             NetworkSoundEventDef = ScriptableObject.CreateInstance<TSkillDef>();
-            NetworkSoundEventDef.name = name.EnsurePrefix("nse");
+            GSUtil.EnsurePrefix(ref name, "nse");
+            NetworkSoundEventDef.name = name;
             NetworkSoundEventDef.eventName = eventName;
         }
     }

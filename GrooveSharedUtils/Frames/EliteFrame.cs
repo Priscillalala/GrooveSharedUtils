@@ -15,6 +15,8 @@ using UnityEngine.AddressableAssets;
 using HG;
 using RoR2.ExpansionManagement;
 using System.Linq;
+using JetBrains.Annotations;
+using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
@@ -40,9 +42,13 @@ namespace GrooveSharedUtils.Frames
         public GameObject equipmentModelPrefab = null;
         public float? overrideEquipmentDropOnDeathChance = null;
         public ExpansionDef requiredExpansion = null;
-
-        protected override IEnumerable<object> Assets => new object[] { EliteDefs, EliteEquipmentDef, BuffDef };
-        protected override internal void BuildInternal(BaseModPlugin callingMod)
+        protected override IEnumerable GetAssets()
+        {
+            yield return EliteDefs;
+            yield return EliteEquipmentDef;
+            yield return BuffDef;
+        }
+        protected override internal void BuildInternal([CanBeNull] BaseModPlugin callingMod)
         {
             BuffFrame<TBuffDef> buffFrame = new BuffFrame<TBuffDef>
             {
@@ -79,14 +85,16 @@ namespace GrooveSharedUtils.Frames
             
 
             string token = name.ToUpperInvariant();
-            string tokenPrefix = callingMod.adjustedGeneratedTokensPrefix;
+            string tokenPrefix = callingMod ? callingMod.adjustedGeneratedTokensPrefix : string.Empty;
             string modifierToken = overrideEliteModifierToken ?? string.Format("{1}ELITE_MODIFIER_{0}", token, tokenPrefix);
             EliteDefs = new TEliteDef[tierInfos.Length];
             for(int i = 0; i < tierInfos.Length; i++)
             {
                 EliteTierInfo info = tierInfos[i];
                 TEliteDef eliteDef = ScriptableObject.CreateInstance<TEliteDef>();
-                eliteDef.name = info.FormatEliteDefName(name).EnsurePrefix("ed");
+                string eliteName = info.FormatEliteDefName(name);
+                GSUtil.EnsurePrefix(ref eliteName, "ed");
+                eliteDef.name = eliteName;
                 eliteDef.eliteEquipmentDef = EliteEquipmentDef;
                 eliteDef.color = eliteColor;
                 eliteDef.modifierToken = modifierToken;

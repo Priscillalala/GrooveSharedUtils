@@ -12,6 +12,8 @@ using RoR2;
 using R2API.ScriptableObjects;
 using R2API;
 using GrooveSharedUtils.ScriptableObjects;
+using JetBrains.Annotations;
+using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
@@ -29,8 +31,11 @@ namespace GrooveSharedUtils.Frames
         public BuffDef terminalTimedBuff = null;
         public float terminalTimedBuffDuration;
         public IModdedDotDef ModdedDotDef { get; private set; }
-        protected override IEnumerable<object> Assets => new object[] { ModdedDotDef };
-        protected internal override void BuildInternal(BaseModPlugin callingMod)
+        protected override IEnumerable GetAssets()
+        {
+            yield return ModdedDotDef;
+        }
+        protected internal override void BuildInternal([CanBeNull] BaseModPlugin callingMod)
         {
             ModdedDotDef = ScriptableObject.CreateInstance<IModdedDotDef>();
             ModdedDotDef.cachedName = name;

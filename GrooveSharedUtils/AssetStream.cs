@@ -43,23 +43,23 @@ namespace GrooveSharedUtils
                 GameObject g = (GameObject)obj;
                 if (g.GetComponent<ProjectileController>())
                 {
-                    contentPack.projectilePrefabs.AddHash(g);
+                    AddHash(contentPack.projectilePrefabs, g);
                 }
                 else if (g.GetComponent<CharacterMaster>())
                 {
-                    contentPack.masterPrefabs.AddHash(g);
+                    AddHash(contentPack.masterPrefabs, g);
                 }
                 else if (g.GetComponent<CharacterBody>())
                 {
-                    contentPack.bodyPrefabs.AddHash(g);
+                    AddHash(contentPack.bodyPrefabs, g);
                 }
                 else if (g.GetComponent<Run>())
                 {
-                    contentPack.gameModePrefabs.AddHash(g);
+                    AddHash(contentPack.gameModePrefabs, g);
                 }
                 else if (g.GetComponent<NetworkIdentity>())
                 {
-                    contentPack.networkedObjectPrefabs.AddHash(g);
+                    AddHash(contentPack.networkedObjectPrefabs, g);
                 }
             };
             map[typeof(ModdedScriptableObject)] = (object obj) =>
@@ -79,7 +79,7 @@ namespace GrooveSharedUtils
                 Type t = (Type)obj;
                 if (t.IsSubclassOf(typeof(EntityStates.EntityState)))
                 {
-                    contentPack.entityStateTypes.AddHash(t);
+                    AddHash(contentPack.entityStateTypes,t);
                 }
             };
         }
@@ -109,7 +109,10 @@ namespace GrooveSharedUtils
         }
         internal void ResolveMap()
         {
-            map.ResolveAllAssetCollections();
+            foreach ((Type type, NamedAssetCollection namedAssetCollection) in map.allAssetCollections)
+            {
+                ResolveHashDisgusting(namedAssetCollection, type);
+            }
         }
         public void Add(params object[] assets)
         {
@@ -157,6 +160,39 @@ namespace GrooveSharedUtils
             return false;
         }
 
+        internal static Dictionary<NamedAssetCollection, HashSet<object>> internalAssetCollectionToHash = new Dictionary<NamedAssetCollection, HashSet<object>>();
+        internal struct ResolveHashTypeInfo
+        {
+            public MethodInfo add;
+            public MethodInfo ofType;
+            public MethodInfo toArray;
+        }
+        internal static Dictionary<Type, ResolveHashTypeInfo> cachedResolvedHashInfo = new Dictionary<Type, ResolveHashTypeInfo>();
+        public static void AddHash(NamedAssetCollection namedAssetCollection, object asset)
+        {
+            HashSet<object> hashSet = internalAssetCollectionToHash.GetOrCreateValue(namedAssetCollection);
+            hashSet.Add(asset);
+        }
+        public static void ResolveHashDisgusting(NamedAssetCollection namedAssetCollection, Type asType)
+        {
+            if (internalAssetCollectionToHash.TryGetValue(namedAssetCollection, out HashSet<object> hashSet))
+            {
+                if (!cachedResolvedHashInfo.TryGetValue(asType, out ResolveHashTypeInfo info))
+                {
+                    info = new ResolveHashTypeInfo
+                    {
+                        ofType = typeof(Enumerable).GetMethod("OfType", BindingFlags.Static | BindingFlags.Public).MakeGenericMethod(asType),
+                        toArray = typeof(Enumerable).GetMethod("ToArray", BindingFlags.Static | BindingFlags.Public).MakeGenericMethod(asType),
+                        add = typeof(NamedAssetCollection<>).MakeGenericType(asType).GetMethod("Add", BindingFlags.Instance | BindingFlags.Public),
+                    };
+                    cachedResolvedHashInfo.Add(asType, info);
+                }
+                object genericHashSet = info.ofType.Invoke(null, new[] { hashSet });
+                object genericArray = info.toArray.Invoke(null, new[] { genericHashSet });
+                info.add.Invoke(namedAssetCollection, new[] { genericArray });
+                internalAssetCollectionToHash.Remove(namedAssetCollection);
+            }
+        }
 
     }
 }
