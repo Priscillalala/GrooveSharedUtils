@@ -30,6 +30,7 @@ namespace GrooveSharedUtils
 
         private static void SystemInitializerAttribute_Execute(On.RoR2.SystemInitializerAttribute.orig_Execute orig)
         {
+            Attributes.ConditionalRegisterAchievementAttribute.Init();
             orig();
             Interfaces.InterfaceManager.Init();
             ScriptableObjects.ModdedCatalogColorDef.Init();

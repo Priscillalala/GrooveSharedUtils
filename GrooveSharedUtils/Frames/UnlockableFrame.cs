@@ -45,8 +45,8 @@ namespace GrooveSharedUtils.Frames
             UnlockableDef.displayModelPrefab = displayModelPrefab;
             UnlockableDef.hidden = hidden;
             UnlockableDef.achievementIcon = achievementIcon;
-            if (getHowToUnlockString != null) UnlockableDef.getHowToUnlockString = getHowToUnlockString;
-            if (getUnlockedString != null) UnlockableDef.getUnlockedString = getUnlockedString;
+            UnlockableDef.getHowToUnlockString = getHowToUnlockString ?? UnlockableDef.getHowToUnlockString;
+            UnlockableDef.getUnlockedString = getUnlockedString ?? UnlockableDef.getUnlockedString;
         }
     }
 }
