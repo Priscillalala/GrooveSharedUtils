@@ -35,7 +35,7 @@ namespace GrooveSharedUtils.Attributes
             RoR2BepInExPack.VanillaFixes.SaferAchievementManager.OnCollectAchievementDefs += SaferAchievementManager_OnCollectAchievementDefs;
         }
 
-        internal static void SaferAchievementManager_OnCollectAchievementDefs(List<string> identifiers, Dictionary<string, AchievementDef> identifierToAchievementDef, List<AchievementDef> achivementDefs)
+        internal static void SaferAchievementManager_OnCollectAchievementDefs(List<string> identifiers, Dictionary<string, AchievementDef> identifierToAchievementDef, List<AchievementDef> achievementDefs)
         {
             Type expectedReturnType = typeof(bool);
             List<ConditionalRegisterAchievementAttribute> attributes = new List<ConditionalRegisterAchievementAttribute>();
@@ -71,7 +71,7 @@ namespace GrooveSharedUtils.Attributes
                             AchievementDef achievementDef = AchievementDefFromAttribute(attribute, methodInfo.DeclaringType);
                             identifiers.Add(achievementDef.identifier);
                             identifierToAchievementDef.Add(achievementDef.identifier, achievementDef);
-                            achivementDefs.Add(achievementDef);
+                            achievementDefs.Add(achievementDef);
                         }
                     }
                 }

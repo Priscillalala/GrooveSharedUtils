@@ -17,8 +17,12 @@ using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
-    public class DifficultyFrame : DifficultyFrame<ModdedDifficultyDef> { }
-    public class DifficultyFrame<TModdedDifficultyDef> : BaseFrame where TModdedDifficultyDef : ModdedDifficultyDef
+    public class DifficultyFrame : DifficultyFrame<DifficultyFrame, ModdedDifficultyDef> { }
+    public class DifficultyFrame<TModdedDifficultyDef> : DifficultyFrame<DifficultyFrame<TModdedDifficultyDef>, TModdedDifficultyDef> 
+        where TModdedDifficultyDef : ModdedDifficultyDef { }
+    public abstract class DifficultyFrame<TFrame, TModdedDifficultyDef> : Frame<TFrame> 
+        where TFrame : DifficultyFrame<TFrame, TModdedDifficultyDef>
+        where TModdedDifficultyDef : ModdedDifficultyDef
     {
         public string name;
         public float scalingValue = 2f;

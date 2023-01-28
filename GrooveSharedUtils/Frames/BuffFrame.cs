@@ -17,8 +17,12 @@ using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
-    public class BuffFrame : BuffFrame<BuffDef> { }
-    public class BuffFrame<TBuffDef> : BaseFrame where TBuffDef : BuffDef
+    public class BuffFrame : BuffFrame<BuffFrame, BuffDef> { }
+    public class BuffFrame<TBuffDef> : BuffFrame<BuffFrame<TBuffDef>, TBuffDef> 
+        where TBuffDef : BuffDef { }
+    public abstract class BuffFrame<TFrame, TBuffDef> : Frame<TFrame> 
+        where TFrame : BuffFrame<TFrame, TBuffDef> 
+        where TBuffDef : BuffDef
     {
         public string name;
         public Color buffColor = Color.white;

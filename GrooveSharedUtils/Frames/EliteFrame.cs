@@ -20,12 +20,17 @@ using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
-    public class EliteFrame : EliteFrame<EliteDef, EquipmentDef, BuffDef> { }
-    public class EliteFrame<TEliteDef, TEquipmentDef, TBuffDef> : BaseFrame where TEliteDef : EliteDef where TEquipmentDef : EquipmentDef where TBuffDef : BuffDef
+    public class EliteFrame : EliteFrame<EliteFrame, EliteDef, EquipmentDef, BuffDef> { }
+    public class EliteFrame<TEliteDef, TEquipmentDef, TBuffDef> : EliteFrame<EliteFrame<TEliteDef, TEquipmentDef, TBuffDef>, TEliteDef, TEquipmentDef, TBuffDef>
+        where TEliteDef : EliteDef
+        where TEquipmentDef : EquipmentDef
+        where TBuffDef : BuffDef { }
+    public abstract class EliteFrame<TFrame, TEliteDef, TEquipmentDef, TBuffDef> : Frame<TFrame> 
+        where TFrame : EliteFrame<TFrame, TEliteDef, TEquipmentDef, TBuffDef>
+        where TEliteDef : EliteDef 
+        where TEquipmentDef : EquipmentDef 
+        where TBuffDef : BuffDef
     {
-        public TEliteDef[] EliteDefs { get; private set; }
-        public TEquipmentDef EliteEquipmentDef { get; private set; }
-        public TBuffDef BuffDef { get; private set; }
         public string name;
         public EliteTierInfo[] tierInfos;
         public Color eliteColor = Color.white;
@@ -42,6 +47,14 @@ namespace GrooveSharedUtils.Frames
         public GameObject equipmentModelPrefab = null;
         public float? overrideEquipmentDropOnDeathChance = null;
         public ExpansionDef requiredExpansion = null;
+        public TEliteDef[] EliteDefs { get; private set; }
+        public TEquipmentDef EliteEquipmentDef { get; private set; }
+        public TBuffDef BuffDef { get; private set; }
+        public TFrame SetTierInfos(params EliteTierInfo[] tierInfos)
+        {
+            this.tierInfos = tierInfos;
+            return this as TFrame;
+        }
         protected override IEnumerable GetAssets()
         {
             yield return EliteDefs;

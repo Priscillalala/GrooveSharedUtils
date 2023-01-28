@@ -17,8 +17,12 @@ using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
-    public class NetworkSoundEventFrame : NetworkSoundEventFrame<NetworkSoundEventDef> { }
-    public class NetworkSoundEventFrame<TNetworkSoundEventDef> : BaseFrame where TNetworkSoundEventDef : NetworkSoundEventDef
+    public class NetworkSoundEventFrame : NetworkSoundEventFrame<NetworkSoundEventFrame, NetworkSoundEventDef> { }
+    public class NetworkSoundEventFrame<TNetworkSoundEventDef> : NetworkSoundEventFrame<NetworkSoundEventFrame<TNetworkSoundEventDef>, TNetworkSoundEventDef>
+        where TNetworkSoundEventDef : NetworkSoundEventDef { }
+    public abstract class NetworkSoundEventFrame<TFrame, TNetworkSoundEventDef> : Frame<TFrame> 
+        where TFrame : NetworkSoundEventFrame<TFrame, TNetworkSoundEventDef>
+        where TNetworkSoundEventDef : NetworkSoundEventDef
     {
         public string name;
         public string eventName;

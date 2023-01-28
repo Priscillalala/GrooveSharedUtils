@@ -44,7 +44,7 @@ namespace GrooveSharedUtils
                     case EliteTier.TierTwo: eliteTierDef = FindEliteTierFromElite(RoR2Content.Elites.Poison); break;
                     case EliteTier.Lunar: eliteTierDef = FindEliteTierFromElite(RoR2Content.Elites.Lunar); break;
                 }
-                if(eliteTierDef != null)
+                if (eliteTierDef != null)
                 {
                     eliteTierDef.eliteTypes = ArrayUtils.Join(eliteTierDef.eliteTypes, eliteDefsPerTier[i].ToArray());
                 }

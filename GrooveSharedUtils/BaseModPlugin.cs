@@ -159,10 +159,17 @@ namespace GrooveSharedUtils
             assemblyInfo = AssemblyInfo.Get(assembly);
             assemblyInfo.plugin = this;
 
+            /*IEnumerable<ConfigurableAttribute> configurableAttributes =  List<ConfigurableAttribute> configurableAttributes = new List<ConfigurableAttribute>();
+            HG.Reflection.SearchableAttribute.GetInstances(configurableAttributes);
+            foreach (ConfigurableAttribute attribute in configurableAttributes)
+            {
+                BindConfigurableAttribute(attribute);
+            }*/
+
             moduleManagerObject = new GameObject(PLUGIN_ModName + "_ModuleManager");
             DontDestroyOnLoad(moduleManagerObject);
 
-            while(assemblyInfo.pendingDisplayAssets.Count > 0)
+            while (assemblyInfo.pendingDisplayAssets.Count > 0)
             {
                 AddDisplayAsset(assemblyInfo.pendingDisplayAssets.Dequeue());
             }
@@ -292,6 +299,10 @@ namespace GrooveSharedUtils
             {
                 return sd.skillName;
             }
+            if(asset is AchievementDef achievement)
+            {
+                return achievement.identifier;
+            }
             if (asset is UnityEngine.Object obj)
             {
                 return obj.name;
@@ -299,6 +310,10 @@ namespace GrooveSharedUtils
             if (asset is ConfigFile configFile)
             {
                 return System.IO.Path.GetFileNameWithoutExtension(configFile.ConfigFilePath);
+            }
+            if(asset is ConfigEntryBase configEntry && configEntry.Definition != null)
+            {
+                return configEntry.Definition.Key;
             }
             return null;
         }

@@ -17,8 +17,12 @@ using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
-    public class DamageColorFrame : DamageColorFrame<ModdedDamageColorDef> { }
-    public class DamageColorFrame<TModdedDamageColorDef> : BaseFrame where TModdedDamageColorDef : ModdedDamageColorDef
+    public class DamageColorFrame : DamageColorFrame<DamageColorFrame, ModdedDamageColorDef> { }
+    public class DamageColorFrame<TModdedDamageColorDef> : DamageColorFrame<DamageColorFrame<TModdedDamageColorDef>, TModdedDamageColorDef> 
+        where TModdedDamageColorDef : ModdedDamageColorDef { }
+    public abstract class DamageColorFrame<TFrame, TModdedDamageColorDef> : Frame<TFrame> 
+        where TFrame : DamageColorFrame<TFrame, TModdedDamageColorDef>
+        where TModdedDamageColorDef : ModdedDamageColorDef
     {
         public string name;
         public Color color;

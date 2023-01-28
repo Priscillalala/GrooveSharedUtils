@@ -18,18 +18,19 @@ using GrooveSharedUtils;
 using System.Linq;
 using JetBrains.Annotations;
 
-public static partial class _GSExtensions
+/*public static partial class _GSExtensions
 {
-    public static TFrame Build<TFrame>(this TFrame frame) where TFrame : BaseFrame
+    public static TFrame Build<TFrame>(this TFrame frame) where TFrame : Frame
     {
         frame.BuildInternal(AssemblyInfo.Get(Assembly.GetCallingAssembly())?.plugin);
         return frame;
     }
-}
+}*/
 
 namespace GrooveSharedUtils.Frames
 {
-    public abstract class BaseFrame : IEnumerable
+    public abstract class Frame<TFrame> : IEnumerable 
+        where TFrame : Frame<TFrame>
     {
         //protected abstract IEnumerable<object> Assets { get; }
         protected abstract IEnumerable GetAssets();
@@ -38,7 +39,11 @@ namespace GrooveSharedUtils.Frames
             BuildInternal(AssemblyInfo.Get(Assembly.GetCallingAssembly()).plugin);
             return this as T;
         }*/
-
+        public TFrame Build()
+        {
+            BuildInternal(AssemblyInfo.Get(Assembly.GetCallingAssembly())?.plugin);
+            return this as TFrame;
+        }
         public IEnumerator GetEnumerator()
         {
             IEnumerable assets = GetAssets();

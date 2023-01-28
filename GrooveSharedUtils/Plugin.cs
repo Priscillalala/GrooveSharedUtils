@@ -34,3 +34,25 @@ namespace GrooveSharedUtils
         }
     }
 }*/
+/*using System;
+using RoR2;
+
+public class ClassA<TClass> where TClass : ClassA<TClass> 
+{
+    public TClass ClassAMethod() => this as TClass;
+} 
+public abstract class ClassB<TClass, T> : ClassA<TClass> where TClass : ClassB<TClass, T> where T : ItemDef 
+{
+    public TClass ClassBMethod() => this as TClass;
+}
+public abstract class InheritedClassB : ClassB<InheritedClassB, ItemDef> { }
+public class GenericInheritedClassB<T> : ClassB<GenericInheritedClassB<T>, T> where T : ItemDef { } 
+public static class TestClass
+{
+    public static void Test()
+    {
+        new InheritedClassB().ClassAMethod().ClassAMethod();
+        new InheritedClassB().ClassBMethod();
+        new GenericInheritedClassB<ItemDef>().ClassBMethod();
+    }
+}*/

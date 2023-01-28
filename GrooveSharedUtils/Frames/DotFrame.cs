@@ -17,8 +17,12 @@ using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
-    public class DotFrame : DotFrame<ModdedDotDef> { }
-    public class DotFrame<TModdedDotDef> : BaseFrame where TModdedDotDef : ModdedDotDef
+    public class DotFrame : DotFrame<DotFrame, ModdedDotDef> { }
+    public class DotFrame<TModdedDotDef> : DotFrame<DotFrame<TModdedDotDef>, TModdedDotDef>
+        where TModdedDotDef : ModdedDotDef { }
+    public abstract class DotFrame<TFrame, TModdedDotDef> : Frame<TFrame> 
+        where TFrame : DotFrame<TFrame, TModdedDotDef>
+        where TModdedDotDef : ModdedDotDef
     {
         public string name;
         public BuffDef associatedBuff = null;

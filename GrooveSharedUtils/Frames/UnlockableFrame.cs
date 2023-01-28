@@ -19,11 +19,13 @@ using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
-    public class UnlockableFrame : UnlockableFrame<UnlockableDef> { }
-    public class UnlockableFrame<TUnlockableDef> : BaseFrame where TUnlockableDef : UnlockableDef
+    public class UnlockableFrame : UnlockableFrame<UnlockableFrame, UnlockableDef> { }
+    public class UnlockableFrame<TUnlockableDef> : UnlockableFrame<UnlockableFrame<TUnlockableDef>, TUnlockableDef> 
+        where TUnlockableDef : UnlockableDef { }
+    public abstract class UnlockableFrame<TFrame, TUnlockableDef> : Frame<TFrame> 
+        where TFrame : UnlockableFrame<TFrame, TUnlockableDef>
+        where TUnlockableDef : UnlockableDef
     {
-        public TUnlockableDef UnlockableDef { get; private set; }
-
         public string name;
         public string overrideNameToken = null;
         public GameObject displayModelPrefab;
@@ -31,6 +33,7 @@ namespace GrooveSharedUtils.Frames
         public Sprite achievementIcon;
         public Func<string> getHowToUnlockString = null;
         public Func<string> getUnlockedString = null;
+        public TUnlockableDef UnlockableDef { get; private set; }
         protected override IEnumerable GetAssets()
         {
             yield return UnlockableDef;

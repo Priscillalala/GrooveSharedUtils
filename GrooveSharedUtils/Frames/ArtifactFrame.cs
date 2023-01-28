@@ -19,8 +19,12 @@ using System.Runtime.CompilerServices;
 
 namespace GrooveSharedUtils.Frames
 {
-    public class ArtifactFrame : ArtifactFrame<ArtifactDef> { }
-    public class ArtifactFrame<TArtifactDef> : BaseFrame where TArtifactDef : ArtifactDef
+    public class ArtifactFrame : ArtifactFrame<ArtifactFrame, ArtifactDef> { }
+    public class ArtifactFrame<TArtifactDef> : ArtifactFrame<ArtifactFrame<TArtifactDef>, TArtifactDef> 
+        where TArtifactDef : ArtifactDef { }
+    public abstract class ArtifactFrame<TFrame, TArtifactDef> : Frame<TFrame>
+        where TFrame : ArtifactFrame<TFrame, TArtifactDef>
+        where TArtifactDef : ArtifactDef
     {
         public string name;
         public string overrideNameToken = null;

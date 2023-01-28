@@ -19,13 +19,14 @@ using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
-    public class ItemFrame : ItemFrame<ItemDef> { }
-    public class ItemFrame<TItemDef> : BaseFrame where TItemDef : ItemDef
+    public class ItemFrame : ItemFrame<ItemFrame, ItemDef> { }
+    public class ItemFrame<TItemDef> : ItemFrame<ItemFrame<TItemDef>, TItemDef> 
+        where TItemDef : ItemDef { }
+    public abstract class ItemFrame<TFrame, TItemDef> : Frame<TFrame> 
+        where TFrame : ItemFrame<TFrame, TItemDef>
+        where TItemDef : ItemDef
     {
         public static ItemRelationshipType contagiousItemRelationshipType = GSUtil.LegacyLoad<ItemRelationshipType>("ItemRelationships/ContagiousItem");
-
-        public TItemDef ItemDef { get; private set; }
-        public ItemRelationshipProvider[] ItemRelationshipProviders { get; private set; }
 
         public string name;
         public string overrideNameToken = null;
@@ -42,6 +43,18 @@ namespace GrooveSharedUtils.Frames
         public UnlockableDef unlockableDef = null;
         public ItemDef[] itemsToCorrupt = Array.Empty<ItemDef>();
         public ExpansionDef requiredExpansion = null;
+        public TItemDef ItemDef { get; private set; }
+        public ItemRelationshipProvider[] ItemRelationshipProviders { get; private set; }
+        public TFrame SetItemTags(params ItemTag[] itemTags)
+        {
+            this.itemTags = itemTags;
+            return this as TFrame;
+        }
+        public TFrame SetItemsToCorrupt(params ItemDef[] itemsToCorrupt)
+        {
+            this.itemsToCorrupt = itemsToCorrupt;
+            return this as TFrame;
+        }
         protected override IEnumerable GetAssets()
         {
             yield return ItemDef;

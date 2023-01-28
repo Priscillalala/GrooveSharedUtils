@@ -67,6 +67,18 @@ namespace GrooveSharedUtils
             {
                 ((IRegisterable)obj).Register();
             };
+            map[typeof(Type)] = (object obj) =>
+            {
+                Type t = (Type)obj;
+                if (t.IsSubclassOf(typeof(EntityStates.EntityState)))
+                {
+                    AddHash(contentPack.entityStateTypes, t);
+                }
+            };
+            map[typeof(AchievementDef)] = (object obj) =>
+            {
+                EarlyAchievementManager.Add((AchievementDef)obj);
+            };
             if (GSUtil.ModLoadedCached("com.bepis.r2api.items"))
             {
                 AddItemAPIToMap(map);
@@ -79,14 +91,6 @@ namespace GrooveSharedUtils
             {
                 AddArtifactCodeAPIToMap(map);
             }
-            map[typeof(Type)] = (object obj) =>
-            {
-                Type t = (Type)obj;
-                if (t.IsSubclassOf(typeof(EntityStates.EntityState)))
-                {
-                    AddHash(contentPack.entityStateTypes,t);
-                }
-            };
         }
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         internal void AddItemAPIToMap(AssetToContentMap map)

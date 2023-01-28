@@ -18,10 +18,12 @@ using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
-    public class SkillFrame : SkillFrame<SkillDef> { }
-    //public class SkillFrame<TSkillDef> : SkillFrame<SkillFrame, TSkillDef> where TSkillDef : SkillDef { }
-
-    public class SkillFrame<TSkillDef> : BaseFrame where TSkillDef : SkillDef
+    public class SkillFrame : SkillFrame<SkillFrame, SkillDef> { }
+    public class SkillFrame<TSkillDef> : SkillFrame<SkillFrame<TSkillDef>, TSkillDef>
+        where TSkillDef : SkillDef { }
+    public abstract class SkillFrame<TFrame, TSkillDef> : Frame<TFrame> 
+        where TFrame : SkillFrame<TFrame, TSkillDef>
+        where TSkillDef : SkillDef
     {
         public string name;
         public Sprite icon;
@@ -32,6 +34,16 @@ namespace GrooveSharedUtils.Frames
         public SkillFamily[] skillFamiliesToAppend = Array.Empty<SkillFamily>();
         public UnlockableDef unlockableDef = null;
         public TSkillDef SkillDef { get; private set; }
+        public TFrame SetKeyworkTokens(params string[] keywordTokens)
+        {
+            this.keywordTokens = keywordTokens;
+            return this as TFrame;
+        }
+        public TFrame SetSkillFamiliesToAppend(params SkillFamily[] skillFamiliesToAppend)
+        {
+            this.skillFamiliesToAppend = skillFamiliesToAppend;
+            return this as TFrame;
+        }
         protected override IEnumerable GetAssets()
         {
             yield return SkillDef;

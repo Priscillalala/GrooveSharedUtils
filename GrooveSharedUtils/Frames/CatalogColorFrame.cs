@@ -17,8 +17,12 @@ using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
-    public class CatalogColorFrame : CatalogColorFrame<ModdedCatalogColorDef> { }
-    public class CatalogColorFrame<TModdedCatalogColorDef> : BaseFrame where TModdedCatalogColorDef : ModdedCatalogColorDef
+    public class CatalogColorFrame : CatalogColorFrame<CatalogColorFrame, ModdedCatalogColorDef> { }
+    public class CatalogColorFrame<TModdedCatalogColorDef> : CatalogColorFrame<CatalogColorFrame<TModdedCatalogColorDef>, TModdedCatalogColorDef> 
+        where TModdedCatalogColorDef : ModdedCatalogColorDef { }
+    public abstract class CatalogColorFrame<TFrame, TModdedCatalogColorDef> : Frame<TFrame> 
+        where TFrame : CatalogColorFrame<TFrame, TModdedCatalogColorDef> 
+        where TModdedCatalogColorDef : ModdedCatalogColorDef
     {
         public string name;
         public Color color;

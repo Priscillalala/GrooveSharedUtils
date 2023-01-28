@@ -19,11 +19,13 @@ using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
-    public class EquipmentFrame : EquipmentFrame<EquipmentDef> { }
-    public class EquipmentFrame<TEquipmentDef> : BaseFrame where TEquipmentDef : EquipmentDef
+    public class EquipmentFrame : EquipmentFrame<EquipmentFrame, EquipmentDef> { }
+    public class EquipmentFrame<TEquipmentDef> : EquipmentFrame<EquipmentFrame<TEquipmentDef>, TEquipmentDef>
+        where TEquipmentDef : EquipmentDef { }
+    public abstract class EquipmentFrame<TFrame, TEquipmentDef> : Frame<TFrame> 
+        where TFrame : EquipmentFrame<TFrame, TEquipmentDef>
+        where TEquipmentDef : EquipmentDef
     {
-
-        public TEquipmentDef EquipmentDef { get; private set; }
         public string name;
         public string overrideNameToken = null;
         public string overridePickupToken = null;
@@ -43,6 +45,7 @@ namespace GrooveSharedUtils.Frames
         public EquipmentType equipmentType = EquipmentType.Default;
         public ExpansionDef requiredExpansion = null;
         public UnlockableDef unlockableDef = null;
+        public TEquipmentDef EquipmentDef { get; private set; }
         protected override IEnumerable GetAssets()
         {
             yield return EquipmentDef;

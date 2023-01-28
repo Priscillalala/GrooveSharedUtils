@@ -17,8 +17,12 @@ using System.Collections;
 
 namespace GrooveSharedUtils.Frames
 {
-    public class DamageTypeFrame : DamageTypeFrame<ModdedDamageTypeDef> { }
-    public class DamageTypeFrame<TModdedDamageTypeDef> : BaseFrame where TModdedDamageTypeDef : ModdedDamageTypeDef
+    public class DamageTypeFrame : DamageTypeFrame<DamageTypeFrame, ModdedDamageTypeDef> { }
+    public class DamageTypeFrame<TModdedDamageTypeDef> : DamageTypeFrame<DamageTypeFrame<TModdedDamageTypeDef>, TModdedDamageTypeDef> 
+        where TModdedDamageTypeDef : ModdedDamageTypeDef { }
+    public abstract class DamageTypeFrame<TFrame, TModdedDamageTypeDef> : Frame<TFrame> 
+        where TFrame : DamageTypeFrame<TFrame, TModdedDamageTypeDef>
+        where TModdedDamageTypeDef : ModdedDamageTypeDef
     {
         public string name;
         public TModdedDamageTypeDef ModdedDamageTypeDef { get; private set;}

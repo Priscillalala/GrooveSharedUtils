@@ -97,6 +97,9 @@
     <Reference Include="RoR2">
       <HintPath>..\..\..\..\Desktop\[modding\assemblies\RoR2.dll</HintPath>
     </Reference>
+    <Reference Include="RoR2BepInExPack">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Risk of Rain 2\BepInEx\plugins\RoR2BepInExPack\RoR2BepInExPack.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.Addressables">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Risk of Rain 2\Risk of Rain 2_Data\Managed\Unity.Addressables.dll</HintPath>
     </Reference>

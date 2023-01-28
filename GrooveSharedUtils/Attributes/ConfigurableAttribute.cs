@@ -19,6 +19,7 @@ namespace GrooveSharedUtils.Attributes
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Field, AllowMultiple = false)]
     public class ConfigurableAttribute : HG.Reflection.SearchableAttribute
     {
+        public static Dictionary<Assembly, List<ConfigurableAttribute>> managedConfigurableAttributes = new Dictionary<Assembly, List<ConfigurableAttribute>>();
         static ConfigurableAttribute()
         {
             bind = typeof(ConfigFile).GetMethods(BindingFlags.Instance | BindingFlags.Public).Where((MethodInfo info) => info.Name == nameof(ConfigFile.Bind)).FirstOrDefault();
