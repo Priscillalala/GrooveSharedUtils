@@ -18,20 +18,22 @@ using HG;
 using BepInEx.Configuration;
 using System.Runtime.CompilerServices;
 using UnityEngine.Networking;
+using RoR2.ExpansionManagement;
 
 namespace GrooveSharedUtils
 {
-    public static partial class Common
+    public class Common
     {
-
+        Common() { }
         /*public static partial class Dependencies
         {
             public const string R2API = "com.bepis.r2api";
             public const string GrooveSharedUtils = "com.groovesalad.GrooveSharedUtils";
             public const string MoonstormSharedUtils = "com.TeamMoonstorm.MoonstormSharedUtils";
         }*/
-        public static class Events
+        public class Events
         {
+            Events() { }
             static Events()
             {
                 On.RoR2.GlobalEventManager.OnHitEnemy += GlobalEventManager_OnHitEnemy;
@@ -39,7 +41,7 @@ namespace GrooveSharedUtils
             }
             internal static void GlobalEventManager_OnHitEnemy(On.RoR2.GlobalEventManager.orig_OnHitEnemy orig, GlobalEventManager self, DamageInfo damageInfo, GameObject victim)
             {
-                orig(self, damageInfo, victim); 
+                orig(self, damageInfo, victim);
 
                 if (damageInfo.procCoefficient == 0f || damageInfo.rejected)
                 {
@@ -87,7 +89,51 @@ namespace GrooveSharedUtils
             public static event OnHitEnemyDelegate onHitEnemyServer;
             public static event ProcessDamageDelegate onProcessDamageServer;
         }
-        public static class Shaders
+        public class Expansions
+        {
+            Expansions() { }
+            public static ExpansionDef DLC1 => dlc1.WaitForCompletion();
+            static LazyAddressable<ExpansionDef> dlc1 = new LazyAddressable<ExpansionDef>("RoR2/DLC1/Common/DLC1.asset", false);
+        }
+        public class Idrs
+        {
+            Idrs() { }
+            public static ItemDisplayRuleSet Commando => commando.WaitForCompletion();
+            static LazyAddressable<ItemDisplayRuleSet> commando = new LazyAddressable<ItemDisplayRuleSet>("RoR2/Base/Commando/idrsCommando.asset", false);
+            public static ItemDisplayRuleSet Huntress => huntress.WaitForCompletion();
+            static LazyAddressable<ItemDisplayRuleSet> huntress = new LazyAddressable<ItemDisplayRuleSet>("RoR2/Base/Huntress/idrsHuntress.asset", false);
+            public static ItemDisplayRuleSet Bandit2 => bandit2.WaitForCompletion();
+            static LazyAddressable<ItemDisplayRuleSet> bandit2 = new LazyAddressable<ItemDisplayRuleSet>("RoR2/Base/Bandit2/idrsBandit2.asset", false);
+            public static ItemDisplayRuleSet Toolbot => toolbot.WaitForCompletion();
+            static LazyAddressable<ItemDisplayRuleSet> toolbot = new LazyAddressable<ItemDisplayRuleSet>("RoR2/Base/Toolbot/idrsToolbot.asset", false);
+            public static ItemDisplayRuleSet Engi => engi.WaitForCompletion();
+            static LazyAddressable<ItemDisplayRuleSet> engi = new LazyAddressable<ItemDisplayRuleSet>("RoR2/Base/Engi/idrsEngi.asset", false);
+            public static ItemDisplayRuleSet EngiTurret => engiTurret.WaitForCompletion();
+            static LazyAddressable<ItemDisplayRuleSet> engiTurret = new LazyAddressable<ItemDisplayRuleSet>("RoR2/Base/Engi/idrsEngiTurret.asset", false);
+            public static ItemDisplayRuleSet EngiWalkerTurret => engiWalkerTurret.WaitForCompletion();
+            static LazyAddressable<ItemDisplayRuleSet> engiWalkerTurret = new LazyAddressable<ItemDisplayRuleSet>("RoR2/Base/Engi/idrsEngiWalkerTurret.asset", false);
+            public static ItemDisplayRuleSet Mage => mage.WaitForCompletion();
+            static LazyAddressable<ItemDisplayRuleSet> mage = new LazyAddressable<ItemDisplayRuleSet>("RoR2/Base/Mage/idrsMage.asset", false);
+            public static ItemDisplayRuleSet Merc => merc.WaitForCompletion();
+            static LazyAddressable<ItemDisplayRuleSet> merc = new LazyAddressable<ItemDisplayRuleSet>("RoR2/Base/Merc/idrsMerc.asset", false);
+            public static ItemDisplayRuleSet Treebot => treebot.WaitForCompletion();
+            static LazyAddressable<ItemDisplayRuleSet> treebot = new LazyAddressable<ItemDisplayRuleSet>("RoR2/Base/Treebot/idrsTreebot.asset", false);
+            public static ItemDisplayRuleSet Loader => loader.WaitForCompletion();
+            static LazyAddressable<ItemDisplayRuleSet> loader = new LazyAddressable<ItemDisplayRuleSet>("RoR2/Base/Loader/idrsLoader.asset", false);
+            public static ItemDisplayRuleSet Croco => croco.WaitForCompletion();
+            static LazyAddressable<ItemDisplayRuleSet> croco = new LazyAddressable<ItemDisplayRuleSet>("RoR2/Base/Croco/idrsCroco.asset", false);
+            public static ItemDisplayRuleSet Captain => captain.WaitForCompletion();
+            static LazyAddressable<ItemDisplayRuleSet> captain = new LazyAddressable<ItemDisplayRuleSet>("RoR2/Base/Captain/idrsCaptain.asset", false);
+            public static ItemDisplayRuleSet RailGunner => railGunner.WaitForCompletion();
+            static LazyAddressable<ItemDisplayRuleSet> railGunner = new LazyAddressable<ItemDisplayRuleSet>("RoR2/DLC1/Railgunner/idrsRailGunner.asset", false);
+            public static ItemDisplayRuleSet VoidSurvivor => voidSurvivor.WaitForCompletion();
+            static LazyAddressable<ItemDisplayRuleSet> voidSurvivor = new LazyAddressable<ItemDisplayRuleSet>("RoR2/DLC1/VoidSurvivor/idrsVoidSurvivor.asset", false);
+            public static ItemDisplayRuleSet Scav => scav.WaitForCompletion();
+            static LazyAddressable<ItemDisplayRuleSet> scav = new LazyAddressable<ItemDisplayRuleSet>("RoR2/Base/Scav/idrsScav.asset", false);
+            public static ItemDisplayRuleSet EquipmentDrone => equipmentDrone.WaitForCompletion();
+            static LazyAddressable<ItemDisplayRuleSet> equipmentDrone = new LazyAddressable<ItemDisplayRuleSet>("RoR2/Base/Drones/idrsEquipmentDrone.asset", false);
+        }
+        /*public static class Shaders
         {
             public static Shader standard => Addressables.LoadAssetAsync<Shader>("48dca5b99d113b8d11006bab44295342").WaitForCompletion();
             public static Shader cloudRemap => Addressables.LoadAssetAsync<Shader>("bbffe49749c91724d819563daf91445d").WaitForCompletion();
@@ -100,7 +146,7 @@ namespace GrooveSharedUtils
             public static Shader triplanarTerrain => Addressables.LoadAssetAsync<Shader>("cd44d5076b47fbc4d8872b2a500b78f8").WaitForCompletion();
             public static Shader snowTopped => Addressables.LoadAssetAsync<Shader>("ec2c273472427df41846b25c110155c2").WaitForCompletion();
             public static Shader wavyCloth => Addressables.LoadAssetAsync<Shader>("69d9da0a01c9f774e8e80f16ecd381b0").WaitForCompletion();
-        }
+        }*/
     }
         
 }

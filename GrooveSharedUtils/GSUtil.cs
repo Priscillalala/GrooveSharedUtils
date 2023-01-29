@@ -247,6 +247,37 @@ namespace GrooveSharedUtils
             }
             return false;
         }
+        public static void Add(this ItemDisplayRuleSet idrs, UnityEngine.Object keyAsset, GameObject displayPrefab, string childName, Vector3 localPos, Vector3 localAngles, Vector3 localScale, LimbFlags limbMask = LimbFlags.None)
+        {
+            Add(idrs, keyAsset, new ItemDisplayRule
+            {
+                followerPrefab = displayPrefab,
+                childName = childName,
+                localPos = localPos,
+                localAngles = localAngles,
+                localScale = localScale,
+                limbMask = limbMask,
+                ruleType = limbMask > LimbFlags.None ? ItemDisplayRuleType.LimbMask : ItemDisplayRuleType.ParentedPrefab
+            });
+        }
+        public static void Add(this ItemDisplayRuleSet idrs, UnityEngine.Object keyAsset, ItemDisplayRule rule)
+        {
+            if (!keyAsset) return;
+            for (int i = 0; i < idrs.keyAssetRuleGroups.Length; i++)
+            {
+                if (idrs.keyAssetRuleGroups[i].keyAsset == keyAsset)
+                {
+                    idrs.keyAssetRuleGroups[i].displayRuleGroup.AddDisplayRule(rule);
+                    return;
+                }
+            }
+            ItemDisplayRuleSet.KeyAssetRuleGroup keyAssetRuleGroup = new ItemDisplayRuleSet.KeyAssetRuleGroup
+            {
+                keyAsset = keyAsset,
+            };
+            keyAssetRuleGroup.displayRuleGroup.AddDisplayRule(rule);
+            ArrayUtils.ArrayAppend(ref idrs.keyAssetRuleGroups, keyAssetRuleGroup);
+        }
         public static void EnsurePrefix(ref string str, string prefix)
         {
             if(str != null && !str.StartsWith(prefix))

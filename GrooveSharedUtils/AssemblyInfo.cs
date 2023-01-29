@@ -31,7 +31,7 @@ namespace GrooveSharedUtils
         public Queue<object> pendingDisplayAssets = new Queue<object>();
         public HashSet<Type> configDisabledModuleTypes = new HashSet<Type>();
 
-        static readonly ConditionalWeakTable<Assembly, AssemblyInfo> assemblyInfos = new ConditionalWeakTable<Assembly, AssemblyInfo>();
+        static readonly Dictionary<Assembly, AssemblyInfo> assemblyInfos = new Dictionary<Assembly, AssemblyInfo>();
         public static AssemblyInfo Get(Assembly assembly)
         {
             return assemblyInfos.GetOrCreateValue(assembly);

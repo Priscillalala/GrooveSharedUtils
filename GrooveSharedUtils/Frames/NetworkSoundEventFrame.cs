@@ -21,9 +21,16 @@ namespace GrooveSharedUtils.Frames
     public class NetworkSoundEventFrame<TNetworkSoundEventDef> : NetworkSoundEventFrame<NetworkSoundEventFrame<TNetworkSoundEventDef>, TNetworkSoundEventDef>
         where TNetworkSoundEventDef : NetworkSoundEventDef { }
     public abstract class NetworkSoundEventFrame<TFrame, TNetworkSoundEventDef> : Frame<TFrame> 
-        where TFrame : NetworkSoundEventFrame<TFrame, TNetworkSoundEventDef>
+        where TFrame : NetworkSoundEventFrame<TFrame, TNetworkSoundEventDef>, new()
         where TNetworkSoundEventDef : NetworkSoundEventDef
     {
+        public static TFrame Create(string name, string eventName)
+        {
+            TFrame frame = new TFrame();
+            frame.name = name;
+            frame.eventName = eventName;
+            return frame;
+        }
         public string name;
         public string eventName;
         public TNetworkSoundEventDef NetworkSoundEventDef { get; private set; }

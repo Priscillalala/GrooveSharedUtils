@@ -25,6 +25,7 @@ using RoR2.Skills;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using HG;
 using R2API.ScriptableObjects;
+using GrooveSharedUtils.ScriptableObjects;
 
 namespace GrooveSharedUtils
 {
@@ -299,21 +300,33 @@ namespace GrooveSharedUtils
             {
                 return sd.skillName;
             }
-            if(asset is AchievementDef achievement)
+            if(asset is ModdedScriptableObject moddedScriptableObject)
+            {
+                return moddedScriptableObject.cachedName;
+            }
+            if (asset is ArtifactDef artifactDef)
+            {
+                return artifactDef.cachedName;
+            }
+            if (asset is UnlockableDef unlockableDef)
+            {
+                return unlockableDef.cachedName;
+            }
+            if (asset is AchievementDef achievement)
             {
                 return achievement.identifier;
-            }
-            if (asset is UnityEngine.Object obj)
-            {
-                return obj.name;
             }
             if (asset is ConfigFile configFile)
             {
                 return System.IO.Path.GetFileNameWithoutExtension(configFile.ConfigFilePath);
             }
-            if(asset is ConfigEntryBase configEntry && configEntry.Definition != null)
+            if (asset is ConfigEntryBase configEntry && configEntry.Definition != null)
             {
                 return configEntry.Definition.Key;
+            }
+            if (asset is UnityEngine.Object obj)
+            {
+                return obj.name;
             }
             return null;
         }

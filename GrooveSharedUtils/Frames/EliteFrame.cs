@@ -32,7 +32,7 @@ namespace GrooveSharedUtils.Frames
         where TBuffDef : BuffDef
     {
         public string name;
-        public EliteTierInfo[] tierInfos;
+        public EliteTierInfo[] eliteTiers;
         public Color eliteColor = Color.white;
         public string overrideEliteModifierToken = null;
         public Texture2D eliteRamp;
@@ -50,9 +50,9 @@ namespace GrooveSharedUtils.Frames
         public TEliteDef[] EliteDefs { get; private set; }
         public TEquipmentDef EliteEquipmentDef { get; private set; }
         public TBuffDef BuffDef { get; private set; }
-        public TFrame SetTierInfos(params EliteTierInfo[] tierInfos)
+        public TFrame SetEliteTiers(params EliteTierInfo[] eliteTiers)
         {
-            this.tierInfos = tierInfos;
+            this.eliteTiers = eliteTiers;
             return this as TFrame;
         }
         protected override IEnumerable GetAssets()
@@ -100,10 +100,10 @@ namespace GrooveSharedUtils.Frames
             string token = name.ToUpperInvariant();
             string tokenPrefix = callingMod ? callingMod.adjustedGeneratedTokensPrefix : string.Empty;
             string modifierToken = overrideEliteModifierToken ?? string.Format("{1}ELITE_MODIFIER_{0}", token, tokenPrefix);
-            EliteDefs = new TEliteDef[tierInfos.Length];
-            for(int i = 0; i < tierInfos.Length; i++)
+            EliteDefs = new TEliteDef[eliteTiers.Length];
+            for(int i = 0; i < eliteTiers.Length; i++)
             {
-                EliteTierInfo info = tierInfos[i];
+                EliteTierInfo info = eliteTiers[i];
                 TEliteDef eliteDef = ScriptableObject.CreateInstance<TEliteDef>();
                 string eliteName = info.FormatEliteDefName(name);
                 GSUtil.EnsurePrefix(ref eliteName, "ed");

@@ -64,6 +64,11 @@ namespace GrooveSharedUtils
                 addressablesOperations.Add(operation);
             }
         }
+        public T WaitForCompletion()
+        {
+            operation.WaitForCompletion();
+            return Result;
+        }
 
         static List<AsyncOperationHandle> addressablesOperations = new List<AsyncOperationHandle>();
         static LazyAddressable()

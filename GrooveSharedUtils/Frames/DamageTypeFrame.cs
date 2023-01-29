@@ -21,9 +21,16 @@ namespace GrooveSharedUtils.Frames
     public class DamageTypeFrame<TModdedDamageTypeDef> : DamageTypeFrame<DamageTypeFrame<TModdedDamageTypeDef>, TModdedDamageTypeDef> 
         where TModdedDamageTypeDef : ModdedDamageTypeDef { }
     public abstract class DamageTypeFrame<TFrame, TModdedDamageTypeDef> : Frame<TFrame> 
-        where TFrame : DamageTypeFrame<TFrame, TModdedDamageTypeDef>
+        where TFrame : DamageTypeFrame<TFrame, TModdedDamageTypeDef>, new()
         where TModdedDamageTypeDef : ModdedDamageTypeDef
     {
+        public static TFrame Create(string name)
+        {
+            TFrame frame = new TFrame();
+            frame.name = name;
+            return frame;
+        }
+
         public string name;
         public TModdedDamageTypeDef ModdedDamageTypeDef { get; private set;}
         protected override IEnumerable GetAssets()

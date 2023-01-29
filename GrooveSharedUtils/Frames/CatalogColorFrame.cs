@@ -21,9 +21,17 @@ namespace GrooveSharedUtils.Frames
     public class CatalogColorFrame<TModdedCatalogColorDef> : CatalogColorFrame<CatalogColorFrame<TModdedCatalogColorDef>, TModdedCatalogColorDef> 
         where TModdedCatalogColorDef : ModdedCatalogColorDef { }
     public abstract class CatalogColorFrame<TFrame, TModdedCatalogColorDef> : Frame<TFrame> 
-        where TFrame : CatalogColorFrame<TFrame, TModdedCatalogColorDef> 
+        where TFrame : CatalogColorFrame<TFrame, TModdedCatalogColorDef>, new()
         where TModdedCatalogColorDef : ModdedCatalogColorDef
     {
+        public static TFrame Create(string name, Color color)
+        {
+            TFrame frame = new TFrame();
+            frame.name = name;
+            frame.color = color;
+            return frame;
+        }
+
         public string name;
         public Color color;
         public TModdedCatalogColorDef ModdedCatalogColorDef { get; private set;}

@@ -36,6 +36,34 @@ namespace GrooveSharedUtils.Frames
         public ExpansionDef requiredExpansion = null;
         public ArtifactCodeInfo? artifactCode = null;
         public TArtifactDef ArtifactDef { get; private set; }
+        public TFrame SetArtifactCode(int topLeft, int topCenter, int topRight, int middleLeft, int middleCenter, int middleRight, int bottomLeft, int bottomCenter, int bottomRight)
+        {
+            artifactCode = new ArtifactCodeInfo(topLeft, topCenter, topRight, middleLeft, middleCenter, middleRight, bottomLeft, bottomCenter, bottomRight);
+            return this as TFrame;
+        }
+        public TFrame SetArtifactCode(Vector3Int topRow, Vector3Int middleRow, Vector3Int bottomRow)
+        {
+            artifactCode = new ArtifactCodeInfo(topRow, middleRow, bottomRow);
+            return this as TFrame;
+        }
+        public TFrame SetArtifactCodeTopRow(int left, int center, int right)
+        {
+            artifactCode = artifactCode ?? default;
+            artifactCode.Value.SetTopRow(left, center, right);
+            return this as TFrame;
+        }
+        public TFrame SetArtifactCodeMiddleRow(int left, int center, int right)
+        {
+            artifactCode = artifactCode ?? default;
+            artifactCode.Value.SetMiddleRow(left, center, right);
+            return this as TFrame;
+        }
+        public TFrame SetArtifactCodeBottomRow(int left, int center, int right)
+        {
+            artifactCode = artifactCode ?? default;
+            artifactCode.Value.SetBottomRow(left, center, right);
+            return this as TFrame;
+        }
         protected override IEnumerable GetAssets()
         {
             yield return ArtifactDef;

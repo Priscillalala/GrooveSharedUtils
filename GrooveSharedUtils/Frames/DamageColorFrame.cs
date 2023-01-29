@@ -21,9 +21,17 @@ namespace GrooveSharedUtils.Frames
     public class DamageColorFrame<TModdedDamageColorDef> : DamageColorFrame<DamageColorFrame<TModdedDamageColorDef>, TModdedDamageColorDef> 
         where TModdedDamageColorDef : ModdedDamageColorDef { }
     public abstract class DamageColorFrame<TFrame, TModdedDamageColorDef> : Frame<TFrame> 
-        where TFrame : DamageColorFrame<TFrame, TModdedDamageColorDef>
+        where TFrame : DamageColorFrame<TFrame, TModdedDamageColorDef>, new()
         where TModdedDamageColorDef : ModdedDamageColorDef
     {
+        public static TFrame Create(string name, Color color)
+        {
+            TFrame frame = new TFrame();
+            frame.name = name;
+            frame.color = color;
+            return frame;
+        }
+
         public string name;
         public Color color;
         public TModdedDamageColorDef ModdedDamageColorDef { get; private set;}
