@@ -19,53 +19,23 @@ namespace GrooveSharedUtils.Attributes
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Field, AllowMultiple = false)]
     public class ConfigurableAttribute : HG.Reflection.SearchableAttribute
     {
-        public static Dictionary<Assembly, List<ConfigurableAttribute>> managedConfigurableAttributes = new Dictionary<Assembly, List<ConfigurableAttribute>>();
         static ConfigurableAttribute()
         {
             bind = typeof(ConfigFile).GetMethods(BindingFlags.Instance | BindingFlags.Public).Where((MethodInfo info) => info.Name == nameof(ConfigFile.Bind)).FirstOrDefault();
         }
         public static MethodInfo bind;
         public static Dictionary<Type, (MethodInfo genericBind, PropertyInfo genericBoxedValue)> genericsCache = new Dictionary<Type, (MethodInfo genericBind, PropertyInfo genericBoxedValue)>();
-        //public object Value { get => _value; private set => _value = value; }
-        //private object _value;
-        //public object ConfigEntry { get => _configEntry; private set => _configEntry = value; }
-        //private object _configEntry;
+
         public string configName = null;
         public object defaultValue = null;
         public string section = null;
         public string name = null;
         public string description = null;
-        /*public void Bind()
-        {
-            Type type = target as Type;
-            FieldInfo fieldInfo = null;
-            bool targetsType = type != null;
-            bool targetsFieldInfo = fieldInfo != null;
-            if(!targetsType && !targetsFieldInfo)
-            {
-                return;
-            }
-            BaseModPlugin plugin = (type ?? fieldInfo.DeclaringType).Assembly.GrooveSharedUtilsInfo().plugin;
-            if (!plugin)
-            {
-                return;
-            }
-            ModEnvironment env = plugin.Environment;
-            ConfigFile configFile = Util.GetOrCreateConfig(name ?? env.defaultConfigName);
-            if (configFile == null || env.configStructure < 0 || env.configStructure >= ModEnvironment.ConfigStructure.Count)
-            {
-                return;
-            }
-            if(targetsType)
-            {
-                BindToType(type, configFile, env);
-            }
-            else if(targetsFieldInfo)
-            {
-                BindToField(fieldInfo, configFile, plugin.Environment);
-            }
-        }*/
-        public object BindToField(FieldInfo fieldInfo, ConfigFile configFile, ConfigStructure structure, bool trimConfigNamespaces)
+
+        public bool targetsType => target is Type;
+        public bool targetsField => target is FieldInfo;
+
+        public object BindToField(FieldInfo fieldInfo, ConfigFile configFile, ConfigStructure structure, bool trimConfigNamespaces, out ConfigEntryBase configEntry)
         {
             Type fieldType = fieldInfo.FieldType;
             (MethodInfo genericBind, PropertyInfo genericBoxedValue) = genericsCache.GetOrCreateValue(fieldType, () => (bind.MakeGenericMethod(fieldType), typeof(ConfigEntry<>).MakeGenericType(fieldType).GetProperty("BoxedValue")));
@@ -85,9 +55,10 @@ namespace GrooveSharedUtils.Attributes
                     name = name ?? declaringTypeName + ": " + fieldName;
                     break;
             }
-            return genericBoxedValue.GetValue(genericBind.Invoke(configFile, new object[] { new ConfigDefinition(section, name), defaultValue, description != null ? new ConfigDescription(description) : null }));
+            configEntry = (ConfigEntryBase)genericBind.Invoke(configFile, new object[] { new ConfigDefinition(section, name), defaultValue, description != null ? new ConfigDescription(description) : null });
+            return configEntry.BoxedValue;
         }
-        public bool BindToType(Type t, ConfigFile configFile, ConfigStructure structure, bool trimConfigNamespaces)
+        public bool BindToType(Type t, ConfigFile configFile, ConfigStructure structure, bool trimConfigNamespaces, out ConfigEntryBase configEntry)
         {
             if(!(defaultValue is bool))
             {
@@ -107,8 +78,43 @@ namespace GrooveSharedUtils.Attributes
                     description = description ?? "Enable " + typeName + "?";
                     break;
             }
-            return configFile.Bind(new ConfigDefinition(section, name), (bool)defaultValue, description != null ? new ConfigDescription(description) : null).Value;
+            configEntry = configFile.Bind(new ConfigDefinition(section, name), (bool)defaultValue, description != null ? new ConfigDescription(description) : null);
+            return ((ConfigEntry<bool>)configEntry).Value;
         }
-        public bool wasFound;
     }
 }
+//public object Value { get => _value; private set => _value = value; }
+//private object _value;
+//public object ConfigEntry { get => _configEntry; private set => _configEntry = value; }
+//private object _configEntry;
+
+/*public void Bind()
+{
+    Type type = target as Type;
+    FieldInfo fieldInfo = null;
+    bool targetsType = type != null;
+    bool targetsFieldInfo = fieldInfo != null;
+    if(!targetsType && !targetsFieldInfo)
+    {
+        return;
+    }
+    BaseModPlugin plugin = (type ?? fieldInfo.DeclaringType).Assembly.GrooveSharedUtilsInfo().plugin;
+    if (!plugin)
+    {
+        return;
+    }
+    ModEnvironment env = plugin.Environment;
+    ConfigFile configFile = Util.GetOrCreateConfig(name ?? env.defaultConfigName);
+    if (configFile == null || env.configStructure < 0 || env.configStructure >= ModEnvironment.ConfigStructure.Count)
+    {
+        return;
+    }
+    if(targetsType)
+    {
+        BindToType(type, configFile, env);
+    }
+    else if(targetsFieldInfo)
+    {
+        BindToField(fieldInfo, configFile, plugin.Environment);
+    }
+}*/

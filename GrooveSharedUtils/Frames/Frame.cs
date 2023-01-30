@@ -32,16 +32,11 @@ namespace GrooveSharedUtils.Frames
     public abstract class Frame<TFrame> : IEnumerable 
         where TFrame : Frame<TFrame>
     {
-        //protected abstract IEnumerable<object> Assets { get; }
         protected abstract IEnumerable GetAssets();
-        /*public T Build()
-        {
-            BuildInternal(AssemblyInfo.Get(Assembly.GetCallingAssembly()).plugin);
-            return this as T;
-        }*/
         public TFrame Build()
         {
-            BuildInternal(AssemblyInfo.Get(Assembly.GetCallingAssembly())?.plugin);
+            BaseModPlugin.TryFind(Assembly.GetCallingAssembly(), out BaseModPlugin plugin);
+            BuildInternal(plugin);
             return this as TFrame;
         }
         public IEnumerator GetEnumerator()

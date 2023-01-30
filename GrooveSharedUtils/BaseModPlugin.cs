@@ -44,30 +44,6 @@ namespace GrooveSharedUtils
     }
     public abstract class BaseModPlugin : BaseUnityPlugin, IContentPackProvider
     {
-        static List<Task> swapShadersTasks = new List<Task>();
-        static Dictionary<Shader, Shader> stubbedToRealShaderCache = new Dictionary<Shader, Shader>();
-
-        static (Type, string)[] _globalTypeToCommonPrefix = new (Type, string)[]
-        {
-            (typeof(NetworkSoundEventDef), "nse"),
-            (typeof(BuffDef), "bd"),
-            (typeof(EliteDef), "ed"),
-            (typeof(DirectorCardCategorySelection), "dccs"),
-            (typeof(DccsPool), "dp"),
-            (typeof(ItemDisplayRuleSet), "idrs"),
-        };
-
-        public static ReadOnlyArray<(Type, string)> globalTypeToCommonPrefix = new ReadOnlyArray<(Type, string)>(_globalTypeToCommonPrefix);
-        static BaseModPlugin()
-        {
-            RoR2Application.onLoad = (Action)Delegate.Combine(RoR2Application.onLoad, new Action(delegate 
-            {
-                Task.WaitAll(swapShadersTasks.ToArray());
-                swapShadersTasks = null;
-                stubbedToRealShaderCache = null;
-            }));
-        }
-        static Dictionary<Type, HashSet<string>> typeToPossiblePrefixesCache = new Dictionary<Type, HashSet<string>>();
         public abstract string PLUGIN_ModName { get; }
         public abstract string PLUGIN_AuthorName { get; }
         public abstract string PLUGIN_VersionNumber { get; }
@@ -86,20 +62,67 @@ namespace GrooveSharedUtils
         public virtual bool ENV_TrimConfigNamespaces { get; } = true;
         public virtual bool ENV_AutoSwapStubbedShaders { get; } = true;
         public virtual (Type, string)[] ENV_AdditionalCommonTypePrefixes { get; } = Array.Empty<(Type, string)>();
-        public string identifier => generatedGUID;
+        internal class Reservation
+        {
+            private static Dictionary<Assembly, Reservation> reservations = new Dictionary<Assembly, Reservation>();
+            internal static Reservation Free(BaseModPlugin plugin)
+            {
+                if (reservations == null) return null;
+                if (reservations.TryFreeValue(plugin.assembly, out Reservation reservation))
+                {
+                    if (reservations.Count <= 0)
+                    {
+                        reservations = null;
+                    }
+                    return reservation;
+                }
+                return new Reservation();
+            }
+            internal static Reservation GetOrCreate(Assembly assembly) => reservations.GetOrCreateValue(assembly);
+            internal AssetFieldLocator assetFieldLocator = new AssetFieldLocator();
+            internal List<ConfigurableAttribute> configurableAttributes = new List<ConfigurableAttribute>();
+
+        }
+        static Dictionary<Assembly, BaseModPlugin> assemblyToPlugin = new Dictionary<Assembly, BaseModPlugin>();
+        public static bool TryFind(Assembly assembly, out BaseModPlugin plugin) => assemblyToPlugin.TryGetValue(assembly, out plugin);
+        static List<Task> swapShadersTasks = new List<Task>();
+        static Dictionary<Shader, Shader> stubbedToRealShaderCache = new Dictionary<Shader, Shader>();
+
+        static (Type, string)[] _globalTypeToCommonPrefix = new (Type, string)[]
+        {
+            (typeof(NetworkSoundEventDef), "nse"),
+            (typeof(BuffDef), "bd"),
+            (typeof(EliteDef), "ed"),
+            (typeof(DirectorCardCategorySelection), "dccs"),
+            (typeof(DccsPool), "dp"),
+            (typeof(ItemDisplayRuleSet), "idrs"),
+        };
+
+        public static ReadOnlyArray<(Type, string)> globalTypeToCommonPrefix = new ReadOnlyArray<(Type, string)>(_globalTypeToCommonPrefix);
+        static Dictionary<Type, HashSet<string>> typeToPossiblePrefixesCache = new Dictionary<Type, HashSet<string>>();
+        static BaseModPlugin()
+        {
+            RoR2Application.onLoad = (Action)Delegate.Combine(RoR2Application.onLoad, new Action(delegate 
+            {
+                Task.WaitAll(swapShadersTasks.ToArray());
+                swapShadersTasks = null;
+                stubbedToRealShaderCache = null;
+            }));
+        }
         public GameObject moduleManagerObject;
         public string generatedGUID;
         public Assembly assembly;
-        public AssemblyInfo assemblyInfo;
+        public AssetFieldLocator assetFieldLocator;
         public List<AssetBundle> assetBundles = new List<AssetBundle>();
         public List<ConfigFile> configFiles = new List<ConfigFile>();
         public ContentPack contentPack = new ContentPack();
+        public HashSet<Type> configDisabledModuleTypes = new HashSet<Type>();
         public List<BaseModModule> moduleOrder;
         public HashSet<Type> enabledModuleTypes;
         public string adjustedGeneratedTokensPrefix => string.IsNullOrEmpty(ENV_GeneratedTokensPrefix) ? string.Empty : ENV_GeneratedTokensPrefix.ToUpper();
         public bool isDebug => (ENV_ModStatus & StatusFlags.Debug) > 0;
         public bool isWIP => (ENV_ModStatus & StatusFlags.WIP) > 0;
-        [Obsolete(".Config should not be used. Refer to GSUtil.GetOrCreateConfig instead.", false)]
+        [Obsolete(".Config should not be used. Refer to ConfigManager.GetOrCreate instead.", false)]
         public new ConfigFile Config
         {
             get => base.Config;
@@ -157,8 +180,16 @@ namespace GrooveSharedUtils
             ContentManager.collectContentPackProviders += this.ContentManager_collectContentPackProviders;
 
             assembly = base.GetType().Assembly;
-            assemblyInfo = AssemblyInfo.Get(assembly);
-            assemblyInfo.plugin = this;
+            /*assemblyInfo = AssemblyInfo.Get(assembly);
+            assemblyInfo.plugin = this;*/
+            assemblyToPlugin[assembly] = this;
+
+            Reservation reservation = Reservation.Free(this);
+            assetFieldLocator = reservation.assetFieldLocator;
+            foreach (ConfigurableAttribute attribute in reservation.configurableAttributes)
+            {
+                TryBindConfigurableAttribute(attribute);
+            }
 
             /*IEnumerable<ConfigurableAttribute> configurableAttributes =  List<ConfigurableAttribute> configurableAttributes = new List<ConfigurableAttribute>();
             HG.Reflection.SearchableAttribute.GetInstances(configurableAttributes);
@@ -170,10 +201,10 @@ namespace GrooveSharedUtils
             moduleManagerObject = new GameObject(PLUGIN_ModName + "_ModuleManager");
             DontDestroyOnLoad(moduleManagerObject);
 
-            while (assemblyInfo.pendingDisplayAssets.Count > 0)
+            /*while (assemblyInfo.pendingDisplayAssets.Count > 0)
             {
                 AddDisplayAsset(assemblyInfo.pendingDisplayAssets.Dequeue());
-            }
+            }*/
             if (ENV_RelativeAssetBundleFolder != null)
             {
                 string directoryPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(assembly.Location), ENV_RelativeAssetBundleFolder);
@@ -215,13 +246,13 @@ namespace GrooveSharedUtils
         public virtual bool ShouldEnableModuleType(Type type)
         {
             return type.GetCustomAttribute<IgnoreModuleAttribute>() == null
-                && !assemblyInfo.configDisabledModuleTypes.Contains(type)
+                && !configDisabledModuleTypes.Contains(type)
                 && (isDebug || type.GetCustomAttribute<DebugModuleAttribute>() == null)
                 && (isWIP || type.GetCustomAttribute<WIPModuleAttribute>() == null);
         }
         public virtual BaseModModule CreateModule(Type type)
         {
-            GSUtil.LogDebug(LogLevel.Debug, "Creating Module: " + type.Name, assemblyInfo);
+            GSUtil.LogDebug(LogLevel.Debug, "Creating Module: " + type.Name, assembly);
             BaseModModule baseModule = (BaseModModule)moduleManagerObject.AddComponent(type);
             try
             {
@@ -235,20 +266,56 @@ namespace GrooveSharedUtils
         }
         public bool ModuleEnabled<T>() where T:BaseModModule => ModuleEnabled(typeof(T));
         public virtual bool ModuleEnabled(Type type) => enabledModuleTypes.Contains(type);
+        public virtual void TryBindConfigurableAttribute(ConfigurableAttribute attribute)
+        {
+            if (attribute.targetsType)
+            {
+                TryBindConfigurableAttributeToType(attribute, attribute.target as Type);
+            }
+            else if (attribute.targetsField)
+            {
+                TryBindConfigurableAttributeToField(attribute, attribute.target as FieldInfo);
+            }
+        }
+        public virtual void TryBindConfigurableAttributeToType(ConfigurableAttribute attribute, Type target)
+        {
+            if (!target.IsSubclassOf(typeof(BaseModModule)))
+            {
+                Logger.LogWarning($"Configurable attribute targets type {target.Name} which does not inherit from {nameof(BaseModModule)}!");
+                return;
+            }
+            ConfigFile config = ConfigManager.GetOrCreate(attribute.configName ?? ENV_DefaultConfigName, assembly, Info.Metadata);
+            if (config != null)
+            {
+                if(!attribute.BindToType(target, config, ENV_ConfigStructure, ENV_TrimConfigNamespaces, out ConfigEntryBase configEntry))
+                {
+                    configDisabledModuleTypes.Add(target);
+                }
+                AddDisplayAsset(configEntry);
+            }
+        }
+        public virtual void TryBindConfigurableAttributeToField(ConfigurableAttribute attribute, FieldInfo target)
+        {
+            if (!target.IsStatic)
+            {
+                Logger.LogWarning($"Configurable attribute targets field {target.Name} which MUST be static!");
+                return;
+            }
+            ConfigFile config = ConfigManager.GetOrCreate(attribute.configName ?? ENV_DefaultConfigName, assembly, Info.Metadata);
+            if (config != null)
+            {
+                target.SetValue(null, attribute.BindToField(target, config, ENV_ConfigStructure, ENV_TrimConfigNamespaces, out ConfigEntryBase configEntry));
+                AddDisplayAsset(configEntry);
+            }
+        }
         public virtual void AddDisplayAsset(object asset)
         {
-            if(asset == null)
-            {
-                return;
-            }
+            if (asset == null) return;
             Type assetType = asset.GetType();
             string assetName = GetAssetName(asset);
-            if (string.IsNullOrEmpty(assetName))
-            {
-                return;
-            }
+            if (string.IsNullOrEmpty(assetName)) return;
             //assetName = assetName.FormatCharacters((char c) => !char.IsWhiteSpace(c));
-            if (AssemblyInfo.Get(assembly).assetFieldLocator.TryGetValue((assetName, assetType), out FieldInfo field))
+            if (assetFieldLocator.TryGetValue((assetName, assetType), out FieldInfo field))
             {
                 field.SetValue(null, asset);
             }
@@ -275,7 +342,7 @@ namespace GrooveSharedUtils
             {
                 if (assetName.StartsWith(commonPrefix, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (AssemblyInfo.Get(assembly).assetFieldLocator.TryGetValue((assetName.Substring(commonPrefix.Length), assetType), out FieldInfo fieldFromPrefix))
+                    if (assetFieldLocator.TryGetValue((assetName.Substring(commonPrefix.Length), assetType), out FieldInfo fieldFromPrefix))
                     {
                         fieldFromPrefix.SetValue(null, asset);
                     }
@@ -330,6 +397,7 @@ namespace GrooveSharedUtils
             }
             return null;
         }
+        public string identifier => generatedGUID;
         private void ContentManager_collectContentPackProviders(ContentManager.AddContentPackProviderDelegate addContentPackProvider)
         {
             addContentPackProvider(this);

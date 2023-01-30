@@ -1,4 +1,4 @@
-﻿using BepInEx;
+﻿/*using BepInEx;
 using System;
 using System.IO;
 using System.Reflection;
@@ -26,8 +26,8 @@ namespace GrooveSharedUtils
     public class AssemblyInfo
     {
         public BaseModPlugin plugin;
-        public Dictionary<(string, Type), FieldInfo> assetFieldLocator = new Dictionary<(string, Type), FieldInfo>(AssetFieldLocatorComparer.comparer);
-        public Dictionary<string, ConfigFile> configFiles = new Dictionary<string, ConfigFile>();
+        public AssetFieldLocator assetFieldLocator = new AssetFieldLocator();
+        //public Dictionary<string, ConfigFile> configFiles = new Dictionary<string, ConfigFile>();
         public Queue<object> pendingDisplayAssets = new Queue<object>();
         public HashSet<Type> configDisabledModuleTypes = new HashSet<Type>();
 
@@ -37,4 +37,4 @@ namespace GrooveSharedUtils
             return assemblyInfos.GetOrCreateValue(assembly);
         }
     }
-}
+}*/

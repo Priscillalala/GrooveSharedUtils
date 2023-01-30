@@ -37,14 +37,6 @@ namespace GrooveSharedUtils
         {
             return Addressables.LoadAssetAsync<TAsset>(key).WaitForCompletion();
         }
-        /*public static void Destroy(UnityEngine.Object obj)
-        {
-            UnityEngine.Object.Destroy(obj);
-        }
-        public static void DestroyImmediate(UnityEngine.Object obj)
-        {
-            UnityEngine.Object.DestroyImmediate(obj);
-        }*/
         public static Type[] GetEntityStateTypes(Assembly assembly = null)
         {
             assembly = assembly ?? Assembly.GetCallingAssembly();
@@ -119,7 +111,7 @@ namespace GrooveSharedUtils
             }
             return 0;
         }
-        public static string FormatCharacters(this string original, Func<char, bool> predicate)
+        /*public static string FormatCharacters(this string original, Func<char, bool> predicate)
         {
             StringBuilder stringBuilder = HG.StringBuilderPool.RentStringBuilder();
             for (int i = 0; i < original.Length; i++)
@@ -133,7 +125,7 @@ namespace GrooveSharedUtils
             string result = stringBuilder.ToString();
             HG.StringBuilderPool.ReturnStringBuilder(stringBuilder);
             return result;
-        }
+        }*/
         public static string InternalToExternalName(string internalName)
         {
             internalName = internalName.Trim();
@@ -210,7 +202,7 @@ namespace GrooveSharedUtils
             }
             LanguageAPI.Add(token, value, specificLanguage);
         }
-        #region ModEnabled
+        #region ModLoaded
         public static bool ModLoaded(string guid)
         {
             if (!Chainloader._loaded)
@@ -309,40 +301,46 @@ namespace GrooveSharedUtils
                 }
             }
         }
-        public static void LogDebug(LogLevel level, object data, AssemblyInfo explicitAssembly = null)
+        public static void LogDebug(LogLevel level, object data, Assembly explicitAssembly = null)
         {
-            AssemblyInfo callingAssemblyInfo = explicitAssembly ?? AssemblyInfo.Get(Assembly.GetCallingAssembly());
-            BaseModPlugin plugin = callingAssemblyInfo?.plugin;
-            if (plugin && plugin.isDebug)
+            Assembly callingAssemblyInfo = explicitAssembly ?? Assembly.GetCallingAssembly();
+            if (BaseModPlugin.TryFind(callingAssemblyInfo, out BaseModPlugin plugin) && plugin.isDebug)
             {
                 LogInternal(level, data, callingAssemblyInfo);
             }
         }
         public static void LogDebug(object data)
         {
-            LogDebug(LogLevel.Debug, data, AssemblyInfo.Get(Assembly.GetCallingAssembly()));
+            LogDebug(LogLevel.Debug, data, Assembly.GetCallingAssembly());
         }
-        public static void Log(LogLevel level, object data, AssemblyInfo explicitAssembly = null)
+        public static void Log(LogLevel level, object data, Assembly explicitAssembly = null)
         {
-            LogInternal(level, data, explicitAssembly ?? AssemblyInfo.Get(Assembly.GetCallingAssembly()));
+            LogInternal(level, data, explicitAssembly ?? Assembly.GetCallingAssembly());
         }
         public static void Log(object data)
         {
-            Log(LogLevel.Info, data, AssemblyInfo.Get(Assembly.GetCallingAssembly()));
+            Log(LogLevel.Info, data, Assembly.GetCallingAssembly());
         }
-        internal static void LogInternal(LogLevel level, object data, AssemblyInfo assemblyInfo)
+        internal static void LogInternal(LogLevel level, object data, Assembly assembly)
         {
-            BaseModPlugin plugin = assemblyInfo?.plugin;
-            if (plugin)
+            ManualLogSource logger = null;
+            if (BaseModPlugin.TryFind(assembly, out BaseModPlugin plugin))
             {
-                plugin.Logger.Log(level, data);
+                logger = plugin.Logger;
+            }
+            else
+            {
+                logger = Chainloader.PluginInfos.Values.FirstOrDefault(info => info.Instance && info.Instance.GetType().Assembly == assembly)?.Instance.Logger;
+            }
+            if (logger != null)
+            {
+                logger.Log(level, data);
             }
             else
             {
                 Debug.Log(data);
             }
         }
-        #region Asset Collection Hash
         /*public static void ResolveHash<TAsset>(this NamedAssetCollection<TAsset> namedAssetCollection)
         {
             if (internalAssetCollectionToHash.TryGetValue(namedAssetCollection, out HashSet<object> hashSet))
@@ -351,7 +349,6 @@ namespace GrooveSharedUtils
                 internalAssetCollectionToHash.Remove(namedAssetCollection);
             }
         }*/
-        #endregion
         public static TValue GetOrCreateValue<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, Func<TValue> createValueDelegate = null)
         {
             if (!dict.TryGetValue(key, out TValue value))
@@ -361,50 +358,17 @@ namespace GrooveSharedUtils
             }
             return value;
         }
-        #region Config
-        public static Dictionary<string, ConfigFile> configFileByName = new Dictionary<string, ConfigFile>();
-
-        public static ConfigFile GetOrCreateConfig(string name, BepInPlugin owner = null)
+        public static bool TryFreeValue<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, out TValue value)
         {
-            return GetOrCreateConfig(name, Assembly.GetCallingAssembly(), owner);
-        }
-        public static ConfigFile GetOrCreateConfig(string name, Assembly assembly, BepInPlugin owner = null)
-        {
-            if (name.IsNullOrWhiteSpace())
+            if (dict.TryGetValue(key, out value))
             {
-                return null;
+                dict.Remove(key);
+                return true;
             }
-            return configFileByName.GetOrCreateValue(name, () =>
-            {
-                string path = System.IO.Path.Combine(Paths.ConfigPath, name + ".cfg");
-                ConfigFile configFile = new ConfigFile(path, true, owner);
-                AddDisplayAsset(configFile, assembly);
-                return configFile;
-            });
-
+            return false;
         }
-        /*public static ConfigFile GetOrCreateConfig(string name, BepInPlugin owner = null)
-        {
-            return GetOrCreateConfig(name, Assembly.GetCallingAssembly(), owner);
-        }
-        public static ConfigFile GetOrCreateConfig(string name, Assembly assembly, BepInPlugin owner = null)
-        {
-            if (name.IsNullOrWhiteSpace())
-            {
-                return null;
-            }
-            Dictionary<string, ConfigFile> configFiles = AssemblyInfo.Get(assembly).configFiles;
-            return configFiles.GetOrCreateValue(name, () =>
-            {
-                string path = System.IO.Path.Combine(Paths.ConfigPath, name + ".cfg");
-                ConfigFile configFile = new ConfigFile(path, true, owner);
-                AddDisplayAsset(configFile, assembly);
-                return configFile;
-            });
-
-        }*/
-        #endregion
-        public static void AddDisplayAsset<TAsset>(TAsset asset, Assembly assembly = null)
+       
+        /*public static void AddDisplayAsset<TAsset>(TAsset asset, Assembly assembly = null)
         {
             assembly = assembly ?? Assembly.GetCallingAssembly();
             AssemblyInfo assemblyInfo = AssemblyInfo.Get(assembly);
@@ -414,6 +378,6 @@ namespace GrooveSharedUtils
                 return;
             }
             assemblyInfo.pendingDisplayAssets.Enqueue(asset);
-        }
+        }*/
     }
 }

@@ -22,13 +22,13 @@ namespace GrooveSharedUtils
 {
     public static class ManualInitializer
     {
-        public static void Init()
+        internal static void Init()
         {
             On.RoR2.SystemInitializerAttribute.Execute += SystemInitializerAttribute_Execute;
             LanguageCollectionManager.Init();
         }
 
-        private static void SystemInitializerAttribute_Execute(On.RoR2.SystemInitializerAttribute.orig_Execute orig)
+        internal static void SystemInitializerAttribute_Execute(On.RoR2.SystemInitializerAttribute.orig_Execute orig)
         {
             Attributes.ConditionalRegisterAchievementAttribute.Init();
             orig();

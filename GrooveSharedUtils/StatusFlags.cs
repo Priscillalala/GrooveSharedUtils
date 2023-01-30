@@ -22,10 +22,10 @@ using BepInEx.Configuration;
 namespace GrooveSharedUtils
 {
     [Flags]
-    public enum StatusFlags
+    public enum StatusFlags : uint
     {
-        Default = 0,
-        Debug = 1,
-        WIP = 2,
+        Default = 0U,
+        Debug = 1U,
+        WIP = 2U,
     }
 }

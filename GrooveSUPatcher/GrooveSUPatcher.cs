@@ -26,9 +26,10 @@ namespace GrooveSharedUtils
         internal static ManualLogSource logger = Logger.CreateLogSource("GrooveSharedUtilsPatcher");
         public static IEnumerable<string> TargetDLLs { get; } = new string[] { };
 
-        internal static Dictionary<string, PluginInfo> controlledBepInExPlugins = new Dictionary<string, PluginInfo>();
+        internal static Dictionary<string, PluginInfo> loyalBepInExPlugins = new Dictionary<string, PluginInfo>();
+        internal static HashSet<Assembly> loyalAssemblies = new HashSet<Assembly>();
         internal static HashSet<Type> assetCollectionScannedTypes = new HashSet<Type>();
-        internal static Dictionary<Assembly, PluginConfigInformation> tempConfigPluginInformation = new Dictionary<Assembly, PluginConfigInformation>();
+        //internal static Dictionary<Assembly, PluginConfigInformation> tempConfigPluginInformation = new Dictionary<Assembly, PluginConfigInformation>();
 
         const string infoBackingField = "<Info>k__BackingField";
         const string loggerBackingField = "<Logger>k__BackingField";
@@ -106,9 +107,20 @@ namespace GrooveSharedUtils
             HG.Reflection.SearchableAttribute.GetInstances(configurableAttributes);
             foreach (ConfigurableAttribute attribute in configurableAttributes)
             {
-                BindConfigurableAttribute(attribute);
+                if(attribute.targetsType || attribute.targetsField)
+                {
+                    Assembly assembly = ((attribute.target as Type) ?? (attribute.target as FieldInfo).DeclaringType).Assembly;
+                    if (loyalAssemblies.Contains(assembly))
+                    {
+                        BaseModPlugin.Reservation.GetOrCreate(assembly).configurableAttributes.Add(attribute);
+                    }
+                    else 
+                    {
+                        TryBindDisloyalConfigurableAttribute(attribute);
+                    }
+                }
             }
-            tempConfigPluginInformation.Clear();
+            //tempConfigPluginInformation.Clear();
             orig(gameExePath, startConsole, preloaderLogEvents);
         }
         private static void Chainloader_Start(ILContext il)
@@ -127,7 +139,7 @@ namespace GrooveSharedUtils
                 c.Emit(OpCodes.Ldloc, pluginDictLocIndex);
                 c.EmitDelegate<Func<Dictionary<string, List<PluginInfo>>, Dictionary<string, List<PluginInfo>>>>((pluginDict) =>
                 {
-                    foreach (KeyValuePair<string, PluginInfo> pair in controlledBepInExPlugins)
+                    foreach (KeyValuePair<string, PluginInfo> pair in loyalBepInExPlugins)
                     {
                         List<PluginInfo> previousPluginInfos = pluginDict.GetOrCreateValue(pair.Key);
                         try
@@ -165,7 +177,7 @@ namespace GrooveSharedUtils
                 Type type = types[i];
                 if (type.GetCustomAttribute<AssetDisplayCaseAttribute>() != null)
                 {
-                    FindAssetFields(type, AssemblyInfo.Get(assembly).assetFieldLocator);
+                    FindAssetFields(type, BaseModPlugin.Reservation.GetOrCreate(assembly).assetFieldLocator);
                 }
 
                 if (!type.IsAbstract && type.IsSubclassOf(typeof(BaseModPlugin)))
@@ -182,15 +194,15 @@ namespace GrooveSharedUtils
                         PluginInfo info = baseModPlugin.Info;
                         if (!baseModPlugin.PLUGIN_BepInExIgnored)
                         {
-                            controlledBepInExPlugins[path] = info;
+                            loyalBepInExPlugins[path] = info;
                         }
-                        tempConfigPluginInformation[assembly] = new PluginConfigInformation
+                        /*tempConfigPluginInformation[assembly] = new PluginConfigInformation
                         {
                             bepInPlugin = info.Metadata,
                             defaultConfigName = baseModPlugin.ENV_DefaultConfigName,
                             configStructure = baseModPlugin.ENV_ConfigStructure,
                             trimConfigNameSpaces = baseModPlugin.ENV_TrimConfigNamespaces,
-                        };
+                        };*/
 
                         UnityEngine.Object.DestroyImmediate(baseModPlugin);
                     }
@@ -204,7 +216,7 @@ namespace GrooveSharedUtils
             assetCollectionScannedTypes.Clear();
             
         }
-        private static void FindAssetFields(Type type, Dictionary<(string, Type), FieldInfo> assetFieldLocator)
+        private static void FindAssetFields(Type type, AssetFieldLocator assetFieldLocator)
         {
             if (assetCollectionScannedTypes.Contains(type))
             {
@@ -222,7 +234,26 @@ namespace GrooveSharedUtils
                 FindAssetFields(nestedType, assetFieldLocator);
             }
         }
-        private static void BindConfigurableAttribute(ConfigurableAttribute attribute)
+        private static void TryBindDisloyalConfigurableAttribute(ConfigurableAttribute attribute)
+        {
+            if (!attribute.targetsField)
+            {
+                return;
+            }
+            FieldInfo target = attribute.target as FieldInfo;
+            if (!target.IsStatic)
+            {
+                logger.LogWarning($"Configurable attribute targets field {target.Name} which MUST be static!");
+                return;
+            }
+            Assembly assembly = target.DeclaringType.Assembly;
+            ConfigFile configFile = ConfigManager.GetOrCreate(attribute.configName ?? assembly.FullName, assembly);
+            if (configFile != null)
+            {
+                target.SetValue(null, attribute.BindToField(target, configFile, ConfigStructure.ModulesAsCategories, true, out _));
+            }
+        }
+        /*private static void BindConfigurableAttribute(ConfigurableAttribute attribute)
         {
             Type type = attribute.target as Type;
             FieldInfo fieldInfo = attribute.target as FieldInfo;
@@ -259,7 +290,7 @@ namespace GrooveSharedUtils
             {
                 fieldInfo.SetValue(null, attribute.BindToField(fieldInfo, configFile, info.configStructure, info.trimConfigNameSpaces));
             }
-        }
+        }*/
 
 
         public static void Patch(AssemblyDefinition _)
