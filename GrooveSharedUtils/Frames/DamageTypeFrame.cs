@@ -37,7 +37,7 @@ namespace GrooveSharedUtils.Frames
         {
             yield return ModdedDamageTypeDef;
         }
-        protected internal override void BuildInternal([CanBeNull] BaseModPlugin callingMod)
+        protected internal override void BuildInternal([CanBeNull] ModPlugin callingMod)
         {
             ModdedDamageTypeDef = ScriptableObject.CreateInstance<TModdedDamageTypeDef>();
             ModdedDamageTypeDef.cachedName = name;

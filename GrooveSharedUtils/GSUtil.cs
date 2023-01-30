@@ -304,7 +304,7 @@ namespace GrooveSharedUtils
         public static void LogDebug(LogLevel level, object data, Assembly explicitAssembly = null)
         {
             Assembly callingAssemblyInfo = explicitAssembly ?? Assembly.GetCallingAssembly();
-            if (BaseModPlugin.TryFind(callingAssemblyInfo, out BaseModPlugin plugin) && plugin.isDebug)
+            if (ModPlugin.TryFind(callingAssemblyInfo, out ModPlugin plugin) && plugin.isDebug)
             {
                 LogInternal(level, data, callingAssemblyInfo);
             }
@@ -324,7 +324,7 @@ namespace GrooveSharedUtils
         internal static void LogInternal(LogLevel level, object data, Assembly assembly)
         {
             ManualLogSource logger = null;
-            if (BaseModPlugin.TryFind(assembly, out BaseModPlugin plugin))
+            if (ModPlugin.TryFind(assembly, out ModPlugin plugin))
             {
                 logger = plugin.Logger;
             }

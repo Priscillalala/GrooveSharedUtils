@@ -39,7 +39,7 @@ namespace GrooveSharedUtils.Frames
         {
             yield return ModdedCatalogColorDef;
         }
-        protected internal override void BuildInternal([CanBeNull] BaseModPlugin callingMod)
+        protected internal override void BuildInternal([CanBeNull] ModPlugin callingMod)
         {
             ModdedCatalogColorDef = ScriptableObject.CreateInstance<TModdedCatalogColorDef>();
             ModdedCatalogColorDef.cachedName = name;

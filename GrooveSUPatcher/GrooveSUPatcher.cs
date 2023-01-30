@@ -50,7 +50,7 @@ namespace GrooveSharedUtils
             //plugin info
             c.Emit(OpCodes.Ldarg_0);
             c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate<Func<BaseModPlugin, PluginInfo>>((baseModPlugin) =>
+            c.EmitDelegate<Func<ModPlugin, PluginInfo>>((baseModPlugin) =>
             {
                 return baseModPlugin.SetupPluginInfo();
             });
@@ -59,7 +59,7 @@ namespace GrooveSharedUtils
             //logger
             c.Emit(OpCodes.Ldarg_0);
             c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate<Func<BaseModPlugin, ManualLogSource>>((baseModPlugin) =>
+            c.EmitDelegate<Func<ModPlugin, ManualLogSource>>((baseModPlugin) =>
             {
                 return baseModPlugin.SetupLogger();
             });
@@ -68,7 +68,7 @@ namespace GrooveSharedUtils
             //config
             c.Emit(OpCodes.Ldarg_0);
             c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate<Func<BaseModPlugin, ConfigFile>>((baseModPlugin) =>
+            c.EmitDelegate<Func<ModPlugin, ConfigFile>>((baseModPlugin) =>
             {
                 return baseModPlugin.SetupConfigFile();
             });
@@ -80,7 +80,7 @@ namespace GrooveSharedUtils
             c.Emit(OpCodes.Ldarg_0);
             c.EmitDelegate<Func<BaseUnityPlugin, bool>>((baseUnityPlugin) =>
             {
-                return baseUnityPlugin is BaseModPlugin;
+                return baseUnityPlugin is ModPlugin;
             });
             c.Emit(OpCodes.Brfalse_S, instruction);
         }
@@ -112,7 +112,7 @@ namespace GrooveSharedUtils
                     Assembly assembly = ((attribute.target as Type) ?? (attribute.target as FieldInfo).DeclaringType).Assembly;
                     if (loyalAssemblies.Contains(assembly))
                     {
-                        BaseModPlugin.Reservation.GetOrCreate(assembly).configurableAttributes.Add(attribute);
+                        ModPlugin.Reservation.GetOrCreate(assembly).configurableAttributes.Add(attribute);
                     }
                     else 
                     {
@@ -177,10 +177,10 @@ namespace GrooveSharedUtils
                 Type type = types[i];
                 if (type.GetCustomAttribute<AssetDisplayCaseAttribute>() != null)
                 {
-                    FindAssetFields(type, BaseModPlugin.Reservation.GetOrCreate(assembly).assetFieldLocator);
+                    FindAssetFields(type, ModPlugin.Reservation.GetOrCreate(assembly).assetFieldLocator);
                 }
 
-                if (!type.IsAbstract && type.IsSubclassOf(typeof(BaseModPlugin)))
+                if (!type.IsAbstract && type.IsSubclassOf(typeof(ModPlugin)))
                 {
                     if (foundBasePlugin)
                     {
@@ -189,7 +189,7 @@ namespace GrooveSharedUtils
                     else
                     {
                         foundBasePlugin = true;
-                        BaseModPlugin baseModPlugin = (BaseModPlugin)Activator.CreateInstance(type);
+                        ModPlugin baseModPlugin = (ModPlugin)Activator.CreateInstance(type);
 
                         PluginInfo info = baseModPlugin.Info;
                         if (!baseModPlugin.PLUGIN_BepInExIgnored)

@@ -60,7 +60,7 @@ namespace GrooveSharedUtils.Frames
             yield return ItemDef;
             yield return ItemRelationshipProviders;
         }
-        protected internal override void BuildInternal([CanBeNull] BaseModPlugin callingMod)
+        protected internal override void BuildInternal([CanBeNull] ModPlugin callingMod)
         {
             string token = name.ToUpperInvariant();
             string tokenPrefix = callingMod ? callingMod.adjustedGeneratedTokensPrefix : string.Empty;

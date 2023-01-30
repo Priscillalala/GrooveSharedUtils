@@ -35,7 +35,7 @@ namespace GrooveSharedUtils.Frames
         protected abstract IEnumerable GetAssets();
         public TFrame Build()
         {
-            BaseModPlugin.TryFind(Assembly.GetCallingAssembly(), out BaseModPlugin plugin);
+            ModPlugin.TryFind(Assembly.GetCallingAssembly(), out ModPlugin plugin);
             BuildInternal(plugin);
             return this as TFrame;
         }
@@ -48,6 +48,6 @@ namespace GrooveSharedUtils.Frames
             }
             return assets.GetEnumerator();
         }
-        protected internal abstract void BuildInternal([CanBeNull] BaseModPlugin callingMod);
+        protected internal abstract void BuildInternal([CanBeNull] ModPlugin callingMod);
     }
 }

@@ -29,7 +29,7 @@ using GrooveSharedUtils.ScriptableObjects;
 
 namespace GrooveSharedUtils
 {
-    public abstract class BaseModPlugin<T> : BaseModPlugin where T : class
+    public abstract class ModPlugin<T> : ModPlugin where T : class
     {
         public static T instance { get; private set; }
 
@@ -42,7 +42,7 @@ namespace GrooveSharedUtils
             base.Awake();
         }
     }
-    public abstract class BaseModPlugin : BaseUnityPlugin, IContentPackProvider
+    public abstract class ModPlugin : BaseUnityPlugin, IContentPackProvider
     {
         public abstract string PLUGIN_ModName { get; }
         public abstract string PLUGIN_AuthorName { get; }
@@ -65,7 +65,7 @@ namespace GrooveSharedUtils
         internal class Reservation
         {
             private static Dictionary<Assembly, Reservation> reservations = new Dictionary<Assembly, Reservation>();
-            internal static Reservation Free(BaseModPlugin plugin)
+            internal static Reservation Free(ModPlugin plugin)
             {
                 if (reservations == null) return null;
                 if (reservations.TryFreeValue(plugin.assembly, out Reservation reservation))
@@ -83,8 +83,8 @@ namespace GrooveSharedUtils
             internal List<ConfigurableAttribute> configurableAttributes = new List<ConfigurableAttribute>();
 
         }
-        static Dictionary<Assembly, BaseModPlugin> assemblyToPlugin = new Dictionary<Assembly, BaseModPlugin>();
-        public static bool TryFind(Assembly assembly, out BaseModPlugin plugin) => assemblyToPlugin.TryGetValue(assembly, out plugin);
+        static Dictionary<Assembly, ModPlugin> assemblyToPlugin = new Dictionary<Assembly, ModPlugin>();
+        public static bool TryFind(Assembly assembly, out ModPlugin plugin) => assemblyToPlugin.TryGetValue(assembly, out plugin);
         static List<Task> swapShadersTasks = new List<Task>();
         static Dictionary<Shader, Shader> stubbedToRealShaderCache = new Dictionary<Shader, Shader>();
 
@@ -100,7 +100,7 @@ namespace GrooveSharedUtils
 
         public static ReadOnlyArray<(Type, string)> globalTypeToCommonPrefix = new ReadOnlyArray<(Type, string)>(_globalTypeToCommonPrefix);
         static Dictionary<Type, HashSet<string>> typeToPossiblePrefixesCache = new Dictionary<Type, HashSet<string>>();
-        static BaseModPlugin()
+        static ModPlugin()
         {
             RoR2Application.onLoad = (Action)Delegate.Combine(RoR2Application.onLoad, new Action(delegate 
             {
@@ -117,7 +117,7 @@ namespace GrooveSharedUtils
         public List<ConfigFile> configFiles = new List<ConfigFile>();
         public ContentPack contentPack = new ContentPack();
         public HashSet<Type> configDisabledModuleTypes = new HashSet<Type>();
-        public List<BaseModModule> moduleOrder;
+        public List<ModModule> moduleOrder;
         public HashSet<Type> enabledModuleTypes;
         public string adjustedGeneratedTokensPrefix => string.IsNullOrEmpty(ENV_GeneratedTokensPrefix) ? string.Empty : ENV_GeneratedTokensPrefix.ToUpper();
         public bool isDebug => (ENV_ModStatus & StatusFlags.Debug) > 0;
@@ -233,7 +233,7 @@ namespace GrooveSharedUtils
             }
             BeginModInit();
 
-            Type baseModuleType = typeof(BaseModModule);
+            Type baseModuleType = typeof(ModModule);
             List<Type> orderedModulesTypes = assembly.GetTypes().Where((Type t) => t.IsSubclassOf(baseModuleType) && !t.IsAbstract && ShouldEnableModuleType(t)).OrderByDescending(new Func<Type, int>(GetModuleTypePriority)).ToList();
             enabledModuleTypes = new HashSet<Type>(orderedModulesTypes);
             moduleOrder = orderedModulesTypes.Select((Type t) => CreateModule(t)).ToList(); //(from t in orderedModulesTypes select CreateModule(t));
@@ -250,10 +250,10 @@ namespace GrooveSharedUtils
                 && (isDebug || type.GetCustomAttribute<DebugModuleAttribute>() == null)
                 && (isWIP || type.GetCustomAttribute<WIPModuleAttribute>() == null);
         }
-        public virtual BaseModModule CreateModule(Type type)
+        public virtual ModModule CreateModule(Type type)
         {
             GSUtil.LogDebug(LogLevel.Debug, "Creating Module: " + type.Name, assembly);
-            BaseModModule baseModule = (BaseModModule)moduleManagerObject.AddComponent(type);
+            ModModule baseModule = (ModModule)moduleManagerObject.AddComponent(type);
             try
             {
                 baseModule.OnModInit();
@@ -264,7 +264,7 @@ namespace GrooveSharedUtils
             }
             return baseModule;
         }
-        public bool ModuleEnabled<T>() where T:BaseModModule => ModuleEnabled(typeof(T));
+        public bool ModuleEnabled<T>() where T:ModModule => ModuleEnabled(typeof(T));
         public virtual bool ModuleEnabled(Type type) => enabledModuleTypes.Contains(type);
         public virtual void TryBindConfigurableAttribute(ConfigurableAttribute attribute)
         {
@@ -279,9 +279,9 @@ namespace GrooveSharedUtils
         }
         public virtual void TryBindConfigurableAttributeToType(ConfigurableAttribute attribute, Type target)
         {
-            if (!target.IsSubclassOf(typeof(BaseModModule)))
+            if (!target.IsSubclassOf(typeof(ModModule)))
             {
-                Logger.LogWarning($"Configurable attribute targets type {target.Name} which does not inherit from {nameof(BaseModModule)}!");
+                Logger.LogWarning($"Configurable attribute targets type {target.Name} which does not inherit from {nameof(ModModule)}!");
                 return;
             }
             ConfigFile config = ConfigManager.GetOrCreate(attribute.configName ?? ENV_DefaultConfigName, assembly, Info.Metadata);
@@ -413,7 +413,7 @@ namespace GrooveSharedUtils
 
             float progressPerModule = 1f / moduleOrder.Count();
             float progress = 0f;
-            foreach (BaseModModule module in moduleOrder)
+            foreach (ModModule module in moduleOrder)
             {
                 try
                 {

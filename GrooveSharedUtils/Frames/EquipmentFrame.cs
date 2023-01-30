@@ -50,7 +50,7 @@ namespace GrooveSharedUtils.Frames
         {
             yield return EquipmentDef;
         }
-        protected override internal void BuildInternal([CanBeNull] BaseModPlugin callingMod)
+        protected override internal void BuildInternal([CanBeNull] ModPlugin callingMod)
         {
             string token = name.ToUpperInvariant();
             string tokenPrefix = callingMod ? callingMod.adjustedGeneratedTokensPrefix : string.Empty;

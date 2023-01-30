@@ -61,7 +61,7 @@ namespace GrooveSharedUtils.Frames
             yield return EliteEquipmentDef;
             yield return BuffDef;
         }
-        protected override internal void BuildInternal([CanBeNull] BaseModPlugin callingMod)
+        protected override internal void BuildInternal([CanBeNull] ModPlugin callingMod)
         {
             BuffFrame<TBuffDef> buffFrame = new BuffFrame<TBuffDef>
             {

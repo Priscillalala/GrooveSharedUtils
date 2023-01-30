@@ -48,7 +48,7 @@ namespace GrooveSharedUtils.Frames
         {
             yield return SkillDef;
         }
-        protected internal override void BuildInternal([CanBeNull] BaseModPlugin callingMod)
+        protected internal override void BuildInternal([CanBeNull] ModPlugin callingMod)
         {
             SkillDef = ScriptableObject.CreateInstance<TSkillDef>();
             SkillDef.skillName = name;

@@ -68,7 +68,7 @@ namespace GrooveSharedUtils.Frames
             yield return AchievementDef;
             yield return UnlockableDef;
         }
-        protected internal override void BuildInternal([CanBeNull] BaseModPlugin callingMod)
+        protected internal override void BuildInternal([CanBeNull] ModPlugin callingMod)
         {
             string token = identifier.ToUpperInvariant();
             string tokenPrefix = callingMod ? callingMod.adjustedGeneratedTokensPrefix : string.Empty;

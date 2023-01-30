@@ -38,7 +38,7 @@ namespace GrooveSharedUtils.Frames
         {
             yield return BuffDef;
         }
-        protected internal override void BuildInternal([CanBeNull] BaseModPlugin callingMod)
+        protected internal override void BuildInternal([CanBeNull] ModPlugin callingMod)
         {
             BuffDef = ScriptableObject.CreateInstance<TBuffDef>();
             GSUtil.EnsurePrefix(ref name, "bd");

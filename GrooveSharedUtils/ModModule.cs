@@ -20,7 +20,7 @@ using System.Collections;
 namespace GrooveSharedUtils
 {
 
-    public abstract class BaseModModule<T> : BaseModModule where T : class
+    public abstract class ModModule<T> : ModModule where T : class
     {
         public static T instance { get; private set; }
         public override void Awake()
@@ -43,7 +43,7 @@ namespace GrooveSharedUtils
             }
         }*/
     }
-    public abstract class BaseModModule : MonoBehaviour
+    public abstract class ModModule : MonoBehaviour
     {
         public virtual void Awake() { }
         public abstract void OnModInit();

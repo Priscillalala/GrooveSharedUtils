@@ -40,7 +40,7 @@ namespace GrooveSharedUtils
             {
                 string path = System.IO.Path.Combine(Paths.ConfigPath, name + ".cfg");
                 ConfigFile configFile = new ConfigFile(path, true, owner);
-                if (BaseModPlugin.TryFind(assembly, out BaseModPlugin plugin))
+                if (ModPlugin.TryFind(assembly, out ModPlugin plugin))
                 {
                     plugin.AddDisplayAsset(configFile);
                 }

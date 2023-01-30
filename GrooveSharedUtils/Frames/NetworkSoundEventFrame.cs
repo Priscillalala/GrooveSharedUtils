@@ -38,7 +38,7 @@ namespace GrooveSharedUtils.Frames
         {
             yield return NetworkSoundEventDef;
         }
-        protected internal override void BuildInternal([CanBeNull] BaseModPlugin callingMod)
+        protected internal override void BuildInternal([CanBeNull] ModPlugin callingMod)
         {
             NetworkSoundEventDef = ScriptableObject.CreateInstance<TNetworkSoundEventDef>();
             GSUtil.EnsurePrefix(ref name, "nse");

@@ -28,10 +28,10 @@ namespace GrooveSharedUtils
     public class AssetStream
     {
         //private IEnumerable<IBaseModule> destinations;
-        private BaseModPlugin plugin;
+        private ModPlugin plugin;
         private AssetToContentMap map;
         //private List<object> foundContent = new List<object>();
-        public AssetStream(BaseModPlugin plugin)
+        public AssetStream(ModPlugin plugin)
         {
             this.plugin = plugin;            
         }
