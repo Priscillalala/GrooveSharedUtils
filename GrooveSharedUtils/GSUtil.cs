@@ -341,14 +341,6 @@ namespace GrooveSharedUtils
                 Debug.Log(data);
             }
         }
-        /*public static void ResolveHash<TAsset>(this NamedAssetCollection<TAsset> namedAssetCollection)
-        {
-            if (internalAssetCollectionToHash.TryGetValue(namedAssetCollection, out HashSet<object> hashSet))
-            {
-                namedAssetCollection.Add(hashSet.OfType<TAsset>().ToArray());
-                internalAssetCollectionToHash.Remove(namedAssetCollection);
-            }
-        }*/
         public static TValue GetOrCreateValue<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, Func<TValue> createValueDelegate = null)
         {
             if (!dict.TryGetValue(key, out TValue value))
@@ -367,17 +359,5 @@ namespace GrooveSharedUtils
             }
             return false;
         }
-       
-        /*public static void AddDisplayAsset<TAsset>(TAsset asset, Assembly assembly = null)
-        {
-            assembly = assembly ?? Assembly.GetCallingAssembly();
-            AssemblyInfo assemblyInfo = AssemblyInfo.Get(assembly);
-            if (assemblyInfo.plugin)
-            {
-                assemblyInfo.plugin.AddDisplayAsset(asset);
-                return;
-            }
-            assemblyInfo.pendingDisplayAssets.Enqueue(asset);
-        }*/
     }
 }
