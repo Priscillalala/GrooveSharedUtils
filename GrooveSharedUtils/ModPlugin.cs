@@ -154,7 +154,7 @@ namespace GrooveSharedUtils
 
             Assembly assembly = type.Assembly;
             AssemblyName assemblyName = assembly.GetReferencedAssemblies().FirstOrDefault((AssemblyName name) => name.Name == "BepInEx");
-            pluginInfo.TargettedBepInExVersion = (assemblyName != null ? assemblyName.Version : null) ?? new Version();
+            pluginInfo.TargettedBepInExVersion = (assemblyName?.Version) ?? new Version();
 
             pluginInfo.Location = assembly.Location;
 
@@ -264,7 +264,7 @@ namespace GrooveSharedUtils
             }
             return baseModule;
         }
-        public bool ModuleEnabled<T>() where T:ModModule => ModuleEnabled(typeof(T));
+        public bool ModuleEnabled<T>() where T : ModModule => ModuleEnabled(typeof(T));
         public virtual bool ModuleEnabled(Type type) => enabledModuleTypes.Contains(type);
         public virtual void TryBindConfigurableAttribute(ConfigurableAttribute attribute)
         {
@@ -284,7 +284,7 @@ namespace GrooveSharedUtils
                 Logger.LogWarning($"Configurable attribute targets type {target.Name} which does not inherit from {nameof(ModModule)}!");
                 return;
             }
-            ConfigFile config = ConfigManager.GetOrCreate(attribute.configName ?? ENV_DefaultConfigName, assembly, Info.Metadata);
+            ConfigFile config = ConfigManager.GetOrCreate(attribute.configName ?? ENV_DefaultConfigName ?? generatedGUID, assembly, Info.Metadata);
             if (config != null)
             {
                 if(!attribute.BindToType(target, config, ENV_ConfigStructure, ENV_TrimConfigNamespaces, out ConfigEntryBase configEntry))
@@ -301,7 +301,7 @@ namespace GrooveSharedUtils
                 Logger.LogWarning($"Configurable attribute targets field {target.Name} which MUST be static!");
                 return;
             }
-            ConfigFile config = ConfigManager.GetOrCreate(attribute.configName ?? ENV_DefaultConfigName, assembly, Info.Metadata);
+            ConfigFile config = ConfigManager.GetOrCreate(attribute.configName ?? ENV_DefaultConfigName ?? generatedGUID, assembly, Info.Metadata);
             if (config != null)
             {
                 target.SetValue(null, attribute.BindToField(target, config, ENV_ConfigStructure, ENV_TrimConfigNamespaces, out ConfigEntryBase configEntry));
@@ -421,7 +421,7 @@ namespace GrooveSharedUtils
                 }
                 catch (Exception ex)
                 {
-                    GSUtil.Log(LogLevel.Error, ex.ToString());
+                    Logger.Log(LogLevel.Error, ex.ToString());
                 }
                 
                 progress += progressPerModule;

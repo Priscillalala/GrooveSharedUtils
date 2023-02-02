@@ -16,13 +16,13 @@ namespace GrooveSharedUtils
 {   
     public static class GrooveSUPatcher
     {
-        public struct PluginConfigInformation
+        /*public struct PluginConfigInformation
         {
             public BepInPlugin bepInPlugin;
             public string defaultConfigName;
             public bool trimConfigNameSpaces;
             public ConfigStructure configStructure;
-        }
+        }*/
         internal static ManualLogSource logger = Logger.CreateLogSource("GrooveSharedUtilsPatcher");
         public static IEnumerable<string> TargetDLLs { get; } = new string[] { };
 
@@ -205,6 +205,7 @@ namespace GrooveSharedUtils
                         };*/
 
                         UnityEngine.Object.DestroyImmediate(baseModPlugin);
+                        loyalAssemblies.Add(assembly);
                     }
                 }
             }

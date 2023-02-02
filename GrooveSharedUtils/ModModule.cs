@@ -48,5 +48,6 @@ namespace GrooveSharedUtils
         public virtual void Awake() { }
         public abstract void OnModInit();
         public abstract void OnCollectContent(AssetStream sasset);
+        //public abstract IEnumerator CollectContent();
     }
 }

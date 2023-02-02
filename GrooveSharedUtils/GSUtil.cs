@@ -111,6 +111,16 @@ namespace GrooveSharedUtils
             }
             return 0;
         }
+        public static ModelPanelParameters SetupModelPanelParameters(GameObject model, Vector3 modelRotation, float minDistance, float maxDistance, Transform focusPoint = null, Transform cameraPosition = null)
+        {
+            ModelPanelParameters parameters = model.AddComponent<ModelPanelParameters>();
+            parameters.modelRotation = Quaternion.Euler(modelRotation);// Util.QuaternionSafeLookRotation(Vector3. modelRotation);
+            parameters.minDistance = minDistance;
+            parameters.maxDistance = maxDistance;
+            parameters.focusPointTransform = focusPoint ?? model.transform.Find("FocusPoint") ?? model.transform.Find("Focus Point");
+            parameters.cameraPositionTransform = cameraPosition ?? model.transform.Find("CameraPosition") ?? model.transform.Find("Camera Position");
+            return parameters;
+        }
         /*public static string FormatCharacters(this string original, Func<char, bool> predicate)
         {
             StringBuilder stringBuilder = HG.StringBuilderPool.RentStringBuilder();
