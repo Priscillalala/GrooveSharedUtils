@@ -1,9 +1,29 @@
 # GrooveSharedUtils
-A RoR2 utilities pack to streamline mod setup and development, focusing on runtime-based content creation.
+A RoR2 utilities pack to streamline mod setup, development, and organization. GrooveSharedUtils focuses on runtime-based content creation.
 
 ![](https://cdn.discordapp.com/attachments/894751893421707305/1019015317990690816/BWE_DOOO_DU_DUUUUU.png)
 
-With special thanks to TeamMoonstorm for MoonstormSharedUtils' material controller components.
+## Structure
+Most of GrooveSharedUtils is build around a specific mod archecture that should be easy to setup and expand.
+### Mod Plugins and Modules
+A `ModPlugin` inherits from BepInEx's `BaseUnityPlugin`; each assembly is limited to a single `ModPlugin`. Your plugin serves as the base of a mod made with GrooveSharedUtils: PLUGIN options define a BepInEx plugin, ENV (Environment) options define global settings for your mod, and the plugin additionally functions as a content pack. Your plugin instantiates and manages classes that inherit from `ModModule` in your assembly. `ModPlugin<T>` and `ModModule<T>` provide access to the class instances.
+### Asset Display Cases and Streams
+The `AssetDisplayCase` attribute can be applied to any class, and indicates that static fields in the class and its nested classes can serve as holders for your mod's assets (think `RoR2Content`). Every module implements the `OnCollectContent` method, which provides access to an `AssetStream`. This method is called as your plugin is building its content pack. Assets added to the asset stream will be mapped to their appropriate locations (`ItemDefs` and `EquipmentDefs` to the content pack, `ModdedDotDefs` to DoTAPI, etc.) and will also be mapped to any asset display case fields, matched by type and name.
+
+## Key Features
+Groove's Shared Utils are intended to be functional to some degree regardless of whether its structure is implemented or not.
+### Frames
+Frames are helper classes to assist with a specific runtime task. For example an `ItemFrame` wraps RoR2's `ItemDef`, creating the scriptable object while exposing relevant fields to the user. GrooveSharedUtil's library of frames is never complete, please reach out with suggestions for new frames.
+### Configurable Attribute
+`Configurable` can be applied to any static field or mod module. The attribute's config file name, section, default value, etc. can be set manually, but they will also be inferred from the field/module and, if present, your plugin's ENV settings.
+### Language Collections
+A `LanguageCollection` is designed to mirror a traditional language file. Language collections are discovered with the `LanguageCollectionProvider` attribute. Strings in a language collection are easy to dynamically modify, as they are a part of your project. Language collections keep your mod's language organized and translatable as a text file.
+### GSUtil and Common
+`GSUtil` contains many helpful methods for general mod development. `Common` contains frequently used assets and events. 
+### And More!
+Well, not *that* much more...but it's still an early release.
+
+With special thanks to TeamMoonstorm for MoonstormSharedUtils' stubbed shaders.
 <details>
 <summary>MSU License</summary>
 <br>
