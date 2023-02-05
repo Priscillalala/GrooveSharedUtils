@@ -34,15 +34,16 @@ namespace GrooveSharedUtils.Frames
         public GameObject defaultDisplayPrefab;
         public LimbFlags defaultLimbMask = LimbFlags.None;
         public (ItemDisplayRuleSet target, ItemDisplayRule rule)[] rules = Array.Empty<(ItemDisplayRuleSet target, ItemDisplayRule rule)>();
-        public TFrame Add(ItemDisplayRuleSet idrs, string childName, Vector3 localPos, Vector3 localAngles, Vector3 localScale, GameObject overrideDisplayPrefab = null, LimbFlags? overrideLimbMask = null)
+        public TFrame Add(ItemDisplayRuleSet idrs, string childName = null, Vector3? localPos = null, Vector3? localAngles = null, Vector3? localScale = null, GameObject overrideDisplayPrefab = null, LimbFlags? overrideLimbMask = null)
         {
+
             LimbFlags limbMask = overrideLimbMask ?? defaultLimbMask;
             ArrayUtils.ArrayAppend(ref rules, (idrs, new ItemDisplayRule
             {
-                childName = childName,
-                localPos = localPos,
-                localAngles = localAngles,
-                localScale = localScale,
+                childName = childName ?? "Base",
+                localPos = localPos ?? Vector3.zero,
+                localAngles = localAngles ?? Vector3.zero,
+                localScale = localScale ?? Vector3.one,
                 followerPrefab = overrideDisplayPrefab ?? defaultDisplayPrefab,
                 limbMask = limbMask,
                 ruleType = limbMask > LimbFlags.None ? ItemDisplayRuleType.LimbMask : ItemDisplayRuleType.ParentedPrefab,

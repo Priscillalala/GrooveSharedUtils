@@ -24,6 +24,7 @@ using HG;
 using UnityEngine.Networking;
 using RoR2.Skills;
 using HG.GeneralSerializer;
+using UnityEngine.Rendering;
 
 namespace GrooveSharedUtils
 {
@@ -120,6 +121,23 @@ namespace GrooveSharedUtils
             parameters.focusPointTransform = focusPoint ?? model.transform.Find("FocusPoint") ?? model.transform.Find("Focus Point");
             parameters.cameraPositionTransform = cameraPosition ?? model.transform.Find("CameraPosition") ?? model.transform.Find("Camera Position");
             return parameters;
+        }
+        public static ItemDisplay SetupItemDisplay(GameObject model)
+        {
+            ItemDisplay itemDisplay = model.AddComponent<ItemDisplay>();
+            Renderer[] renderers = model.GetComponentsInChildren<Renderer>().Where(x => x is MeshRenderer || x is SkinnedMeshRenderer).ToArray();
+            itemDisplay.rendererInfos = new CharacterModel.RendererInfo[renderers.Length];
+            for(int i = 0; i < renderers.Length; i++)
+            {
+                itemDisplay.rendererInfos[i] = new CharacterModel.RendererInfo
+                {
+                    defaultMaterial = renderers[i].material,
+                    renderer = renderers[i],
+                    defaultShadowCastingMode = ShadowCastingMode.On,
+                    ignoreOverlays = false,
+                };
+            }
+            return itemDisplay;
         }
         /*public static string FormatCharacters(this string original, Func<char, bool> predicate)
         {
