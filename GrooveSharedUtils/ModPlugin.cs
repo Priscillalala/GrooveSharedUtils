@@ -254,9 +254,8 @@ namespace GrooveSharedUtils
         }
         public virtual bool ShouldEnableModuleType(Type type)
         {
-            ConfigurableAttribute configurableAttribute;
             return type.GetCustomAttribute<IgnoreModuleAttribute>() == null
-                //&& ((configurableAttribute = type.GetCustomAttribute<ConfigurableAttribute>()) == null || (bool)configurableAttribute.value == true)
+                && !ConfigurableAttribute.configDisabledModuleTypes.Contains(type)
                 && (isDebug || type.GetCustomAttribute<DebugModuleAttribute>() == null)
                 && (isWIP || type.GetCustomAttribute<WIPModuleAttribute>() == null);
         }
@@ -499,7 +498,7 @@ namespace GrooveSharedUtils
                     }
                     return;
                 }
-                AssetDisplayCaseAttribute.TryDisplayAsset(asset, plugin.assembly);
+                AssetDisplayCaseAttribute.TryDisplayAsset(asset, plugin.GetAssetName(asset), plugin.assembly);
                 map.TryMapAsset(asset);
                 if (GSUtil.ModLoadedCached("com.bepis.r2api.content_management") && CheckForR2APISerializableContentPack(asset))
                 {

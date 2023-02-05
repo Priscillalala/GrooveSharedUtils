@@ -20,6 +20,7 @@ namespace GrooveSharedUtils.Attributes
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Field, AllowMultiple = false)]
     public class ConfigurableAttribute : HG.Reflection.SearchableAttribute
     {
+        public static HashSet<Type> configDisabledModuleTypes = new HashSet<Type>();
         static ConfigurableAttribute()
         {
             bind = typeof(ConfigFile).GetMethods(BindingFlags.Instance | BindingFlags.Public).Where((MethodInfo info) => info.Name == nameof(ConfigFile.Bind)).FirstOrDefault();
@@ -32,9 +33,7 @@ namespace GrooveSharedUtils.Attributes
         public string section = null;
         public string name = null;
         public string description = null;
-
-        public object value { get; private set; }
-
+        public string resetForVersion = null;
         public bool targetsType => target is Type;
         public bool targetsField => target is FieldInfo;
 
@@ -60,6 +59,7 @@ namespace GrooveSharedUtils.Attributes
             }
             ConfigEntryBase configEntry = (ConfigEntryBase)genericBind.Invoke(configFile, new object[] { new ConfigDefinition(section, name), defaultValue, description != null ? new ConfigDescription(description) : null });
             OnBound(configEntry, assembly);
+            fieldInfo.SetValue(null, configEntry.BoxedValue);
         }
         public void BindToType(Type t, ConfigFile configFile, SettingsAttribute settings, Assembly assembly)
         {
@@ -82,11 +82,31 @@ namespace GrooveSharedUtils.Attributes
             }
             ConfigEntry<bool> configEntry = configFile.Bind(new ConfigDefinition(section, name), (bool)defaultValue, description != null ? new ConfigDescription(description) : null);
             OnBound(configEntry, assembly);
+            if (!configEntry.Value)
+            {
+                configDisabledModuleTypes.Add(t);
+            }
         }
         public void OnBound(ConfigEntryBase configEntry, Assembly assembly) 
         {
-            value = configEntry.BoxedValue;
             AssetDisplayCaseAttribute.TryDisplayAsset(configEntry, assembly);
+            if (!string.IsNullOrEmpty(resetForVersion) && ConfigManager.TryGetPreviousConfigVersion(configEntry.ConfigFile, out Version prevVersion) && configEntry.ConfigFile._ownerMetadata != null)
+            {
+                Version resetVersion = new Version(resetForVersion);
+                Version currentVersion = configEntry.ConfigFile._ownerMetadata.Version;
+                Debug.Log("prev version " + prevVersion);
+                Debug.Log("reset version " + resetVersion);
+                Debug.Log("cur version " + currentVersion);
+                if (prevVersion < resetVersion && currentVersion >= resetVersion)
+                {
+                    configEntry.BoxedValue = configEntry.DefaultValue;
+                    Debug.Log("reset!");
+                }
+                else
+                {
+                    Debug.Log("didnt reset!");
+                }
+            }
         }
 
         public static Dictionary<Assembly, List<ConfigurableAttribute>> attributesByAssembly = new Dictionary<Assembly, List<ConfigurableAttribute>>();
@@ -118,7 +138,7 @@ namespace GrooveSharedUtils.Attributes
                 {
                     Type typeTarget = attribute.target as Type;
                     FieldInfo fieldTarget = attribute.target as FieldInfo;
-                    string configName = attribute.configName ?? settings.defaultConfigName ?? assembly.GetName().Name;
+                    string configName = attribute.configName ?? settings.defaultConfigName ?? pluginInfo.Metadata.GUID;
                     if (attribute.targetsType)
                     {
                         if (!typeTarget.IsSubclassOf(typeof(ModModule)))
