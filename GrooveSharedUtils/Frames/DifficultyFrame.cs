@@ -37,10 +37,10 @@ namespace GrooveSharedUtils.Frames
         {
             yield return ModdedDifficultyDef;
         }
-        protected internal override void BuildInternal([CanBeNull] ModPlugin callingMod)
+        protected internal override void BuildForAssembly(Assembly assembly)
         {
             string token = name.ToUpperInvariant();
-            string tokenPrefix = callingMod ? callingMod.adjustedGeneratedTokensPrefix : string.Empty;
+            string tokenPrefix = GetGeneratedTokensPrefix(assembly);
             ModdedDifficultyDef = ScriptableObject.CreateInstance<TModdedDifficultyDef>();
             ModdedDifficultyDef.cachedName = name;
             ModdedDifficultyDef.scalingValue = scalingValue;

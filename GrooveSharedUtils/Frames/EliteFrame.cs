@@ -61,7 +61,7 @@ namespace GrooveSharedUtils.Frames
             yield return EliteEquipmentDef;
             yield return BuffDef;
         }
-        protected override internal void BuildInternal([CanBeNull] ModPlugin callingMod)
+        protected override internal void BuildForAssembly(Assembly assembly)
         {
             BuffFrame<TBuffDef> buffFrame = new BuffFrame<TBuffDef>
             {
@@ -74,7 +74,7 @@ namespace GrooveSharedUtils.Frames
                 isHidden = false,
                 startSfx = buffStartSfx,
             };
-            buffFrame.BuildInternal(callingMod);
+            buffFrame.BuildForAssembly(assembly);
             BuffDef = buffFrame.BuffDef;
 
             EquipmentFrame<TEquipmentDef> equipmentFrame = new EquipmentFrame<TEquipmentDef>
@@ -93,12 +93,12 @@ namespace GrooveSharedUtils.Frames
                 cooldown = 25f,
                 passiveBuffDef = BuffDef,
             };
-            equipmentFrame.BuildInternal(callingMod);
+            equipmentFrame.BuildForAssembly(assembly);
             EliteEquipmentDef = equipmentFrame.EquipmentDef;
             
 
             string token = name.ToUpperInvariant();
-            string tokenPrefix = callingMod ? callingMod.adjustedGeneratedTokensPrefix : string.Empty;
+            string tokenPrefix = GetGeneratedTokensPrefix(assembly); ;
             string modifierToken = overrideEliteModifierToken ?? string.Format("{1}ELITE_MODIFIER_{0}", token, tokenPrefix);
             EliteDefs = new TEliteDef[eliteTiers.Length];
             for(int i = 0; i < eliteTiers.Length; i++)

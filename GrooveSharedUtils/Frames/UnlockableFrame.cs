@@ -38,10 +38,10 @@ namespace GrooveSharedUtils.Frames
         {
             yield return UnlockableDef;
         }
-        protected internal override void BuildInternal([CanBeNull] ModPlugin callingMod)
+        protected internal override void BuildForAssembly(Assembly assembly)
         {
             string token = name.ToUpperInvariant();
-            string tokenPrefix = callingMod ? callingMod.adjustedGeneratedTokensPrefix : string.Empty;
+            string tokenPrefix = GetGeneratedTokensPrefix(assembly);
             UnlockableDef = ScriptableObject.CreateInstance<TUnlockableDef>();
             UnlockableDef.cachedName = name;
             UnlockableDef.nameToken = overrideNameToken ?? string.Format("{1}UNLOCKABLE_{0}_NAME", token, tokenPrefix);

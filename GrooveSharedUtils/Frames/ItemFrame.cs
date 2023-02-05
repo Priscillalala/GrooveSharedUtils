@@ -60,10 +60,10 @@ namespace GrooveSharedUtils.Frames
             yield return ItemDef;
             yield return ItemRelationshipProviders;
         }
-        protected internal override void BuildInternal([CanBeNull] ModPlugin callingMod)
+        protected internal override void BuildForAssembly(Assembly assembly)
         {
             string token = name.ToUpperInvariant();
-            string tokenPrefix = callingMod ? callingMod.adjustedGeneratedTokensPrefix : string.Empty;
+            string tokenPrefix = GetGeneratedTokensPrefix(assembly);
             ItemDef = ScriptableObject.CreateInstance<TItemDef>();
             ItemDef.name = name;
             ItemDef.nameToken = overrideNameToken ?? string.Format("{1}ITEM_{0}_NAME", token, tokenPrefix);
@@ -84,7 +84,7 @@ namespace GrooveSharedUtils.Frames
             ItemDef.hidden = hidden;
             ItemDef.tags = itemTags;
             ItemDef.unlockableDef = unlockableDef;
-            ItemDef.requiredExpansion = requiredExpansion ?? callingMod?.ENV_DefaultExpansionDef;
+            ItemDef.requiredExpansion = requiredExpansion ?? GetDefaultExpansionDef(assembly);
             ItemRelationshipProvider[] itemRelationships = Array.Empty<ItemRelationshipProvider>();
             if (itemsToCorrupt.Length > 0)
             {

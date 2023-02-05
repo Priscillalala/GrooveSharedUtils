@@ -50,10 +50,10 @@ namespace GrooveSharedUtils.Frames
         {
             yield return EquipmentDef;
         }
-        protected override internal void BuildInternal([CanBeNull] ModPlugin callingMod)
+        protected override internal void BuildForAssembly(Assembly assembly)
         {
             string token = name.ToUpperInvariant();
-            string tokenPrefix = callingMod ? callingMod.adjustedGeneratedTokensPrefix : string.Empty;
+            string tokenPrefix = GetGeneratedTokensPrefix(assembly);
             EquipmentDef = ScriptableObject.CreateInstance<TEquipmentDef>();
             EquipmentDef.name = name;
             EquipmentDef.nameToken = overrideNameToken ?? string.Format("{1}EQUIPMENT_{0}_NAME", token, tokenPrefix);
@@ -84,7 +84,7 @@ namespace GrooveSharedUtils.Frames
                     EquipmentDef.isBoss = true;
                     break;
             }
-            EquipmentDef.requiredExpansion = requiredExpansion ?? callingMod?.ENV_DefaultExpansionDef;
+            EquipmentDef.requiredExpansion = requiredExpansion ?? GetDefaultExpansionDef(assembly);
             EquipmentDef.unlockableDef = unlockableDef;
 
             if(performEquipmentAction != null)

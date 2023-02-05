@@ -11,6 +11,7 @@ using BepInEx.Bootstrap;
 using System.Reflection;
 using BepInEx.Configuration;
 using GrooveSharedUtils.Attributes;
+using UnityEngine;
 
 namespace GrooveSharedUtils
 {   
@@ -23,12 +24,14 @@ namespace GrooveSharedUtils
             public bool trimConfigNameSpaces;
             public ConfigStructure configStructure;
         }*/
-        internal static ManualLogSource logger = Logger.CreateLogSource("GrooveSharedUtilsPatcher");
-        public static IEnumerable<string> TargetDLLs { get; } = new string[] { };
+        internal static ManualLogSource logger = BepInEx.Logging.Logger.CreateLogSource("GrooveSharedUtilsPatcher");
+        public static IEnumerable<string> TargetDLLs { get; } = Array.Empty<string>();
 
-        internal static Dictionary<string, PluginInfo> loyalBepInExPlugins = new Dictionary<string, PluginInfo>();
-        internal static HashSet<Assembly> loyalAssemblies = new HashSet<Assembly>();
-        internal static HashSet<Type> assetCollectionScannedTypes = new HashSet<Type>();
+        internal static Dictionary<string, PluginInfo> bepInExPluginsToAdd = new Dictionary<string, PluginInfo>();
+        //internal static HashSet<Assembly> loyalAssemblies = new HashSet<Assembly>();
+        //internal static HashSet<Type> assetCollectionScannedTypes = new HashSet<Type>();
+
+        public static event Action<PluginInfo, Assembly> onBeforePluginInstantiated;
         //internal static Dictionary<Assembly, PluginConfigInformation> tempConfigPluginInformation = new Dictionary<Assembly, PluginConfigInformation>();
 
         const string infoBackingField = "<Info>k__BackingField";
@@ -102,24 +105,13 @@ namespace GrooveSharedUtils
                 catch (Exception ex) { logger.LogError(ex.ToString()); }
             }
 
-            ManualInitializer.Init();
-            List<ConfigurableAttribute> configurableAttributes = new List<ConfigurableAttribute>();
-            HG.Reflection.SearchableAttribute.GetInstances(configurableAttributes);
-            foreach (ConfigurableAttribute attribute in configurableAttributes)
-            {
-                if(attribute.targetsType || attribute.targetsField)
-                {
-                    Assembly assembly = ((attribute.target as Type) ?? (attribute.target as FieldInfo).DeclaringType).Assembly;
-                    if (loyalAssemblies.Contains(assembly))
-                    {
-                        ModPlugin.Reservation.GetOrCreate(assembly).configurableAttributes.Add(attribute);
-                    }
-                    else 
-                    {
-                        TryBindDisloyalConfigurableAttribute(attribute);
-                    }
-                }
-            }
+            logger.LogWarning("Start early init");
+            AssetDisplayCaseAttribute.PatcherInit();
+            ConfigurableAttribute.PatcherInit();
+            LoadAssetBundleAttribute.PatcherInit();
+            Frames.Frame.PatcherInit();
+            ManualInitializer.PatcherInit();
+            
             //tempConfigPluginInformation.Clear();
             orig(gameExePath, startConsole, preloaderLogEvents);
         }
@@ -139,7 +131,7 @@ namespace GrooveSharedUtils
                 c.Emit(OpCodes.Ldloc, pluginDictLocIndex);
                 c.EmitDelegate<Func<Dictionary<string, List<PluginInfo>>, Dictionary<string, List<PluginInfo>>>>((pluginDict) =>
                 {
-                    foreach (KeyValuePair<string, PluginInfo> pair in loyalBepInExPlugins)
+                    foreach (KeyValuePair<string, PluginInfo> pair in bepInExPluginsToAdd)
                     {
                         List<PluginInfo> previousPluginInfos = pluginDict.GetOrCreateValue(pair.Key);
                         try
@@ -151,11 +143,32 @@ namespace GrooveSharedUtils
                             logger.LogError(ex.ToString());
                         }
                     }
+                    bepInExPluginsToAdd.Clear();
                     return pluginDict;
                 });
                 c.Emit(OpCodes.Stloc, pluginDictLocIndex);
             }
-            else { logger.LogError("Chainloader IL hook failed!"); }
+            else { logger.LogError("Chainloader IL hook 1 failed!"); }
+
+            int locAssemblyIndex = -1;
+            int pluginInfoLocIndex = -1;
+
+            ILFound = c.TryGotoNext(MoveType.Before,
+                x => x.MatchLdloc(out locAssemblyIndex),
+                x => x.MatchLdloc(out pluginInfoLocIndex),
+                x => x.MatchCallOrCallvirt<PluginInfo>("get_TypeName"),
+                x => x.MatchCallOrCallvirt<Assembly>(nameof(Assembly.GetType)),
+                x => x.MatchCallOrCallvirt<GameObject>(nameof(GameObject.AddComponent)),
+                x => x.MatchCastclass<BaseUnityPlugin>()
+                );
+
+            if (ILFound)
+            {
+                c.Emit(OpCodes.Ldloc, pluginInfoLocIndex);
+                c.Emit(OpCodes.Ldloc, locAssemblyIndex);
+                c.EmitDelegate<Action<PluginInfo, Assembly>>((pluginInfo, assembly) => onBeforePluginInstantiated?.Invoke(pluginInfo, assembly));
+            }
+            else { logger.LogError("Chainloader IL hook 2 failed!"); }
         }
         private static void HandleAssembly(string path)
         {
@@ -175,10 +188,10 @@ namespace GrooveSharedUtils
             for (int i = 0; i < length; i++)
             {
                 Type type = types[i];
-                if (type.GetCustomAttribute<AssetDisplayCaseAttribute>() != null)
+                /*if (type.GetCustomAttribute<AssetDisplayCaseAttribute>() != null)
                 {
                     FindAssetFields(type, ModPlugin.Reservation.GetOrCreate(assembly).assetFieldLocator);
-                }
+                }*/
 
                 if (!type.IsAbstract && type.IsSubclassOf(typeof(ModPlugin)))
                 {
@@ -192,10 +205,9 @@ namespace GrooveSharedUtils
                         ModPlugin baseModPlugin = (ModPlugin)Activator.CreateInstance(type);
 
                         PluginInfo info = baseModPlugin.Info;
-                        if (!baseModPlugin.PLUGIN_BepInExIgnored)
-                        {
-                            loyalBepInExPlugins[path] = info;
-                        }
+  
+                        bepInExPluginsToAdd[path] = info;
+                        
                         /*tempConfigPluginInformation[assembly] = new PluginConfigInformation
                         {
                             bepInPlugin = info.Metadata,
@@ -205,7 +217,7 @@ namespace GrooveSharedUtils
                         };*/
 
                         UnityEngine.Object.DestroyImmediate(baseModPlugin);
-                        loyalAssemblies.Add(assembly);
+                        //loyalAssemblies.Add(assembly);
                     }
                 }
             }
@@ -214,10 +226,10 @@ namespace GrooveSharedUtils
                 assembly.GrooveSharedUtilsInfo().assetFieldLocator = currentAssetFieldLocator;
             }*/
             //currentAssetFieldLocator.Clear();
-            assetCollectionScannedTypes.Clear();
+            //assetCollectionScannedTypes.Clear();
             
         }
-        private static void FindAssetFields(Type type, AssetFieldLocator assetFieldLocator)
+        /*private static void FindAssetFields(Type type, AssetFieldLocator assetFieldLocator)
         {
             if (assetCollectionScannedTypes.Contains(type))
             {
@@ -234,8 +246,8 @@ namespace GrooveSharedUtils
             {
                 FindAssetFields(nestedType, assetFieldLocator);
             }
-        }
-        private static void TryBindDisloyalConfigurableAttribute(ConfigurableAttribute attribute)
+        }*/
+        /*private static void TryBindDisloyalConfigurableAttribute(ConfigurableAttribute attribute)
         {
             if (!attribute.targetsField)
             {
@@ -251,9 +263,9 @@ namespace GrooveSharedUtils
             ConfigFile configFile = ConfigManager.GetOrCreate(attribute.configName ?? assembly.FullName, assembly);
             if (configFile != null)
             {
-                target.SetValue(null, attribute.BindToField(target, configFile, ConfigStructure.ModulesAsCategories, true, out _));
+                target.SetValue(null, attribute.BindToField(target, configFile, ConfigStructure.Normal, true, out _));
             }
-        }
+        }*/
         /*private static void BindConfigurableAttribute(ConfigurableAttribute attribute)
         {
             Type type = attribute.target as Type;

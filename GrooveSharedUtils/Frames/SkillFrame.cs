@@ -48,12 +48,12 @@ namespace GrooveSharedUtils.Frames
         {
             yield return SkillDef;
         }
-        protected internal override void BuildInternal([CanBeNull] ModPlugin callingMod)
+        protected internal override void BuildForAssembly(Assembly assembly)
         {
             SkillDef = ScriptableObject.CreateInstance<TSkillDef>();
             SkillDef.skillName = name;
             string token = name.ToUpperInvariant();
-            string tokenPrefix = callingMod ? callingMod.adjustedGeneratedTokensPrefix : string.Empty;
+            string tokenPrefix = GetGeneratedTokensPrefix(assembly);
             SkillDef.skillNameToken = overrideSkillNameToken ?? $"{tokenPrefix}SKILL_{token}_NAME";
             SkillDef.skillDescriptionToken = overrideSkillDescriptionToken ?? $"{tokenPrefix}SKILL_{token}_DESC";
             SkillDef.icon = icon;

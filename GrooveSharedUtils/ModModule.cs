@@ -23,31 +23,27 @@ namespace GrooveSharedUtils
     public abstract class ModModule<T> : ModModule where T : class
     {
         public static T instance { get; private set; }
-        public override void Awake()
+        /*public override void Awake()
         {
             if (instance == null)
             {
                 instance = this as T;
             }
             base.Awake();
-        }
-        /*public BaseModModule()
-        {
-            if(instance != null)
-            {
-                return;
-            }
-            if(this is T t)
-            {
-                instance = t;
-            }
         }*/
+        public ModModule()
+        {
+            if (instance == null)
+            {
+                instance = this as T;
+            }
+        }
     }
     public abstract class ModModule : MonoBehaviour
     {
-        public virtual void Awake() { }
-        public abstract void OnModInit();
-        public abstract void OnCollectContent(AssetStream sasset);
-        //public abstract IEnumerator CollectContent();
+        //public virtual void Awake() { }
+        //public abstract void OnModInit();
+        //public abstract void OnCollectContent(AssetStream sasset);
+        public virtual IEnumerator LoadContent() => null;
     }
 }

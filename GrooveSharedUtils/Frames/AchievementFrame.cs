@@ -68,10 +68,10 @@ namespace GrooveSharedUtils.Frames
             yield return AchievementDef;
             yield return UnlockableDef;
         }
-        protected internal override void BuildInternal([CanBeNull] ModPlugin callingMod)
+        protected internal override void BuildForAssembly(Assembly assembly)
         {
             string token = identifier.ToUpperInvariant();
-            string tokenPrefix = callingMod ? callingMod.adjustedGeneratedTokensPrefix : string.Empty;
+            string tokenPrefix = GetGeneratedTokensPrefix(assembly);
             AchievementDef = Activator.CreateInstance<TAchievementDef>();
             AchievementDef.identifier = identifier;
             AchievementDef.unlockableRewardIdentifier = unlockableRewardName;
@@ -98,7 +98,7 @@ namespace GrooveSharedUtils.Frames
                     Language.GetString(AchievementDef.descriptionToken)
                 })
             };
-            unlockableFrame.BuildInternal(callingMod);
+            unlockableFrame.BuildForAssembly(assembly);
             UnlockableDef = unlockableFrame.UnlockableDef;
         }
     }

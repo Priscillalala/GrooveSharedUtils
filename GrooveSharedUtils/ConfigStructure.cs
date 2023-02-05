@@ -23,8 +23,8 @@ namespace GrooveSharedUtils
 {
     public enum ConfigStructure
     {
-        ModulesAsCategories,
-        ModulesInCategories,
+        Normal,
+        Flattened,
         Count
     }
 }

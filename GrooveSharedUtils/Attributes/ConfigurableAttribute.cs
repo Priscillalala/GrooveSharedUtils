@@ -13,6 +13,7 @@ using R2API.ScriptableObjects;
 using BepInEx.Configuration;
 using System.Linq;
 using BepInEx.Logging;
+using GrooveSharedUtils.Attributes;
 
 namespace GrooveSharedUtils.Attributes
 {
@@ -32,10 +33,12 @@ namespace GrooveSharedUtils.Attributes
         public string name = null;
         public string description = null;
 
+        public object value { get; private set; }
+
         public bool targetsType => target is Type;
         public bool targetsField => target is FieldInfo;
 
-        public object BindToField(FieldInfo fieldInfo, ConfigFile configFile, ConfigStructure structure, bool trimConfigNamespaces, out ConfigEntryBase configEntry)
+        public void BindToField(FieldInfo fieldInfo, ConfigFile configFile, SettingsAttribute settings, Assembly assembly)
         {
             Type fieldType = fieldInfo.FieldType;
             (MethodInfo genericBind, PropertyInfo genericBoxedValue) = genericsCache.GetOrCreateValue(fieldType, () => (bind.MakeGenericMethod(fieldType), typeof(ConfigEntry<>).MakeGenericType(fieldType).GetProperty("BoxedValue")));
@@ -44,43 +47,109 @@ namespace GrooveSharedUtils.Attributes
             Type declaringType = fieldInfo.DeclaringType;
             string declaringTypeName = GSUtil.InternalToExternalName(declaringType.Name);
 
-            switch (structure)
+            switch (settings.configStructure)
             {
-                case ConfigStructure.ModulesAsCategories:
+                case ConfigStructure.Normal:
                     section = section ?? declaringTypeName;
                     name = name ?? fieldName;
                     break;
-                case ConfigStructure.ModulesInCategories:
-                    section = section ?? (trimConfigNamespaces ? declaringType.Namespace.Split('.').LastOrDefault() : declaringType.Namespace);
+                case ConfigStructure.Flattened:
+                    section = section ?? (settings.trimConfigNamespaces ? declaringType.Namespace.Split('.').LastOrDefault() : declaringType.Namespace);
                     name = name ?? declaringTypeName + ": " + fieldName;
                     break;
             }
-            configEntry = (ConfigEntryBase)genericBind.Invoke(configFile, new object[] { new ConfigDefinition(section, name), defaultValue, description != null ? new ConfigDescription(description) : null });
-            return configEntry.BoxedValue;
+            ConfigEntryBase configEntry = (ConfigEntryBase)genericBind.Invoke(configFile, new object[] { new ConfigDefinition(section, name), defaultValue, description != null ? new ConfigDescription(description) : null });
+            OnBound(configEntry, assembly);
         }
-        public bool BindToType(Type t, ConfigFile configFile, ConfigStructure structure, bool trimConfigNamespaces, out ConfigEntryBase configEntry)
+        public void BindToType(Type t, ConfigFile configFile, SettingsAttribute settings, Assembly assembly)
         {
-            if(!(defaultValue is bool))
+            if (!(defaultValue is bool))
             {
                 defaultValue = true;
             }
             string typeName = GSUtil.InternalToExternalName(t.Name);
-            switch (structure)
+            switch (settings.configStructure)
             {
-                case ConfigStructure.ModulesAsCategories:
+                case ConfigStructure.Normal:
                     section = section ?? typeName;
                     name = name ?? "Enable " + typeName;
-                    description = description ?? "Enable/Disable this content";
                     break;
-                case ConfigStructure.ModulesInCategories:
-                    section = section ?? (trimConfigNamespaces ? t.Namespace.Split('.').LastOrDefault() : t.Namespace);
+                case ConfigStructure.Flattened:
+                    section = section ?? (settings.trimConfigNamespaces ? t.Namespace.Split('.').LastOrDefault() : t.Namespace);
                     name = name ?? typeName;
                     description = description ?? "Enable " + typeName + "?";
                     break;
             }
-            configEntry = configFile.Bind(new ConfigDefinition(section, name), (bool)defaultValue, description != null ? new ConfigDescription(description) : null);
-            return ((ConfigEntry<bool>)configEntry).Value;
+            ConfigEntry<bool> configEntry = configFile.Bind(new ConfigDefinition(section, name), (bool)defaultValue, description != null ? new ConfigDescription(description) : null);
+            OnBound(configEntry, assembly);
         }
+        public void OnBound(ConfigEntryBase configEntry, Assembly assembly) 
+        {
+            value = configEntry.BoxedValue;
+            AssetDisplayCaseAttribute.TryDisplayAsset(configEntry, assembly);
+        }
+
+        public static Dictionary<Assembly, List<ConfigurableAttribute>> attributesByAssembly = new Dictionary<Assembly, List<ConfigurableAttribute>>();
+        internal static void PatcherInit()
+        {
+            List<ConfigurableAttribute> configurableAttributes = new List<ConfigurableAttribute>();
+            GetInstances(configurableAttributes);
+
+            foreach (ConfigurableAttribute attribute in configurableAttributes)
+            {
+                if (attribute.targetsType || attribute.targetsField)
+                {
+                    Type typeTarget = attribute.target as Type;
+                    FieldInfo fieldTarget = attribute.target as FieldInfo;
+                    Assembly assembly = (typeTarget ?? fieldTarget.DeclaringType).Assembly;
+                    attributesByAssembly.GetOrCreateValue(assembly).Add(attribute);
+                }
+            }
+
+            GrooveSUPatcher.onBeforePluginInstantiated += OnBeforePluginInstantiated;
+        }
+
+        internal static void OnBeforePluginInstantiated(PluginInfo pluginInfo, Assembly assembly)
+        {
+            if (attributesByAssembly.TryFreeValue(assembly, out List<ConfigurableAttribute> configurableAttributes))
+            {
+                SettingsAttribute settings = assembly.GetCustomAttribute<SettingsAttribute>() ?? new SettingsAttribute();
+                foreach (ConfigurableAttribute attribute in configurableAttributes)
+                {
+                    Type typeTarget = attribute.target as Type;
+                    FieldInfo fieldTarget = attribute.target as FieldInfo;
+                    string configName = attribute.configName ?? settings.defaultConfigName ?? assembly.GetName().Name;
+                    if (attribute.targetsType)
+                    {
+                        if (!typeTarget.IsSubclassOf(typeof(ModModule)))
+                        {
+                            GrooveSUPatcher.logger.LogWarning($"Configurable attribute targets type {typeTarget.Name} which does not inherit from {nameof(ModModule)}!");
+                            continue;
+                        }
+                        attribute.BindToType(typeTarget, ConfigManager.GetOrCreate(configName, pluginInfo.Metadata), settings, assembly);
+                    }
+                    else if (attribute.targetsField)
+                    {
+                        if (!fieldTarget.IsStatic)
+                        {
+                            GrooveSUPatcher.logger.LogWarning($"Configurable attribute targets field {fieldTarget.Name} which MUST be static!");
+                            continue;
+                        }
+                        attribute.BindToField(fieldTarget, ConfigManager.GetOrCreate(configName, pluginInfo.Metadata), settings, assembly);
+                    }
+                }
+            }
+        }
+
+        [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false)]
+        public sealed class SettingsAttribute : Attribute
+        {
+            public string defaultConfigName = null;
+            public ConfigStructure configStructure = ConfigStructure.Normal;
+            public bool trimConfigNamespaces = false;
+        }
+        [Obsolete(nameof(OptInAttribute) + " should be accessed from " + nameof(HG.Reflection.SearchableAttribute))]
+        public new class OptInAttribute { }
     }
 }
 //public object Value { get => _value; private set => _value = value; }

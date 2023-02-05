@@ -22,7 +22,7 @@ namespace GrooveSharedUtils
 {
     public static class ManualInitializer
     {
-        internal static void Init()
+        internal static void PatcherInit()
         {
             On.RoR2.SystemInitializerAttribute.Execute += SystemInitializerAttribute_Execute;
             LanguageCollectionManager.Init();

@@ -68,10 +68,10 @@ namespace GrooveSharedUtils.Frames
         {
             yield return ArtifactDef;
         }
-        protected internal override void BuildInternal([CanBeNull] ModPlugin callingMod)
+        protected internal override void BuildForAssembly(Assembly assembly)
         {
             string token = name.ToUpperInvariant();
-            string tokenPrefix = callingMod ? callingMod.adjustedGeneratedTokensPrefix : string.Empty;
+            string tokenPrefix = GetGeneratedTokensPrefix(assembly);
             ArtifactDef = ScriptableObject.CreateInstance<TArtifactDef>();
             ArtifactDef.cachedName = name;
             ArtifactDef.nameToken = overrideNameToken ?? $"{tokenPrefix}ARTIFACT_{token}_NAME";
@@ -80,7 +80,7 @@ namespace GrooveSharedUtils.Frames
             ArtifactDef.smallIconDeselectedSprite = deselectedIcon;
             ArtifactDef.pickupModelPrefab = pickupModelPrefab;
             ArtifactDef.unlockableDef = unlockableDef;
-            ArtifactDef.requiredExpansion = requiredExpansion ?? callingMod?.ENV_DefaultExpansionDef;
+            ArtifactDef.requiredExpansion = requiredExpansion ?? GetDefaultExpansionDef(assembly);
             if(artifactCode != null && GSUtil.ModLoaded("com.bepis.r2api.artifactcode"))
             {
                 RegisterArtifactCode((ArtifactCodeInfo)artifactCode);

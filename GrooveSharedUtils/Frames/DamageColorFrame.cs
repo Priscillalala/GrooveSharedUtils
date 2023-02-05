@@ -39,7 +39,7 @@ namespace GrooveSharedUtils.Frames
         {
             yield return ModdedDamageColorDef;
         }
-        protected internal override void BuildInternal([CanBeNull] ModPlugin callingMod)
+        protected internal override void BuildForAssembly(Assembly assembly)
         {
             ModdedDamageColorDef = ScriptableObject.CreateInstance<TModdedDamageColorDef>();
             ModdedDamageColorDef.cachedName = name;

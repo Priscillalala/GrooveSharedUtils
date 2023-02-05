@@ -33,8 +33,9 @@ namespace GrooveSharedUtils
                 .Select((FieldInfo fi) => { return (fi, fi.FieldType.GetGenericArguments()[0]); }).ToArray();
 
         }
-        public HashSet<(Type, NamedAssetCollection)> allAssetCollections = new HashSet<(Type, NamedAssetCollection)>();
+        public List<(Type, NamedAssetCollection)> allAssetCollections = new List<(Type, NamedAssetCollection)>();
         public Dictionary<Type, Action<object>> assetTypeActionsCache = new Dictionary<Type, Action<object>>();
+        public Dictionary<NamedAssetCollection, List<object>> plannedAdditions = new Dictionary<NamedAssetCollection, List<object>>();
         public AssetToContentMap(ContentPack contentPack)
         {
             for (int i = 0; i < contentPackAssetCollectionFields.Length; i++)
@@ -46,7 +47,7 @@ namespace GrooveSharedUtils
                 {
                     Add(type, (object obj) => {
                         GSUtil.Log("add hash: " + obj.GetType());
-                        AssetStream.AddHash(namedAssetCollection, obj); 
+                        PlanAdd(namedAssetCollection, obj); 
                     });
                 }
             }
@@ -65,13 +66,41 @@ namespace GrooveSharedUtils
             {
                 if (pair.Key.IsAssignableFrom(assetType))
                 {
-                    //Util.Log("mapping asset, found: " + pair.Key);
                     Action<object> value = pair.Value;
                     value.Invoke(asset);
                     assetTypeActions.Add(value);
                 }
             }
             assetTypeActionsCache.Add(assetType, (Action<object>)Delegate.Combine(assetTypeActions.ToArray()));
+        }
+        internal struct ResolveHashTypeInfo
+        {
+            public MethodInfo add;
+            public MethodInfo ofType;
+            public MethodInfo toArray;
+        }
+        internal static Dictionary<Type, ResolveHashTypeInfo> cachedResolvedHashInfo = new Dictionary<Type, ResolveHashTypeInfo>();
+        public void PlanAdd(NamedAssetCollection namedAssetCollection, object asset)
+        {
+            plannedAdditions.GetOrCreateValue(namedAssetCollection).Add(asset);
+        }
+        public void ResolveAllPlans()
+        {
+            foreach ((Type type, NamedAssetCollection namedAssetCollection) in allAssetCollections)
+            {
+                if (plannedAdditions.TryGetValue(namedAssetCollection, out List<object> assets)) 
+                {
+                    ResolveHashTypeInfo info = cachedResolvedHashInfo.GetOrCreateValue(type, () => new ResolveHashTypeInfo
+                    {
+                        ofType = typeof(Enumerable).GetMethod("OfType", BindingFlags.Static | BindingFlags.Public).MakeGenericMethod(type),
+                        toArray = typeof(Enumerable).GetMethod("ToArray", BindingFlags.Static | BindingFlags.Public).MakeGenericMethod(type),
+                        add = typeof(NamedAssetCollection<>).MakeGenericType(type).GetMethod("Add", BindingFlags.Instance | BindingFlags.Public),
+                    });
+                    object genericEnumerable = info.ofType.Invoke(null, new[] { assets });
+                    object genericArray = info.toArray.Invoke(null, new[] { genericEnumerable });
+                    info.add.Invoke(namedAssetCollection, new[] { genericArray });
+                }
+            }
         }
     }
 }

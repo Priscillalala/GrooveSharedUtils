@@ -39,7 +39,7 @@ namespace GrooveSharedUtils.Frames
         {
             yield return ModdedDotDef;
         }
-        protected internal override void BuildInternal([CanBeNull] ModPlugin callingMod)
+        protected internal override void BuildForAssembly(Assembly assembly)
         {
             ModdedDotDef = ScriptableObject.CreateInstance<TModdedDotDef>();
             ModdedDotDef.cachedName = name;

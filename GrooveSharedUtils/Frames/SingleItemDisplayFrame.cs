@@ -58,7 +58,7 @@ namespace GrooveSharedUtils.Frames
         {
             yield break;
         }
-        protected internal override void BuildInternal(ModPlugin callingMod)
+        protected internal override void BuildForAssembly(Assembly assembly)
         {
             for(int i = 0; i < rules.Length; i++)
             {
