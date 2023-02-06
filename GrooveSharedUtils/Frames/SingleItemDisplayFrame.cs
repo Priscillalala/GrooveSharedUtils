@@ -34,22 +34,23 @@ namespace GrooveSharedUtils.Frames
         public GameObject defaultDisplayPrefab;
         public LimbFlags defaultLimbMask = LimbFlags.None;
         public (ItemDisplayRuleSet target, ItemDisplayRule rule)[] rules = Array.Empty<(ItemDisplayRuleSet target, ItemDisplayRule rule)>();
-        public TFrame Add(ItemDisplayRuleSet idrs, string childName = null, Vector3? localPos = null, Vector3? localAngles = null, Vector3? localScale = null, GameObject overrideDisplayPrefab = null, LimbFlags? overrideLimbMask = null)
+        public TFrame Add(ItemDisplayRuleSet idrs, string childName, Vector3 localPos, Vector3 localAngles, Vector3 localScale, GameObject overrideDisplayPrefab = null, LimbFlags? overrideLimbMask = null)
         {
 
             LimbFlags limbMask = overrideLimbMask ?? defaultLimbMask;
             ArrayUtils.ArrayAppend(ref rules, (idrs, new ItemDisplayRule
             {
-                childName = childName ?? "Base",
-                localPos = localPos ?? Vector3.zero,
-                localAngles = localAngles ?? Vector3.zero,
-                localScale = localScale ?? Vector3.one,
+                childName = childName,
+                localPos = localPos,
+                localAngles = localAngles,
+                localScale = localScale,
                 followerPrefab = overrideDisplayPrefab ?? defaultDisplayPrefab,
                 limbMask = limbMask,
                 ruleType = limbMask > LimbFlags.None ? ItemDisplayRuleType.LimbMask : ItemDisplayRuleType.ParentedPrefab,
             }));
             return this as TFrame;
         }
+        public TFrame Add(ItemDisplayRuleSet idrs) => Add(idrs, "Base", Vector3.zero, Vector3.zero, Vector3.one);
         public TFrame SetRules(params (ItemDisplayRuleSet target, ItemDisplayRule rule)[] rules)
         {
             this.rules = rules;

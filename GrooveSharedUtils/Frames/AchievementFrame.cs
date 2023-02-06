@@ -77,7 +77,7 @@ namespace GrooveSharedUtils.Frames
             AchievementDef.unlockableRewardIdentifier = unlockableRewardName;
             AchievementDef.prerequisiteAchievementIdentifier = prerequisiteAchievementIdentifier;
             AchievementDef.nameToken = overrideAchievementNameToken ?? $"{tokenPrefix}ACHIEVEMENT_{token}_NAME";
-            AchievementDef.descriptionToken = overrideAchievementDescriptionToken ?? $"{tokenPrefix}ACHIEVEMENT_{token}_NAME";
+            AchievementDef.descriptionToken = overrideAchievementDescriptionToken ?? $"{tokenPrefix}ACHIEVEMENT_{token}_DESCRIPTION";
             AchievementDef.type = trackerType;
             AchievementDef.serverTrackerType = serverTrackerType;
             AchievementDef.SetAchievedIcon(achievementIcon);
