@@ -35,18 +35,14 @@ namespace GrooveSharedUtils.Frames
         public BuffDef terminalTimedBuff = null;
         public float terminalTimedBuffDuration;
         public TModdedDotDef ModdedDotDef { get; private set; }
-        protected override IEnumerable GetAssets()
-        {
-            yield return ModdedDotDef;
-        }
-        protected internal override void BuildForAssembly(Assembly assembly)
+        protected override IEnumerator BuildIterator()
         {
             ModdedDotDef = ScriptableObject.CreateInstance<TModdedDotDef>();
             ModdedDotDef.cachedName = name;
             ModdedDotDef.associatedBuff = associatedBuff;
-            if(associatedBuff && associatedBuff.isDebuff)
+            if (associatedBuff && associatedBuff.isDebuff)
             {
-                GSUtil.Log(BepInEx.Logging.LogLevel.Warning, string.Format("ModdedDotDef {0} has associated buff {1} marked as isDebuff, this will count as 2 debuffs!", name, associatedBuff.name));
+                GroovyLogger.Log(BepInEx.Logging.LogLevel.Warning, string.Format("ModdedDotDef {0} has associated buff {1} marked as isDebuff, this will count as 2 debuffs!", name, associatedBuff.name));
             }
             ModdedDotDef.customDotBehaviour = customDotBehaviour;
             ModdedDotDef.customDotVisual = customDotVisual;
@@ -57,6 +53,7 @@ namespace GrooveSharedUtils.Frames
             ModdedDotDef.resetTimerOnAdd = false;
             ModdedDotDef.terminalTimedBuff = terminalTimedBuff;
             ModdedDotDef.terminalTimedBuffDuration = terminalTimedBuffDuration;
+            yield return ModdedDotDef;
         }
     }
 }

@@ -32,15 +32,12 @@ namespace GrooveSharedUtils.Frames
         }
 
         public string name;
-        public TModdedDamageTypeDef ModdedDamageTypeDef { get; private set;}
-        protected override IEnumerable GetAssets()
-        {
-            yield return ModdedDamageTypeDef;
-        }
-        protected internal override void BuildForAssembly(Assembly assembly)
+        public TModdedDamageTypeDef ModdedDamageTypeDef { get; private set; }
+        protected override IEnumerator BuildIterator()
         {
             ModdedDamageTypeDef = ScriptableObject.CreateInstance<TModdedDamageTypeDef>();
             ModdedDamageTypeDef.cachedName = name;
+            yield return ModdedDamageTypeDef;
         }
     }
 }

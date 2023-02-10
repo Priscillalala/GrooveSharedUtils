@@ -34,16 +34,13 @@ namespace GrooveSharedUtils.Frames
         public string name;
         public string eventName;
         public TNetworkSoundEventDef NetworkSoundEventDef { get; private set; }
-        protected override IEnumerable GetAssets()
-        {
-            yield return NetworkSoundEventDef;
-        }
-        protected internal override void BuildForAssembly(Assembly assembly)
+        protected override IEnumerator BuildIterator()
         {
             NetworkSoundEventDef = ScriptableObject.CreateInstance<TNetworkSoundEventDef>();
             GSUtil.EnsurePrefix(ref name, "nse");
             NetworkSoundEventDef.name = name;
             NetworkSoundEventDef.eventName = eventName;
+            yield return NetworkSoundEventDef;
         }
     }
 }

@@ -82,7 +82,7 @@ namespace GrooveSharedUtils
                     });
                     c.Emit(OpCodes.Stloc, damageLocIndex);
                 }
-                else { GSUtil.Log(BepInEx.Logging.LogLevel.Error, "Take Damage IL hook failed!"); }
+                else { GroovyLogger.Log(BepInEx.Logging.LogLevel.Error, "Take Damage IL hook failed!"); }
             }
             public delegate void OnHitEnemyDelegate(DamageInfo damageInfo, GameObject victim);
             public delegate void ProcessDamageDelegate(HealthComponent victim, DamageInfo damageInfo, ref float damage);

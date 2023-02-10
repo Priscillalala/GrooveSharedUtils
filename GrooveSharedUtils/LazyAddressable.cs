@@ -42,7 +42,7 @@ namespace GrooveSharedUtils
         }
         public static implicit operator T(LazyAddressable<T> lazyAddressable)
         {
-            return lazyAddressable.Result;
+            return lazyAddressable.WaitForCompletion();
         }
         public static implicit operator LazyAddressable<T>(string key)
         {
@@ -57,7 +57,7 @@ namespace GrooveSharedUtils
             }
             catch (Exception e)
             {
-                GSUtil.Log(BepInEx.Logging.LogLevel.Error, e.ToString());
+                GroovyLogger.Log(BepInEx.Logging.LogLevel.Error, e.ToString());
             }
             if(ensureCompletion && operation.IsValid())
             {
@@ -89,7 +89,7 @@ namespace GrooveSharedUtils
                     }
                     catch (Exception e)
                     {
-                        GSUtil.Log(BepInEx.Logging.LogLevel.Error, e.ToString());
+                        GroovyLogger.Log(BepInEx.Logging.LogLevel.Error, e.ToString());
                     }
                 }
                 addressablesOperations = null;

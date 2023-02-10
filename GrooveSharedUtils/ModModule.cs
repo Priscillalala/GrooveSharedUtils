@@ -16,6 +16,7 @@ using System.Linq;
 using R2API;
 using System.Runtime.CompilerServices;
 using System.Collections;
+using BepInEx.Logging;
 
 namespace GrooveSharedUtils
 {
@@ -31,7 +32,7 @@ namespace GrooveSharedUtils
             }
             base.Awake();
         }*/
-        public ModModule()
+        public ModModule() : base()
         {
             if (instance == null)
             {
@@ -41,9 +42,32 @@ namespace GrooveSharedUtils
     }
     public abstract class ModModule : MonoBehaviour
     {
+        internal static ModPlugin earlyAssignmentOwner = null;
+        private ModPlugin owner;
+        public ModModule()
+        {
+            owner = earlyAssignmentOwner;
+            earlyAssignmentOwner = null;
+        }
         //public virtual void Awake() { }
         //public abstract void OnModInit();
         //public abstract void OnCollectContent(AssetStream sasset);
         public virtual IEnumerator LoadContent() => null;
+        public void LogDebug(LogLevel level, object data)
+        {
+            if (owner && owner.isDebug)
+            {
+                owner.Logger.Log(level, data);
+            }
+        }
+        public void LogDebug(object data)
+        {
+            if (owner && owner.isDebug)
+            {
+                owner.Logger.Log(LogLevel.Debug, data);
+            }
+        }
+        public void Log(LogLevel level, object data) => owner?.Logger.Log(level, data);
+        public void Log(object data) => owner?.Logger.Log(LogLevel.Info, data);
     }
 }

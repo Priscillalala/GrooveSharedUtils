@@ -269,11 +269,16 @@ namespace GrooveSharedUtils
             ModModule baseModule = null;
             try
             {
+                ModModule.earlyAssignmentOwner = this;
                 baseModule = (ModModule)moduleManagerObject.AddComponent(type);
             }
             catch (Exception ex)
             {
-                GSUtil.Log(LogLevel.Error, ex.ToString());
+                Logger.Log(LogLevel.Error, ex.ToString());
+            }
+            finally
+            {
+                ModModule.earlyAssignmentOwner = null;
             }
             return baseModule;
         }
@@ -533,6 +538,50 @@ namespace GrooveSharedUtils
                 content.Reset();
             }
         }
+        /*public void LogDebug(LogLevel level, object data)
+        {
+            if (isDebug)
+            {
+                Logger.Log(level, data);
+            }
+        }
+        public void LogDebug(object data)
+        {
+            if (isDebug)
+            {
+                Logger.Log(LogLevel.Debug, data);
+            }
+        }
+        public void Log(LogLevel level, object data) => Logger.Log(level, data);
+        public void Log(object data) => Logger.Log(LogLevel.Info, data); 
+        public static void LogDebug(LogLevel level, object data)
+        {
+            if (TryFind(Assembly.GetCallingAssembly(), out ModPlugin plugin) && plugin.isDebug)
+            {
+                plugin.Logger.Log(level, data);
+            }
+        }
+        public static void LogDebug(object data)
+        {
+            if (TryFind(Assembly.GetCallingAssembly(), out ModPlugin plugin) && plugin.isDebug)
+            {
+                plugin.Logger.Log(LogLevel.Debug, data);
+            }
+        }
+        public static void Log(LogLevel level, object data)
+        {
+            if (TryFind(Assembly.GetCallingAssembly(), out ModPlugin plugin))
+            {
+                plugin.Logger.Log(level, data);
+            }
+        }
+        public static void Log(object data)
+        {
+            if (TryFind(Assembly.GetCallingAssembly(), out ModPlugin plugin))
+            {
+                plugin.Logger.Log(LogLevel.Info, data);
+            }
+        }*/
 
         /*public async Task SwapStubbedShaders(AssetBundle assetBundle)
         {

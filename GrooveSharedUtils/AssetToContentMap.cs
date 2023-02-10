@@ -46,7 +46,7 @@ namespace GrooveSharedUtils
                 if (!ContainsKey(type))
                 {
                     Add(type, (object obj) => {
-                        GSUtil.Log("add hash: " + obj.GetType());
+                        GroovyLogger.Log(BepInEx.Logging.LogLevel.Info, "add hash: " + obj.GetType());
                         PlanAdd(namedAssetCollection, obj); 
                     });
                 }

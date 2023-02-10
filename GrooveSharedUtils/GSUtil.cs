@@ -329,7 +329,7 @@ namespace GrooveSharedUtils
                 }
             }
         }
-        public static void LogDebug(LogLevel level, object data, Assembly explicitAssembly = null)
+        /*public static void LogDebug(LogLevel level, object data, Assembly explicitAssembly = null)
         {
             Assembly callingAssemblyInfo = explicitAssembly ?? Assembly.GetCallingAssembly();
             if (ModPlugin.TryFind(callingAssemblyInfo, out ModPlugin plugin) && plugin.isDebug)
@@ -368,7 +368,7 @@ namespace GrooveSharedUtils
             {
                 Debug.Log(data);
             }
-        }
+        }*/
         public static TValue GetOrCreateValue<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, Func<TValue> createValueDelegate = null)
         {
             if (!dict.TryGetValue(key, out TValue value))

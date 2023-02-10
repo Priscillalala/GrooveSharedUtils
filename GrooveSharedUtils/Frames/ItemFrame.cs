@@ -26,7 +26,7 @@ namespace GrooveSharedUtils.Frames
         where TFrame : ItemFrame<TFrame, TItemDef>
         where TItemDef : ItemDef
     {
-        public static ItemRelationshipType contagiousItemRelationshipType = GSUtil.LegacyLoad<ItemRelationshipType>("ItemRelationships/ContagiousItem");
+        public static LazyAddressable<ItemRelationshipType> contagiousItemRelationshipType = "RoR2/DLC1/Common/ContagiousItem.asset";
 
         public string name;
         public string overrideNameToken = null;
@@ -55,21 +55,15 @@ namespace GrooveSharedUtils.Frames
             this.itemsToCorrupt = itemsToCorrupt;
             return this as TFrame;
         }
-        protected override IEnumerable GetAssets()
-        {
-            yield return ItemDef;
-            yield return ItemRelationshipProviders;
-        }
-        protected internal override void BuildForAssembly(Assembly assembly)
+        protected override IEnumerator BuildIterator()
         {
             string token = name.ToUpperInvariant();
-            string tokenPrefix = GetGeneratedTokensPrefix(assembly);
             ItemDef = ScriptableObject.CreateInstance<TItemDef>();
             ItemDef.name = name;
-            ItemDef.nameToken = overrideNameToken ?? string.Format("{1}ITEM_{0}_NAME", token, tokenPrefix);
-            ItemDef.pickupToken = overridePickupToken ?? string.Format("{1}ITEM_{0}_PICKUP", token, tokenPrefix);
-            ItemDef.descriptionToken = overrideDescriptionToken ?? string.Format("{1}ITEM_{0}_DESC", token, tokenPrefix);
-            ItemDef.loreToken = overrideLoreToken ?? string.Format("{1}ITEM_{0}_LORE", token, tokenPrefix);
+            ItemDef.nameToken = overrideNameToken ?? string.Format("{1}ITEM_{0}_NAME", token, settings.generatedTokensPrefix);
+            ItemDef.pickupToken = overridePickupToken ?? string.Format("{1}ITEM_{0}_PICKUP", token, settings.generatedTokensPrefix);
+            ItemDef.descriptionToken = overrideDescriptionToken ?? string.Format("{1}ITEM_{0}_DESC", token, settings.generatedTokensPrefix);
+            ItemDef.loreToken = overrideLoreToken ?? string.Format("{1}ITEM_{0}_LORE", token, settings.generatedTokensPrefix);
             ItemDef.pickupIconSprite = icon;
             ItemDef.pickupModelPrefab = pickupModelPrefab;
             if (overrideItemTierDef)
@@ -84,12 +78,14 @@ namespace GrooveSharedUtils.Frames
             ItemDef.hidden = hidden;
             ItemDef.tags = itemTags;
             ItemDef.unlockableDef = unlockableDef;
-            ItemDef.requiredExpansion = requiredExpansion ?? GetDefaultExpansionDef(assembly);
+            ItemDef.requiredExpansion = requiredExpansion ?? defaultExpansionDef;
+            yield return ItemDef;
+
             ItemRelationshipProvider[] itemRelationships = Array.Empty<ItemRelationshipProvider>();
             if (itemsToCorrupt.Length > 0)
             {
                 ItemRelationshipProvider itemRelationshipProvider = ScriptableObject.CreateInstance<ItemRelationshipProvider>();
-                itemRelationshipProvider.relationshipType = contagiousItemRelationshipType;
+                itemRelationshipProvider.relationshipType = contagiousItemRelationshipType.WaitForCompletion();
                 itemRelationshipProvider.relationships = new ItemDef.Pair[itemsToCorrupt.Length];
                 for (int i = 0; i < itemsToCorrupt.Length; i++)
                 {
@@ -102,6 +98,7 @@ namespace GrooveSharedUtils.Frames
                 ArrayUtils.ArrayAppend(ref itemRelationships, itemRelationshipProvider);
             }
             ItemRelationshipProviders = itemRelationships;
+            yield return ItemRelationshipProviders;
         }
     }
 }

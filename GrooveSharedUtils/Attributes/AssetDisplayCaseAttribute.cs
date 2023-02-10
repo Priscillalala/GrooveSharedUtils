@@ -16,6 +16,7 @@ using GrooveSharedUtils.ScriptableObjects;
 using HG;
 using System.Linq;
 using BepInEx.Logging;
+using RoR2.ContentManagement;
 
 namespace GrooveSharedUtils.Attributes
 {
@@ -142,7 +143,8 @@ namespace GrooveSharedUtils.Attributes
             foreach (FieldInfo fieldInfo in type.GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly))
             {
                 GrooveSUPatcher.logger.LogInfo("display case field: " + fieldInfo.Name);
-                assetFieldLocator.Add((fieldInfo.Name, fieldInfo.FieldType), fieldInfo);
+                TargetAssetNameAttribute targetName = fieldInfo.GetCustomAttribute<TargetAssetNameAttribute>();
+                assetFieldLocator.Add((targetName != null ? targetName.targetAssetName : fieldInfo.Name, fieldInfo.FieldType), fieldInfo);
             }
             foreach (Type nestedType in type.GetNestedTypes())
             {

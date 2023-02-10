@@ -64,18 +64,18 @@ namespace GrooveSharedUtils
                 {
                     if (!methodInfo.IsStatic)
                     {
-                        GSUtil.Log(LogLevel.Warning, $"{nameof(LanguageCollectionProviderAttribute)} cannot target method {methodInfo.Name}: it is not static!");
+                        GroovyLogger.Log(LogLevel.Warning, $"{nameof(LanguageCollectionProviderAttribute)} cannot target method {methodInfo.Name}: it is not static!");
                         continue;
                     }
                     if (!expectedReturnType.IsAssignableFrom(methodInfo.ReturnType))
                     {
                         string returnType = methodInfo.ReturnType != null ? methodInfo.ReturnType.FullName : "void";
-                        GSUtil.Log(LogLevel.Warning, $"{nameof(LanguageCollectionProviderAttribute)} cannot target method {methodInfo.Name}: return type is {returnType}, and needs to be {expectedReturnType.Name}!");
+                        GroovyLogger.Log(LogLevel.Warning, $"{nameof(LanguageCollectionProviderAttribute)} cannot target method {methodInfo.Name}: return type is {returnType}, and needs to be {expectedReturnType.Name}!");
                         continue;
                     }
                     if(methodInfo.GetGenericArguments().Length != 0)
                     {
-                        GSUtil.Log(LogLevel.Warning, $"{nameof(LanguageCollectionProviderAttribute)} cannot target method {methodInfo.Name}: it has arguments!");
+                        GroovyLogger.Log(LogLevel.Warning, $"{nameof(LanguageCollectionProviderAttribute)} cannot target method {methodInfo.Name}: it has arguments!");
                         continue;
                     }
                     string languageName = string.IsNullOrEmpty(provider.languageNameOverride) ? methodInfo.DeclaringType.Name : provider.languageNameOverride;

@@ -34,22 +34,18 @@ namespace GrooveSharedUtils.Frames
         public Func<string> getHowToUnlockString = null;
         public Func<string> getUnlockedString = null;
         public TUnlockableDef UnlockableDef { get; private set; }
-        protected override IEnumerable GetAssets()
-        {
-            yield return UnlockableDef;
-        }
-        protected internal override void BuildForAssembly(Assembly assembly)
+        protected override IEnumerator BuildIterator()
         {
             string token = name.ToUpperInvariant();
-            string tokenPrefix = GetGeneratedTokensPrefix(assembly);
             UnlockableDef = ScriptableObject.CreateInstance<TUnlockableDef>();
             UnlockableDef.cachedName = name;
-            UnlockableDef.nameToken = overrideNameToken ?? string.Format("{1}UNLOCKABLE_{0}_NAME", token, tokenPrefix);
+            UnlockableDef.nameToken = overrideNameToken ?? string.Format("{1}UNLOCKABLE_{0}_NAME", token, settings.generatedTokensPrefix);
             UnlockableDef.displayModelPrefab = displayModelPrefab;
             UnlockableDef.hidden = hidden;
             UnlockableDef.achievementIcon = achievementIcon;
             UnlockableDef.getHowToUnlockString = getHowToUnlockString ?? UnlockableDef.getHowToUnlockString;
             UnlockableDef.getUnlockedString = getUnlockedString ?? UnlockableDef.getUnlockedString;
+            yield return UnlockableDef;
         }
     }
 }

@@ -43,23 +43,19 @@ namespace GrooveSharedUtils.Frames
         public float dropOnDeathChance = 0;
         public BuffDef passiveBuffDef = null;
         public EquipmentType equipmentType = EquipmentType.Default;
+        public ColorCatalog.ColorIndex? overrideColorIndex = null;
         public ExpansionDef requiredExpansion = null;
         public UnlockableDef unlockableDef = null;
         public TEquipmentDef EquipmentDef { get; private set; }
-        protected override IEnumerable GetAssets()
-        {
-            yield return EquipmentDef;
-        }
-        protected override internal void BuildForAssembly(Assembly assembly)
+        protected override IEnumerator BuildIterator()
         {
             string token = name.ToUpperInvariant();
-            string tokenPrefix = GetGeneratedTokensPrefix(assembly);
             EquipmentDef = ScriptableObject.CreateInstance<TEquipmentDef>();
             EquipmentDef.name = name;
-            EquipmentDef.nameToken = overrideNameToken ?? string.Format("{1}EQUIPMENT_{0}_NAME", token, tokenPrefix);
-            EquipmentDef.pickupToken = overridePickupToken ?? string.Format("{1}EQUIPMENT_{0}_PICKUP", token, tokenPrefix);
-            EquipmentDef.descriptionToken = overrideDescriptionToken ?? string.Format("{1}EQUIPMENT_{0}_DESC", token, tokenPrefix);
-            EquipmentDef.loreToken = overrideLoreToken ?? string.Format("{1}EQUIPMENT_{0}_LORE", token, tokenPrefix);
+            EquipmentDef.nameToken = overrideNameToken ?? string.Format("{1}EQUIPMENT_{0}_NAME", token, settings.generatedTokensPrefix);
+            EquipmentDef.pickupToken = overridePickupToken ?? string.Format("{1}EQUIPMENT_{0}_PICKUP", token, settings.generatedTokensPrefix);
+            EquipmentDef.descriptionToken = overrideDescriptionToken ?? string.Format("{1}EQUIPMENT_{0}_DESC", token, settings.generatedTokensPrefix);
+            EquipmentDef.loreToken = overrideLoreToken ?? string.Format("{1}EQUIPMENT_{0}_LORE", token, settings.generatedTokensPrefix);
             EquipmentDef.pickupIconSprite = icon;
             EquipmentDef.pickupModelPrefab = pickupModelPrefab;
             EquipmentDef.cooldown = cooldown;
@@ -70,24 +66,27 @@ namespace GrooveSharedUtils.Frames
             EquipmentDef.dropOnDeathChance = dropOnDeathChance;
             EquipmentDef.enigmaCompatible = enigmaCompatible;
             EquipmentDef.passiveBuffDef = passiveBuffDef;
+            ColorCatalog.ColorIndex colorIndex = ColorCatalog.ColorIndex.None;
             switch (equipmentType)
             {
                 case EquipmentType.Default:
-                    EquipmentDef.colorIndex = ColorCatalog.ColorIndex.Equipment;
+                    colorIndex = ColorCatalog.ColorIndex.Equipment;
                     break;
                 case EquipmentType.Lunar:
-                    EquipmentDef.colorIndex = ColorCatalog.ColorIndex.LunarItem;
+                    colorIndex = ColorCatalog.ColorIndex.LunarItem;
                     EquipmentDef.isLunar = true;
                     break;
                 case EquipmentType.Boss:
-                    EquipmentDef.colorIndex = ColorCatalog.ColorIndex.BossItem;
+                    colorIndex = ColorCatalog.ColorIndex.BossItem;
                     EquipmentDef.isBoss = true;
                     break;
             }
-            EquipmentDef.requiredExpansion = requiredExpansion ?? GetDefaultExpansionDef(assembly);
+            EquipmentDef.colorIndex = overrideColorIndex ?? colorIndex;
+            EquipmentDef.requiredExpansion = requiredExpansion ?? defaultExpansionDef;
             EquipmentDef.unlockableDef = unlockableDef;
+            yield return EquipmentDef;
 
-            if(performEquipmentAction != null)
+            if (performEquipmentAction != null)
             {
                 EquipmentActionCatalog.Add(EquipmentDef, performEquipmentAction);
             }

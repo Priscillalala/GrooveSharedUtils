@@ -56,16 +56,13 @@ namespace GrooveSharedUtils.Frames
             this.rules = rules;
             return this as TFrame;
         }
-        protected override IEnumerable GetAssets()
+        protected override IEnumerator BuildIterator()
         {
-            yield break;
-        }
-        protected internal override void BuildForAssembly(Assembly assembly)
-        {
-            for(int i = 0; i < rules.Length; i++)
+            for (int i = 0; i < rules.Length; i++)
             {
                 rules[i].target.Add(keyAsset, rules[i].rule);
             }
+            yield break;
         }
     }
 }

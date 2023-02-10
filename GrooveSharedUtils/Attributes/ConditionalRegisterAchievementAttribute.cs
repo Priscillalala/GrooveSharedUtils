@@ -46,25 +46,25 @@ namespace GrooveSharedUtils.Attributes
                 {
                     if (!methodInfo.IsStatic)
                     {
-                        GSUtil.Log(LogLevel.Warning, $"{nameof(LanguageCollectionProviderAttribute)} cannot target method {methodInfo.Name}: it is not static!");
+                        GroovyLogger.Log(LogLevel.Warning, $"{nameof(LanguageCollectionProviderAttribute)} cannot target method {methodInfo.Name}: it is not static!");
                         continue;
                     }
                     if (!expectedReturnType.IsAssignableFrom(methodInfo.ReturnType))
                     {
                         string returnType = methodInfo.ReturnType != null ? methodInfo.ReturnType.FullName : "void";
-                        GSUtil.Log(LogLevel.Warning, $"{nameof(LanguageCollectionProviderAttribute)} cannot target method {methodInfo.Name}: return type is {returnType}, and needs to be {expectedReturnType.Name}!");
+                        GroovyLogger.Log(LogLevel.Warning, $"{nameof(LanguageCollectionProviderAttribute)} cannot target method {methodInfo.Name}: return type is {returnType}, and needs to be {expectedReturnType.Name}!");
                         continue;
                     }
                     if (methodInfo.GetGenericArguments().Length != 0)
                     {
-                        GSUtil.Log(LogLevel.Warning, $"{nameof(LanguageCollectionProviderAttribute)} cannot target method {methodInfo.Name}: it has arguments!");
+                        GroovyLogger.Log(LogLevel.Warning, $"{nameof(LanguageCollectionProviderAttribute)} cannot target method {methodInfo.Name}: it has arguments!");
                         continue;
                     }
                     if (methodInfo.Invoke(null, Array.Empty<object>()) is bool shouldRegister && shouldRegister)
                     {
                         if (identifierToAchievementDef.ContainsKey(attribute.identifier))
                         {
-                            GSUtil.Log(LogLevel.Warning, $"Class {methodInfo.DeclaringType.FullName} attempted to register as achievement {attribute.identifier}, but class {identifierToAchievementDef[attribute.identifier].type.FullName} has already registered as that achievement.");
+                            GroovyLogger.Log(LogLevel.Warning, $"Class {methodInfo.DeclaringType.FullName} attempted to register as achievement {attribute.identifier}, but class {identifierToAchievementDef[attribute.identifier].type.FullName} has already registered as that achievement.");
                         } 
                         else
                         {

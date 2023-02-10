@@ -63,7 +63,7 @@ namespace GrooveSharedUtils
             }
             else
             {
-                GSUtil.Log(BepInEx.Logging.LogLevel.Error, $"{nameof(OverlayManager)} IL hook failed!");
+                GroovyLogger.Log(BepInEx.Logging.LogLevel.Error, $"{nameof(OverlayManager)} IL hook failed!");
             }
         }
 

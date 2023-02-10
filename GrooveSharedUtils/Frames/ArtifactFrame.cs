@@ -64,24 +64,20 @@ namespace GrooveSharedUtils.Frames
             artifactCode.Value.SetBottomRow(left, center, right);
             return this as TFrame;
         }
-        protected override IEnumerable GetAssets()
-        {
-            yield return ArtifactDef;
-        }
-        protected internal override void BuildForAssembly(Assembly assembly)
+        protected override IEnumerator BuildIterator()
         {
             string token = name.ToUpperInvariant();
-            string tokenPrefix = GetGeneratedTokensPrefix(assembly);
             ArtifactDef = ScriptableObject.CreateInstance<TArtifactDef>();
             ArtifactDef.cachedName = name;
-            ArtifactDef.nameToken = overrideNameToken ?? $"{tokenPrefix}ARTIFACT_{token}_NAME";
-            ArtifactDef.descriptionToken = overrideDescriptionToken ?? $"{tokenPrefix}ARTIFACT_{token}_DESCRIPTION";
+            ArtifactDef.nameToken = overrideNameToken ?? $"{settings.generatedTokensPrefix}ARTIFACT_{token}_NAME";
+            ArtifactDef.descriptionToken = overrideDescriptionToken ?? $"{settings.generatedTokensPrefix}ARTIFACT_{token}_DESCRIPTION";
             ArtifactDef.smallIconSelectedSprite = selectedIcon;
             ArtifactDef.smallIconDeselectedSprite = deselectedIcon;
             ArtifactDef.pickupModelPrefab = pickupModelPrefab;
             ArtifactDef.unlockableDef = unlockableDef;
-            ArtifactDef.requiredExpansion = requiredExpansion ?? GetDefaultExpansionDef(assembly);
-            if(artifactCode != null && GSUtil.ModLoaded("com.bepis.r2api.artifactcode"))
+            ArtifactDef.requiredExpansion = requiredExpansion ?? defaultExpansionDef;
+            yield return ArtifactDef;
+            if (artifactCode != null && GSUtil.ModLoaded("com.bepis.r2api.artifactcode"))
             {
                 RegisterArtifactCode((ArtifactCodeInfo)artifactCode);
             }

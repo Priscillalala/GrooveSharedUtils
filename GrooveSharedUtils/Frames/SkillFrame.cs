@@ -44,24 +44,20 @@ namespace GrooveSharedUtils.Frames
             this.skillFamiliesToAppend = skillFamiliesToAppend;
             return this as TFrame;
         }
-        protected override IEnumerable GetAssets()
-        {
-            yield return SkillDef;
-        }
-        protected internal override void BuildForAssembly(Assembly assembly)
+        protected override IEnumerator BuildIterator()
         {
             SkillDef = ScriptableObject.CreateInstance<TSkillDef>();
             SkillDef.skillName = name;
             string token = name.ToUpperInvariant();
-            string tokenPrefix = GetGeneratedTokensPrefix(assembly);
-            SkillDef.skillNameToken = overrideSkillNameToken ?? $"{tokenPrefix}SKILL_{token}_NAME";
-            SkillDef.skillDescriptionToken = overrideSkillDescriptionToken ?? $"{tokenPrefix}SKILL_{token}_DESC";
+            SkillDef.skillNameToken = overrideSkillNameToken ?? $"{settings.generatedTokensPrefix}SKILL_{token}_NAME";
+            SkillDef.skillDescriptionToken = overrideSkillDescriptionToken ?? $"{settings.generatedTokensPrefix}SKILL_{token}_DESC";
             SkillDef.icon = icon;
             SkillDef.keywordTokens = keywordTokens;
             if (setupSkillDef != null)
             {
                 setupSkillDef.Invoke(SkillDef);
             }
+            yield return SkillDef;
             for (int i = 0; i < skillFamiliesToAppend.Length; i++)
             {
                 SkillFamily skillFamily = skillFamiliesToAppend[i];

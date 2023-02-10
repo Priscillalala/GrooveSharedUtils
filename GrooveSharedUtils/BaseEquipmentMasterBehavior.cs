@@ -43,7 +43,7 @@ namespace GrooveSharedUtils
 				MethodInfo methodInfo;
 				if ((methodInfo = (itemDefAssociationAttribute.target as MethodInfo)) == null)
 				{
-					GSUtil.Log(LogLevel.Error, string.Format("{0} cannot be applied to object of type '{1}'", new object[]
+					GroovyLogger.Log(LogLevel.Error, string.Format("{0} cannot be applied to object of type '{1}'", new object[]
 					{
 						nameof(EquipmentDefAssociationAttribute),
 						itemDefAssociationAttribute?.GetType().FullName
@@ -51,7 +51,7 @@ namespace GrooveSharedUtils
 				}
 				else if (!methodInfo.IsStatic)
 				{
-					GSUtil.Log(LogLevel.Error, string.Format("{2} cannot be applied to method {0}.{1}: Method is not static.", new object[]
+					GroovyLogger.Log(LogLevel.Error, string.Format("{2} cannot be applied to method {0}.{1}: Method is not static.", new object[]
 					{
 						methodInfo.DeclaringType.FullName,
 						methodInfo.Name,
@@ -63,7 +63,7 @@ namespace GrooveSharedUtils
 					Type type = itemDefAssociationAttribute.behaviorTypeOverride ?? methodInfo.DeclaringType;
 					if (!masterBehaviourType.IsAssignableFrom(type))
 					{
-						GSUtil.Log(LogLevel.Error, string.Format("{3} cannot be applied to method {0}.{1}: {0} does not derive from {2}.", new object[]
+						GroovyLogger.Log(LogLevel.Error, string.Format("{3} cannot be applied to method {0}.{1}: {0} does not derive from {2}.", new object[]
 						{
 							methodInfo.DeclaringType.FullName,
 							methodInfo.Name,
@@ -73,7 +73,7 @@ namespace GrooveSharedUtils
 					}
 					else if (type.IsAbstract)
 					{
-						GSUtil.Log(LogLevel.Error, string.Format("{2} cannot be applied to method {0}.{1}: {0} is an abstract type", new object[]
+						GroovyLogger.Log(LogLevel.Error, string.Format("{2} cannot be applied to method {0}.{1}: {0} is an abstract type", new object[]
 						{
 							methodInfo.DeclaringType.FullName,
 							methodInfo.Name,
@@ -83,7 +83,7 @@ namespace GrooveSharedUtils
 					else if (!itemDefType.IsAssignableFrom(methodInfo.ReturnType))
 					{
 						Type returnType = methodInfo.ReturnType;
-						GSUtil.Log(LogLevel.Error, string.Format("{0} cannot be applied to method {1}.{2}: {3}.{4} returns type '{5}' instead of {6}.", new object[] 
+						GroovyLogger.Log(LogLevel.Error, string.Format("{0} cannot be applied to method {1}.{2}: {3}.{4} returns type '{5}' instead of {6}.", new object[] 
 						{
 							nameof(EquipmentDefAssociationAttribute),
 							methodInfo.DeclaringType.FullName,
@@ -96,7 +96,7 @@ namespace GrooveSharedUtils
 					}
 					else if (methodInfo.GetGenericArguments().Length != 0)
 					{
-						GSUtil.Log(LogLevel.Error, string.Format("{0} cannot be applied to method {1}.{2}: {3}.{4} must take no arguments.", new object[]
+						GroovyLogger.Log(LogLevel.Error, string.Format("{0} cannot be applied to method {1}.{2}: {3}.{4} must take no arguments.", new object[]
 						{
 							nameof(EquipmentDefAssociationAttribute),
 							methodInfo.DeclaringType.FullName,
@@ -110,11 +110,11 @@ namespace GrooveSharedUtils
 						EquipmentDef equipmentDef = (EquipmentDef)methodInfo.Invoke(null, Array.Empty<object>());
 						if (!equipmentDef)
 						{
-							GSUtil.Log(LogLevel.Error, methodInfo.DeclaringType.FullName + "." + methodInfo.Name + " returned null.");
+							GroovyLogger.Log(LogLevel.Error, methodInfo.DeclaringType.FullName + "." + methodInfo.Name + " returned null.");
 						}
 						else if (equipmentDef.equipmentIndex < 0)
 						{
-							GSUtil.Log(LogLevel.Error, string.Format("{0}.{1} returned an EquipmentDef that's not registered in the EquipmentCatalog. result={2}", 
+							GroovyLogger.Log(LogLevel.Error, string.Format("{0}.{1} returned an EquipmentDef that's not registered in the EquipmentCatalog. result={2}", 
 								methodInfo.DeclaringType.FullName, 
 								methodInfo.Name,
 								equipmentDef));

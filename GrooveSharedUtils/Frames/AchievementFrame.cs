@@ -63,24 +63,19 @@ namespace GrooveSharedUtils.Frames
             SetServerTrackerType<TBaseServerAchievement>();
             return this as TFrame;
         }
-        protected override IEnumerable GetAssets()
-        {
-            yield return AchievementDef;
-            yield return UnlockableDef;
-        }
-        protected internal override void BuildForAssembly(Assembly assembly)
+        protected override IEnumerator BuildIterator()
         {
             string token = identifier.ToUpperInvariant();
-            string tokenPrefix = GetGeneratedTokensPrefix(assembly);
             AchievementDef = Activator.CreateInstance<TAchievementDef>();
             AchievementDef.identifier = identifier;
             AchievementDef.unlockableRewardIdentifier = unlockableRewardName;
             AchievementDef.prerequisiteAchievementIdentifier = prerequisiteAchievementIdentifier;
-            AchievementDef.nameToken = overrideAchievementNameToken ?? $"{tokenPrefix}ACHIEVEMENT_{token}_NAME";
-            AchievementDef.descriptionToken = overrideAchievementDescriptionToken ?? $"{tokenPrefix}ACHIEVEMENT_{token}_DESCRIPTION";
+            AchievementDef.nameToken = overrideAchievementNameToken ?? $"{settings.generatedTokensPrefix}ACHIEVEMENT_{token}_NAME";
+            AchievementDef.descriptionToken = overrideAchievementDescriptionToken ?? $"{settings.generatedTokensPrefix}ACHIEVEMENT_{token}_DESCRIPTION";
             AchievementDef.type = trackerType;
             AchievementDef.serverTrackerType = serverTrackerType;
             AchievementDef.SetAchievedIcon(achievementIcon);
+            yield return AchievementDef;
 
             UnlockableFrame<TUnlockableDef> unlockableFrame = new UnlockableFrame<TUnlockableDef>
             {
@@ -98,7 +93,7 @@ namespace GrooveSharedUtils.Frames
                     Language.GetString(AchievementDef.descriptionToken)
                 })
             };
-            unlockableFrame.BuildForAssembly(assembly);
+            yield return unlockableFrame;
             UnlockableDef = unlockableFrame.UnlockableDef;
         }
     }

@@ -33,23 +33,19 @@ namespace GrooveSharedUtils.Frames
         public string serverTag;
         public bool countsAsHardMode = false;
         public TModdedDifficultyDef ModdedDifficultyDef { get; private set; }
-        protected override IEnumerable GetAssets()
-        {
-            yield return ModdedDifficultyDef;
-        }
-        protected internal override void BuildForAssembly(Assembly assembly)
+        protected override IEnumerator BuildIterator()
         {
             string token = name.ToUpperInvariant();
-            string tokenPrefix = GetGeneratedTokensPrefix(assembly);
             ModdedDifficultyDef = ScriptableObject.CreateInstance<TModdedDifficultyDef>();
             ModdedDifficultyDef.cachedName = name;
             ModdedDifficultyDef.scalingValue = scalingValue;
-            ModdedDifficultyDef.nameToken = overrideNameToken ?? $"{tokenPrefix}DIFFICULTY_{token}_NAME";
-            ModdedDifficultyDef.descriptionToken = overrideDescriptionToken ?? $"{tokenPrefix}DIFFICULTY_{token}_DESCRIPTION";
+            ModdedDifficultyDef.nameToken = overrideNameToken ?? $"{settings.generatedTokensPrefix}DIFFICULTY_{token}_NAME";
+            ModdedDifficultyDef.descriptionToken = overrideDescriptionToken ?? $"{settings.generatedTokensPrefix}DIFFICULTY_{token}_DESCRIPTION";
             ModdedDifficultyDef.icon = icon;
             ModdedDifficultyDef.color = color;
             ModdedDifficultyDef.serverTag = serverTag;
             ModdedDifficultyDef.countsAsHardMode = countsAsHardMode;
+            yield return ModdedDifficultyDef;
         }
     }
 }

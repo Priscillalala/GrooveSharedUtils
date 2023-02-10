@@ -34,16 +34,13 @@ namespace GrooveSharedUtils.Frames
 
         public string name;
         public Color color;
-        public TModdedDamageColorDef ModdedDamageColorDef { get; private set;}
-        protected override IEnumerable GetAssets()
-        {
-            yield return ModdedDamageColorDef;
-        }
-        protected internal override void BuildForAssembly(Assembly assembly)
+        public TModdedDamageColorDef ModdedDamageColorDef { get; private set; }
+        protected override IEnumerator BuildIterator()
         {
             ModdedDamageColorDef = ScriptableObject.CreateInstance<TModdedDamageColorDef>();
             ModdedDamageColorDef.cachedName = name;
             ModdedDamageColorDef.color = color;
+            yield return ModdedDamageColorDef;
         }
     }
 }

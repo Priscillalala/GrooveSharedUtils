@@ -33,12 +33,8 @@ namespace GrooveSharedUtils.Frames
         public bool isDebuff = false;
         public bool isHidden = false;
         public NetworkSoundEventDef startSfx = null;
-        public TBuffDef BuffDef { get; private set;}
-        protected override IEnumerable GetAssets()
-        {
-            yield return BuffDef;
-        }
-        protected internal override void BuildForAssembly(Assembly assembly)
+        public TBuffDef BuffDef { get; private set; }
+        protected override IEnumerator BuildIterator()
         {
             BuffDef = ScriptableObject.CreateInstance<TBuffDef>();
             GSUtil.EnsurePrefix(ref name, "bd");
@@ -51,6 +47,7 @@ namespace GrooveSharedUtils.Frames
             BuffDef.isDebuff = isDebuff;
             BuffDef.isHidden = isHidden;
             BuffDef.startSfx = startSfx;
+            yield return BuffDef;
         }
     }
 }

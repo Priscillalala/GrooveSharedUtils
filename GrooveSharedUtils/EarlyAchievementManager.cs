@@ -37,7 +37,7 @@ namespace GrooveSharedUtils
             {
                 if (identifierToAchievementDef.ContainsKey(achievementDef.identifier))
                 {
-                    GSUtil.Log(LogLevel.Warning, $"Class {achievementDef.type.FullName} attempted to register as achievement {achievementDef.identifier}, but class {identifierToAchievementDef[achievementDef.identifier].type.FullName} has already registered as that achievement.");
+                    GroovyLogger.Log(LogLevel.Warning, $"Class {achievementDef.type.FullName} attempted to register as achievement {achievementDef.identifier}, but class {identifierToAchievementDef[achievementDef.identifier].type.FullName} has already registered as that achievement.");
                 }
                 else
                 {
