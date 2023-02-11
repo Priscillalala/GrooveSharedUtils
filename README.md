@@ -30,7 +30,13 @@ A `LanguageCollection` is designed to mirror a traditional language file. Langua
 ### And More!
 Well, not *that* much more...but it's still an early release.
 
-With special thanks to TeamMoonstorm for MoonstormSharedUtils' stubbed shaders.
+## Contact
+You can find me on Discord @Groove_Salad#7700.
+
+## With special thanks to... 
+* literallyeurope and SteamStream for feedback on WIP builds.
+* Nebby
+* TeamMoonstorm for MoonstormSharedUtils' stubbed shaders.
 <details>
 <summary>MSU License</summary>
 <br>
