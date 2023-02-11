@@ -30,6 +30,7 @@ using System.Runtime.CompilerServices;
 using GrooveSharedUtils.Interfaces;
 using RoR2.Projectile;
 using UnityEngine.Networking;
+using System.Diagnostics;
 
 namespace GrooveSharedUtils
 {
@@ -95,6 +96,7 @@ namespace GrooveSharedUtils
         }*/
         internal static Dictionary<Assembly, ModPlugin> assemblyToPlugin = new Dictionary<Assembly, ModPlugin>();
         public static bool TryFind(Assembly assembly, out ModPlugin plugin) => assemblyToPlugin.TryGetValue(assembly, out plugin);
+        public static event Action<Type, ModPlugin> onBeforeModuleInstantiated;
         //static List<Task> swapShadersTasks = new List<Task>();
         //static Dictionary<Shader, Shader> stubbedToRealShaderCache = new Dictionary<Shader, Shader>();
 
@@ -255,9 +257,9 @@ namespace GrooveSharedUtils
         public virtual bool ShouldEnableModuleType(Type type)
         {
             return type.GetCustomAttribute<IgnoreModuleAttribute>() == null
-                && !ConfigurableAttribute.configDisabledModuleTypes.Contains(type)
                 && (isDebug || type.GetCustomAttribute<DebugModuleAttribute>() == null)
-                && (isWIP || type.GetCustomAttribute<WIPModuleAttribute>() == null);
+                && (isWIP || type.GetCustomAttribute<WIPModuleAttribute>() == null)
+                && ConfigurableAttribute.CheckModuleTypeEnabled(type, Info);
         }
         public virtual ModModule CreateModule(Type type)
         {
@@ -265,7 +267,7 @@ namespace GrooveSharedUtils
             {
                 Logger.Log(LogLevel.Debug, "Creating Module: " + type.Name);
             }
-
+            onBeforeModuleInstantiated?.Invoke(type, this);
             ModModule baseModule = null;
             try
             {
@@ -284,48 +286,6 @@ namespace GrooveSharedUtils
         }
         public bool ModuleEnabled<T>() where T : ModModule => ModuleEnabled(typeof(T));
         public virtual bool ModuleEnabled(Type type) => enabledModuleTypes.Contains(type);
-
-        /*public virtual void AddDisplayAsset(object asset)
-        {
-            if (asset == null) return;
-            Type assetType = asset.GetType();
-            string assetName = GetAssetName(asset);
-            if (string.IsNullOrEmpty(assetName)) return;
-            //assetName = assetName.FormatCharacters((char c) => !char.IsWhiteSpace(c));
-            if (assetFieldLocator.TryGetValue((assetName, assetType), out FieldInfo field))
-            {
-                field.SetValue(null, asset);
-            }
-            HashSet<string> commonPrefixes = typeToPossiblePrefixesCache.GetOrCreateValue(assetType, () => 
-            {
-                HashSet<string> prefixes = new HashSet<string>();
-                foreach((Type, string) pair in globalTypeToCommonPrefix)
-                {
-                    if (pair.Item1.IsAssignableFrom(assetType))
-                    {
-                        prefixes.Add(pair.Item2);
-                    }
-                }
-                foreach ((Type, string) pair in ENV_AdditionalCommonTypePrefixes)
-                {
-                    if (pair.Item1.IsAssignableFrom(assetType))
-                    {
-                        prefixes.Add(pair.Item2);
-                    }
-                }
-                return prefixes;
-            });
-            foreach(string commonPrefix in commonPrefixes)
-            {
-                if (assetName.StartsWith(commonPrefix, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (assetFieldLocator.TryGetValue((assetName.Substring(commonPrefix.Length), assetType), out FieldInfo fieldFromPrefix))
-                    {
-                        fieldFromPrefix.SetValue(null, asset);
-                    }
-                }
-            }
-        }*/
         public virtual string GetAssetName(object asset) => AssetDisplayCaseAttribute.GetAssetName(asset);
         public virtual AssetToContentMap GetAssetToContentMap()
         {
@@ -466,32 +426,43 @@ namespace GrooveSharedUtils
 
         public class CollectContent : IEnumerator
         {
-            private IEnumerator content;
+            private Stack<IEnumerator> iterators = new Stack<IEnumerator>();
             private ModPlugin plugin;
             private AssetToContentMap map;
             public CollectContent(IEnumerator content, ModPlugin plugin, AssetToContentMap map) 
             {
-                this.content = content;
+                this.iterators.Push(content);
                 this.plugin = plugin;
                 this.map = map;
             }
-            public object Current => content.Current;
-
+            public object Current => null;
             public bool MoveNext()
             {
-                bool result = false;
                 try 
                 {
-                    if (result = content.MoveNext()) 
+                    IEnumerator enumerator = iterators.Peek();
+                    if (enumerator.MoveNext()) 
                     {
-                        Collect(content.Current);
+                        plugin.Logger.LogWarning($"Move Next! current is {enumerator.Current}");
+                        if (enumerator.Current is IEnumerator iterator)
+                        {
+                            iterators.Push(iterator);
+                        }
+                        else 
+                        {
+                            Collect(enumerator.Current);
+                        }
+                    }
+                    else
+                    {
+                        iterators.Pop();
                     }
                 }
                 catch (Exception ex)
                 {
                     plugin.Logger.Log(LogLevel.Error, ex.ToString());
                 }
-                return result;
+                return iterators.Count > 0;
             }
             public void Collect(object asset) 
             {
@@ -535,109 +506,12 @@ namespace GrooveSharedUtils
             }
             public void Reset()
             {
-                content.Reset();
-            }
-        }
-        /*public void LogDebug(LogLevel level, object data)
-        {
-            if (isDebug)
-            {
-                Logger.Log(level, data);
-            }
-        }
-        public void LogDebug(object data)
-        {
-            if (isDebug)
-            {
-                Logger.Log(LogLevel.Debug, data);
-            }
-        }
-        public void Log(LogLevel level, object data) => Logger.Log(level, data);
-        public void Log(object data) => Logger.Log(LogLevel.Info, data); 
-        public static void LogDebug(LogLevel level, object data)
-        {
-            if (TryFind(Assembly.GetCallingAssembly(), out ModPlugin plugin) && plugin.isDebug)
-            {
-                plugin.Logger.Log(level, data);
-            }
-        }
-        public static void LogDebug(object data)
-        {
-            if (TryFind(Assembly.GetCallingAssembly(), out ModPlugin plugin) && plugin.isDebug)
-            {
-                plugin.Logger.Log(LogLevel.Debug, data);
-            }
-        }
-        public static void Log(LogLevel level, object data)
-        {
-            if (TryFind(Assembly.GetCallingAssembly(), out ModPlugin plugin))
-            {
-                plugin.Logger.Log(level, data);
-            }
-        }
-        public static void Log(object data)
-        {
-            if (TryFind(Assembly.GetCallingAssembly(), out ModPlugin plugin))
-            {
-                plugin.Logger.Log(LogLevel.Info, data);
-            }
-        }*/
-
-        /*public async Task SwapStubbedShaders(AssetBundle assetBundle)
-        {
-            await Task.Run(() => 
-            {
-                AssetBundleRequest request = assetBundle.LoadAllAssetsAsync<Material>();
-                request.completed += (operation) =>
+                while (iterators.Count > 0)
                 {
-                    int length = request.allAssets.Length;
-                    Logger.LogInfo($"Swapping stubbed shaders for {length} materials from {assetBundle.name}");
-                    for(int i = 0; i < length; i++)
-                    {
-                        Material mat = (Material)request.allAssets[i];
-                        Shader shader = stubbedToRealShaderCache.GetOrCreateValue(mat.shader, () =>
-                        {
-                            Shader realShader = null;
-                            string name = mat.shader.name;
-                            if (name.StartsWith("Stubbed"))
-                            {
-                                AsyncOperationHandle<Shader> asyncOperationHandle = default;
-
-                                string path = name.Substring(7) + ".shader";
-                                GSUtil.Log(name);
-                                GSUtil.Log(path);
-                                try
-                                {
-                                    asyncOperationHandle = Addressables.LoadAssetAsync<Shader>(path);
-                                }
-                                finally
-                                {
-                                    if (asyncOperationHandle.IsValid())
-                                    {
-                                        GSUtil.Log("Valid!");
-                                        realShader = asyncOperationHandle.WaitForCompletion();
-                                    }                                    
-                                }
-                            }
-                            GSUtil.Log(realShader != null);
-                            return realShader;
-                            if(ENV_AdditionalStubbedShaderPairs.TryGetValue(name, out Shader fromEnvShader))
-                            {
-                                return fromEnvShader;
-                            }
-                            if (globalStubbedShaderPairs.TryGetValue(name, out Shader fromGlobalShader))
-                            {
-                                return fromGlobalShader;
-                            }
-                            return null;
-                        });
-                        GSUtil.Log(shader != null);
-                        mat.shader = shader ?? mat.shader;
-                        GSUtil.Log("Final Shader: " +  mat.shader.name);
-                    }
-                };
-            });
-        }*/
+                    iterators.Pop();
+                }
+            }
+        }
     }
 }
 //static Dictionary<string, Shader> _globalStubbedShaderPairs = new Dictionary<string, Shader>();
@@ -701,3 +575,100 @@ _globalTypeToCommonPrefix[typeof(ItemDisplayRuleSet)] = "idrs";*/
                 AddDisplayAsset(configEntry);
             }
         }*/
+
+/*public async Task SwapStubbedShaders(AssetBundle assetBundle)
+{
+    await Task.Run(() => 
+    {
+        AssetBundleRequest request = assetBundle.LoadAllAssetsAsync<Material>();
+        request.completed += (operation) =>
+        {
+            int length = request.allAssets.Length;
+            Logger.LogInfo($"Swapping stubbed shaders for {length} materials from {assetBundle.name}");
+            for(int i = 0; i < length; i++)
+            {
+                Material mat = (Material)request.allAssets[i];
+                Shader shader = stubbedToRealShaderCache.GetOrCreateValue(mat.shader, () =>
+                {
+                    Shader realShader = null;
+                    string name = mat.shader.name;
+                    if (name.StartsWith("Stubbed"))
+                    {
+                        AsyncOperationHandle<Shader> asyncOperationHandle = default;
+
+                        string path = name.Substring(7) + ".shader";
+                        GSUtil.Log(name);
+                        GSUtil.Log(path);
+                        try
+                        {
+                            asyncOperationHandle = Addressables.LoadAssetAsync<Shader>(path);
+                        }
+                        finally
+                        {
+                            if (asyncOperationHandle.IsValid())
+                            {
+                                GSUtil.Log("Valid!");
+                                realShader = asyncOperationHandle.WaitForCompletion();
+                            }                                    
+                        }
+                    }
+                    GSUtil.Log(realShader != null);
+                    return realShader;
+                    if(ENV_AdditionalStubbedShaderPairs.TryGetValue(name, out Shader fromEnvShader))
+                    {
+                        return fromEnvShader;
+                    }
+                    if (globalStubbedShaderPairs.TryGetValue(name, out Shader fromGlobalShader))
+                    {
+                        return fromGlobalShader;
+                    }
+                    return null;
+                });
+                GSUtil.Log(shader != null);
+                mat.shader = shader ?? mat.shader;
+                GSUtil.Log("Final Shader: " +  mat.shader.name);
+            }
+        };
+    });
+}*/
+/*public virtual void AddDisplayAsset(object asset)
+{
+    if (asset == null) return;
+    Type assetType = asset.GetType();
+    string assetName = GetAssetName(asset);
+    if (string.IsNullOrEmpty(assetName)) return;
+    //assetName = assetName.FormatCharacters((char c) => !char.IsWhiteSpace(c));
+    if (assetFieldLocator.TryGetValue((assetName, assetType), out FieldInfo field))
+    {
+        field.SetValue(null, asset);
+    }
+    HashSet<string> commonPrefixes = typeToPossiblePrefixesCache.GetOrCreateValue(assetType, () => 
+    {
+        HashSet<string> prefixes = new HashSet<string>();
+        foreach((Type, string) pair in globalTypeToCommonPrefix)
+        {
+            if (pair.Item1.IsAssignableFrom(assetType))
+            {
+                prefixes.Add(pair.Item2);
+            }
+        }
+        foreach ((Type, string) pair in ENV_AdditionalCommonTypePrefixes)
+        {
+            if (pair.Item1.IsAssignableFrom(assetType))
+            {
+                prefixes.Add(pair.Item2);
+            }
+        }
+        return prefixes;
+    });
+    foreach(string commonPrefix in commonPrefixes)
+    {
+        if (assetName.StartsWith(commonPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            if (assetFieldLocator.TryGetValue((assetName.Substring(commonPrefix.Length), assetType), out FieldInfo fieldFromPrefix))
+            {
+                fieldFromPrefix.SetValue(null, asset);
+            }
+        }
+    }
+}*/

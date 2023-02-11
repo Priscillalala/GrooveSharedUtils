@@ -30,7 +30,6 @@ namespace GrooveSharedUtils.Attributes
 
         internal static void PatcherInit()
         {
-            GrooveSUPatcher.logger.LogWarning($"AAAAAAAAAAAAAAA");
             SettingsAttribute defaultSettings = new SettingsAttribute();
             Dictionary<Assembly, SettingsAttribute> settingsCache = new Dictionary<Assembly, SettingsAttribute>();
 

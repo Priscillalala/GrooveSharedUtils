@@ -57,17 +57,24 @@ namespace GrooveSharedUtils
         {
             if (owner && owner.isDebug)
             {
-                owner.Logger.Log(level, data);
+                LogData(level, data);
             }
         }
         public void LogDebug(object data)
         {
             if (owner && owner.isDebug)
             {
-                owner.Logger.Log(LogLevel.Debug, data);
+                LogData(LogLevel.Debug, data);
             }
         }
-        public void Log(LogLevel level, object data) => owner?.Logger.Log(level, data);
-        public void Log(object data) => owner?.Logger.Log(LogLevel.Info, data);
+        public void Log(LogLevel level, object data) => LogData(level, data);
+        public void Log(object data) => LogData(LogLevel.Info, data);
+        private void LogData(LogLevel level, object data)
+        {
+            if (owner)
+            {
+                owner.Logger.Log(level, $"[{this.GetType().Name}] " + data);
+            }
+        }
     }
 }

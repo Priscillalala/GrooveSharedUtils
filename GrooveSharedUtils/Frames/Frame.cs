@@ -19,6 +19,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using RoR2.ExpansionManagement;
 using System.Diagnostics;
+using System.ComponentModel;
 
 /*public static partial class _GSExtensions
 {
@@ -47,29 +48,42 @@ namespace GrooveSharedUtils.Frames
     public abstract class Frame : IEnumerator
     {
         [Obsolete("Current should not be used.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public object Current => iterator.Current;
         protected IEnumerator iterator;
         protected SettingsAttribute settings = defaultSettings;
         protected ExpansionDef defaultExpansionDef = null;
+        private Assembly owner;
+        private static Stack<Assembly> immediateFrameOwners = new Stack<Assembly>();
+        private static Dictionary<Assembly, bool> isValidOwnerCache = new Dictionary<Assembly, bool>();
         public Frame()
         {
             GroovyLogger.Log(BepInEx.Logging.LogLevel.Info, "Frame created: " + this.GetType());
             iterator = BuildIterator();
-            StackTrace trace = new StackTrace();
-            for (int i = 0; i < trace.FrameCount; i++)
+            if (immediateFrameOwners.Count > 0)
             {
-                
-                Assembly assembly = trace.GetFrame(i)?.GetMethod()?.DeclaringType?.Assembly;
-                if (assembly != null && assembly != typeof(Frame).Assembly) 
-                {
-                    GroovyLogger.Log(BepInEx.Logging.LogLevel.Info, $"Found Owner: {assembly.GetName().Name}");
-                    SetOwner(assembly);
-                    break;
-                }                
+                SetOwner(immediateFrameOwners.Peek());
+                GroovyLogger.Log(BepInEx.Logging.LogLevel.Info, $"Set owner immediate: {immediateFrameOwners.Peek().GetName().Name}");
             }
+            else
+            {
+                StackTrace trace = new StackTrace();
+                for (int i = 0; i < trace.FrameCount; i++)
+                {
+                    Assembly assembly = trace.GetFrame(i)?.GetMethod()?.DeclaringType?.Assembly;
+                    //GroovyLogger.Log(BepInEx.Logging.LogLevel.Info, $"Check method: {trace.GetFrame(i)?.GetMethod().DeclaringType}.{trace.GetFrame(i)?.GetMethod().Name}. Assembly is {assembly.GetName().Name}");
+                    if (assembly != null && isValidOwnerCache.GetOrCreateValue(assembly, () => assembly.GetReferencedAssemblies().Any(x => x.Name == typeof(Frame).Assembly.GetName().Name)))
+                    {
+                        GroovyLogger.Log(BepInEx.Logging.LogLevel.Info, $"Found Owner: {assembly.GetName().Name}");
+                        SetOwner(assembly);
+                        return;
+                    }
+                }
+            }         
         }
         protected void SetOwner(Assembly newOwner)
         {
+            owner = newOwner;
             settings = newOwner.GetCustomAttribute<SettingsAttribute>() ?? defaultSettings;
             defaultExpansionDef = assemblyToGetDefaultExpansionDef.TryGetValue(newOwner, out Func<ExpansionDef> getExpansionDef) ? getExpansionDef() : null;
         }
@@ -85,11 +99,23 @@ namespace GrooveSharedUtils.Frames
             return assets.GetEnumerator();
         }*/
         [Obsolete("MoveNext should not be used. Refer to Build instead.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public bool MoveNext()
         {
-            return iterator.MoveNext();
+            bool result = false;
+            try
+            {
+                immediateFrameOwners.Push(owner);
+                result = iterator.MoveNext();
+            }
+            finally
+            {
+                immediateFrameOwners.Pop();
+            }
+            return result;
         }
         [Obsolete("Reset should not be used. Construct a new Frame instead.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public void Reset()
         {
             iterator.Reset();
@@ -115,7 +141,7 @@ namespace GrooveSharedUtils.Frames
             return null;
         }*/
 
-        internal static SettingsAttribute defaultSettings = new SettingsAttribute();
+        internal static readonly SettingsAttribute defaultSettings = new SettingsAttribute();
         internal static Dictionary<Assembly, Func<ExpansionDef>> assemblyToGetDefaultExpansionDef = new Dictionary<Assembly, Func<ExpansionDef>>();
 
         internal static void PatcherInit()
