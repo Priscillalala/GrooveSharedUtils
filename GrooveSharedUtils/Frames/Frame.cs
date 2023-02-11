@@ -58,12 +58,12 @@ namespace GrooveSharedUtils.Frames
         private static Dictionary<Assembly, bool> isValidOwnerCache = new Dictionary<Assembly, bool>();
         public Frame()
         {
-            GroovyLogger.Log(BepInEx.Logging.LogLevel.Info, "Frame created: " + this.GetType());
+           // GroovyLogger.Log(BepInEx.Logging.LogLevel.Info, "Frame created: " + this.GetType());
             iterator = BuildIterator();
             if (immediateFrameOwners.Count > 0)
             {
                 SetOwner(immediateFrameOwners.Peek());
-                GroovyLogger.Log(BepInEx.Logging.LogLevel.Info, $"Set owner immediate: {immediateFrameOwners.Peek().GetName().Name}");
+                //GroovyLogger.Log(BepInEx.Logging.LogLevel.Info, $"Set owner immediate: {immediateFrameOwners.Peek().GetName().Name}");
             }
             else
             {
@@ -72,9 +72,13 @@ namespace GrooveSharedUtils.Frames
                 {
                     Assembly assembly = trace.GetFrame(i)?.GetMethod()?.DeclaringType?.Assembly;
                     //GroovyLogger.Log(BepInEx.Logging.LogLevel.Info, $"Check method: {trace.GetFrame(i)?.GetMethod().DeclaringType}.{trace.GetFrame(i)?.GetMethod().Name}. Assembly is {assembly.GetName().Name}");
-                    if (assembly != null && isValidOwnerCache.GetOrCreateValue(assembly, () => assembly.GetReferencedAssemblies().Any(x => x.Name == typeof(Frame).Assembly.GetName().Name)))
+                    if (assembly != null && assembly != typeof(Frame).Assembly && isValidOwnerCache.GetOrCreateValue(assembly, () =>  
                     {
-                        GroovyLogger.Log(BepInEx.Logging.LogLevel.Info, $"Found Owner: {assembly.GetName().Name}");
+                        string name = typeof(Frame).Assembly.GetName().Name;
+                        return assembly.GetReferencedAssemblies().Any(x => x.Name == name);
+                    }))
+                    {
+                        //GroovyLogger.Log(BepInEx.Logging.LogLevel.Info, $"Found Owner: {assembly.GetName().Name}");
                         SetOwner(assembly);
                         return;
                     }

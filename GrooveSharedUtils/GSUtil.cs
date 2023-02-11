@@ -38,6 +38,10 @@ namespace GrooveSharedUtils
         {
             return Addressables.LoadAssetAsync<TAsset>(key).WaitForCompletion();
         }
+        public static bool TryFind(this Transform transform, string n, out Transform child)
+        {
+            return child = transform.Find(n);
+        }
         public static Type[] GetEntityStateTypes(Assembly assembly = null)
         {
             assembly = assembly ?? Assembly.GetCallingAssembly();
@@ -119,7 +123,20 @@ namespace GrooveSharedUtils
             parameters.minDistance = minDistance;
             parameters.maxDistance = maxDistance;
             parameters.focusPointTransform = focusPoint ?? model.transform.Find("FocusPoint") ?? model.transform.Find("Focus Point");
+            if (!parameters.focusPointTransform)
+            {
+                Transform newFocusPoint = new GameObject("FocusPoint").transform;
+                newFocusPoint.SetParent(model.transform);
+                parameters.focusPointTransform = newFocusPoint;
+            }
             parameters.cameraPositionTransform = cameraPosition ?? model.transform.Find("CameraPosition") ?? model.transform.Find("Camera Position");
+            if (!parameters.cameraPositionTransform)
+            {
+                Transform newCameraPosition = new GameObject("CameraPosition").transform;
+                newCameraPosition.SetParent(model.transform);
+                newCameraPosition.localPosition = model.transform.forward;
+                parameters.cameraPositionTransform = newCameraPosition;
+            }
             return parameters;
         }
         public static ItemDisplay SetupItemDisplay(GameObject model)

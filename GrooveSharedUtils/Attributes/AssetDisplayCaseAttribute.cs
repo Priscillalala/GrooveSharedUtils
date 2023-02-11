@@ -139,10 +139,10 @@ namespace GrooveSharedUtils.Attributes
         }
         private static void FindAssetFields(Type type, AssetFieldLocator assetFieldLocator)
         {
-            GrooveSUPatcher.logger.LogInfo("display case: " + type);
+            //GrooveSUPatcher.logger.LogInfo("display case: " + type);
             foreach (FieldInfo fieldInfo in type.GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly))
             {
-                GrooveSUPatcher.logger.LogInfo("display case field: " + fieldInfo.Name);
+                //GrooveSUPatcher.logger.LogInfo("display case field: " + fieldInfo.Name);
                 TargetAssetNameAttribute targetName = fieldInfo.GetCustomAttribute<TargetAssetNameAttribute>();
                 assetFieldLocator.Add((targetName != null ? targetName.targetAssetName : fieldInfo.Name, fieldInfo.FieldType), fieldInfo);
             }

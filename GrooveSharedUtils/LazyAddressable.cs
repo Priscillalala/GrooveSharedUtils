@@ -23,7 +23,6 @@ using RoR2;
 
 namespace GrooveSharedUtils
 {
-
     public struct LazyAddressable<T>  where T : UnityEngine.Object
     {
         public AsyncOperationHandle<T> operation { get; private set; }

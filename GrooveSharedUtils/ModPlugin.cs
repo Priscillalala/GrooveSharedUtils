@@ -443,7 +443,7 @@ namespace GrooveSharedUtils
                     IEnumerator enumerator = iterators.Peek();
                     if (enumerator.MoveNext()) 
                     {
-                        plugin.Logger.LogWarning($"Move Next! current is {enumerator.Current}");
+                        //plugin.Logger.LogWarning($"Move Next! current is {enumerator.Current}");
                         if (enumerator.Current is IEnumerator iterator)
                         {
                             iterators.Push(iterator);

@@ -17,13 +17,6 @@ namespace GrooveSharedUtils
 {   
     public static class GrooveSUPatcher
     {
-        /*public struct PluginConfigInformation
-        {
-            public BepInPlugin bepInPlugin;
-            public string defaultConfigName;
-            public bool trimConfigNameSpaces;
-            public ConfigStructure configStructure;
-        }*/
         internal static ManualLogSource logger = BepInEx.Logging.Logger.CreateLogSource("GrooveSharedUtilsPatcher");
         public static IEnumerable<string> TargetDLLs { get; } = Array.Empty<string>();
 
@@ -42,7 +35,7 @@ namespace GrooveSharedUtils
         {
             On.BepInEx.Bootstrap.Chainloader.Initialize += Chainloader_Initialize;
             
-            logger.LogWarning("Initializing GSU Patcher");
+            logger.LogInfo("Initializing Groove Shared Utils Patcher!");
         }
 
         private static void BaseUnityPlugin_ctor(ILContext il)
@@ -90,7 +83,6 @@ namespace GrooveSharedUtils
 
         private static void Chainloader_Initialize(On.BepInEx.Bootstrap.Chainloader.orig_Initialize orig, string gameExePath, bool startConsole, ICollection<LogEventArgs> preloaderLogEvents)
         {
-            logger.LogWarning("Chainloader init");
             IL.BepInEx.BaseUnityPlugin.ctor += BaseUnityPlugin_ctor;
             IL.BepInEx.Bootstrap.Chainloader.Start += Chainloader_Start;
             foreach (string path in Directory.EnumerateFiles(Path.GetFullPath(Paths.PluginPath), "*.dll", SearchOption.AllDirectories))
@@ -105,7 +97,6 @@ namespace GrooveSharedUtils
                 catch (Exception ex) { logger.LogError(ex.ToString()); }
             }
 
-            logger.LogWarning("Start early init");
             AssetDisplayCaseAttribute.PatcherInit();
             ConfigurableAttribute.PatcherInit();
             LoadAssetBundleAttribute.PatcherInit();
@@ -172,7 +163,7 @@ namespace GrooveSharedUtils
         }
         private static void HandleAssembly(string path)
         {
-            logger.LogInfo("Handling Assembly: " + Path.GetFileName(path));
+            //logger.LogInfo("Handling Assembly: " + Path.GetFileName(path));
             Assembly assembly = Assembly.LoadFile(path);
             
             if(assembly.GetReferencedAssemblies().All((AssemblyName name) => name.Name != "GrooveSharedUtils") && assembly.GetName().Name != "GrooveSharedUtils")
@@ -207,14 +198,6 @@ namespace GrooveSharedUtils
                         PluginInfo info = baseModPlugin.Info;
   
                         bepInExPluginsToAdd[path] = info;
-                        
-                        /*tempConfigPluginInformation[assembly] = new PluginConfigInformation
-                        {
-                            bepInPlugin = info.Metadata,
-                            defaultConfigName = baseModPlugin.ENV_DefaultConfigName,
-                            configStructure = baseModPlugin.ENV_ConfigStructure,
-                            trimConfigNameSpaces = baseModPlugin.ENV_TrimConfigNamespaces,
-                        };*/
 
                         UnityEngine.Object.DestroyImmediate(baseModPlugin);
                         //loyalAssemblies.Add(assembly);
