@@ -36,7 +36,7 @@ namespace GrooveSharedUtils.Attributes
         public bool targetsType => target is Type;
         public bool targetsField => target is FieldInfo;
 
-        public ConfigEntryBase BindToField(FieldInfo fieldInfo, PluginInfo pluginInfo, SettingsAttribute settings, Assembly assembly)
+        public ConfigEntryBase BindToField(FieldInfo fieldInfo, PluginInfo pluginInfo, SettingsAttribute settings, Assembly assembly, ConfigEntry<bool> declaringModuleConfig = null)
         {
             ConfigFile configFile = GetConfigFile(pluginInfo, settings, assembly, this);
             Type fieldType = fieldInfo.FieldType;
@@ -46,15 +46,17 @@ namespace GrooveSharedUtils.Attributes
             Type declaringType = fieldInfo.DeclaringType;
             string declaringTypeName = GSUtil.InternalToExternalName(declaringType.Name);
 
+            string declaringModuleSection = declaringModuleConfig?.Definition.Section;
+            string declaringModuleName = declaringModuleConfig?.Definition.Key;
             switch (settings.configStructure)
             {
                 case ConfigStructure.Normal:
-                    section = section ?? declaringTypeName;
+                    section = section ?? declaringModuleSection ?? declaringTypeName;
                     name = name ?? fieldName;
                     break;
                 case ConfigStructure.Flattened:
-                    section = section ?? (settings.trimConfigNamespaces ? declaringType.Namespace.Split('.').LastOrDefault() : declaringType.Namespace);
-                    name = name ?? declaringTypeName + ": " + fieldName;
+                    section = section ?? declaringModuleSection ?? (settings.trimConfigNamespaces ? declaringType.Namespace.Split('.').LastOrDefault() : declaringType.Namespace);
+                    name = name ?? (declaringModuleName ?? declaringTypeName) + ": " + fieldName;
                     break;
             }
             ConfigEntryBase configEntry = (ConfigEntryBase)genericBind.Invoke(configFile, new object[] { new ConfigDefinition(section, name), defaultValue, description != null ? new ConfigDescription(description) : null });
@@ -73,12 +75,12 @@ namespace GrooveSharedUtils.Attributes
             {
                 case ConfigStructure.Normal:
                     section = section ?? typeName;
-                    name = name ?? "Enable " + typeName;
+                    name = name ?? "Enable " + section;
                     break;
                 case ConfigStructure.Flattened:
                     section = section ?? (settings.trimConfigNamespaces ? t.Namespace.Split('.').LastOrDefault() : t.Namespace);
                     name = name ?? typeName;
-                    description = description ?? "Enable " + typeName + "?";
+                    description = description ?? "Enable " + section + "?";
                     break;
             }
             ConfigEntry<bool> configEntry = configFile.Bind(new ConfigDefinition(section, name), (bool)defaultValue, description != null ? new ConfigDescription(description) : null);
@@ -92,9 +94,9 @@ namespace GrooveSharedUtils.Attributes
             {
                 Version resetVersion = new Version(resetForVersion);
                 Version currentVersion = configEntry.ConfigFile._ownerMetadata.Version;
-                Debug.Log("prev version " + prevVersion);
+                /*Debug.Log("prev version " + prevVersion);
                 Debug.Log("reset version " + resetVersion);
-                Debug.Log("cur version " + currentVersion);
+                Debug.Log("cur version " + currentVersion);*/
                 if (prevVersion < resetVersion && currentVersion >= resetVersion)
                 {
                     configEntry.BoxedValue = configEntry.DefaultValue;
@@ -116,7 +118,16 @@ namespace GrooveSharedUtils.Attributes
             }
             if (config == null)
             {
-                config = moduleType.GetCustomAttribute<ConfigurableAttribute>().BindToModuleType(moduleType, pluginInfo, GetSettings(moduleType.Assembly), moduleType.Assembly);
+                SettingsAttribute settings = GetSettings(moduleType.Assembly);
+                config = moduleType.GetCustomAttribute<ConfigurableAttribute>().BindToModuleType(moduleType, pluginInfo, settings, moduleType.Assembly);
+                if (configurableFieldsByModuleHolder.TryFreeValue(moduleType, out List<ConfigurableAttribute> configurableFields))
+                {
+                    foreach (ConfigurableAttribute configurableField in configurableFields)
+                    {
+                        FieldInfo field = configurableField.target as FieldInfo;
+                        field.SetValue(null, configurableField.BindToField(field, pluginInfo, settings, moduleType.Assembly, config).BoxedValue);
+                    }
+                }
                 moduleToConfig[moduleType] = config;
             }
             return config.Value;
@@ -146,7 +157,6 @@ namespace GrooveSharedUtils.Attributes
             }
 
             GrooveSUPatcher.onBeforePluginInstantiated += OnBeforePluginInstantiated;
-            ModPlugin.onBeforeModuleInstantiated += ModPlugin_onBeforeModuleInstantiated;
         }
         internal static void OnBeforePluginInstantiated(PluginInfo pluginInfo, Assembly assembly)
         {
@@ -185,18 +195,6 @@ namespace GrooveSharedUtils.Attributes
                         }
                         
                     }
-                }
-            }
-        }
-        private static void ModPlugin_onBeforeModuleInstantiated(Type moduleType, ModPlugin plugin)
-        {
-            if (configurableFieldsByModuleHolder.TryFreeValue(moduleType, out List<ConfigurableAttribute> configurableFields))
-            {
-                SettingsAttribute settings = GetSettings(moduleType.Assembly);
-                foreach (ConfigurableAttribute configurableField in configurableFields)
-                {
-                    FieldInfo field = configurableField.target as FieldInfo;
-                    field.SetValue(null, configurableField.BindToField(field, plugin.Info, settings, moduleType.Assembly).BoxedValue);
                 }
             }
         }

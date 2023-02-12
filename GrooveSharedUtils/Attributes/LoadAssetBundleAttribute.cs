@@ -108,7 +108,7 @@ namespace GrooveSharedUtils.Attributes
                 AssetBundleRequest allMatsRequest = bundle.LoadAllAssetsAsync<Material>();
                 yield return new WaitUntil(() => allMatsRequest.isDone);
                 int length = allMatsRequest.allAssets.Length;
-                Debug.Log($"swapping {length} stubbed shaders for bundle");
+                //Debug.Log($"swapping {length} stubbed shaders for bundle");
                 for (int i = 0; i < length; i++)
                 {
                     Material mat = (Material)allMatsRequest.allAssets[i];
@@ -120,19 +120,19 @@ namespace GrooveSharedUtils.Attributes
                             AsyncOperationHandle<Shader> loadRealShaderOperation = default;
 
                             string path = name.Substring(7) + ".shader";
-                            Debug.Log(name);
-                            Debug.Log(path);
+                            //Debug.Log(name);
+                            //Debug.Log(path);
                             try
                             {
                                 loadRealShaderOperation = Addressables.LoadAssetAsync<Shader>(path);
                             }
                             catch (Exception ex)
                             {
-                                Debug.LogError(ex.ToString());
+                                GroovyLogger.Log(LogLevel.Error, ex.ToString());
                             }
                             if (loadRealShaderOperation.IsValid())
                             {
-                                Debug.Log("Valid!");
+                                //Debug.Log("Valid!");
                                 yield return new WaitUntil(() => loadRealShaderOperation.IsDone);
                                 realShader = loadRealShaderOperation.Result;
                             }
@@ -140,7 +140,7 @@ namespace GrooveSharedUtils.Attributes
                         stubbedToRealShaderCache[mat.shader] = realShader;
                     }
                     mat.shader = realShader ?? mat.shader;
-                    Debug.Log("Final Shader: " + mat.shader.name);
+                    //Debug.Log("Final Shader: " + mat.shader.name);
                 }
             }
         }
