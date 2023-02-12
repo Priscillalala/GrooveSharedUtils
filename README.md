@@ -31,12 +31,12 @@ A `LanguageCollection` is designed to mirror a traditional language file. Langua
 Well, not *that* much more...but it's still an early release.
 
 ## Contact
-You can find me on Discord @Groove_Salad#7700.
+You can find me in the [Spikestrip Modding Server](https://discord.gg/me7P53smzk) @Groove_Salad#7700
 
 ## With special thanks to... 
 * literallyeurope and SteamStream for feedback on WIP builds.
 * Nebby
-* TeamMoonstorm for MoonstormSharedUtils' stubbed shaders.
+* TeamMoonstorm for MoonstormSharedUtils' stubbed shaders
 <details>
 <summary>MSU License</summary>
 <br>
