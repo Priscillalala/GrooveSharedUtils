@@ -31,17 +31,18 @@ namespace GrooveSharedUtils
         internal static void SystemInitializerAttribute_Execute(On.RoR2.SystemInitializerAttribute.orig_Execute orig)
         {
             Attributes.ConditionalRegisterAchievementAttribute.Init();
-            EarlyAchievementManager.Init();
+            EarlyAchievementCatalog.Init();
             orig();
             Interfaces.InterfaceManager.Init();
             ScriptableObjects.ModdedCatalogColorDef.Init();
             ScriptableObjects.ModdedDamageColorDef.Init();
+            ArtifactActionCatalog.Init();
             BaseBuffBodyBehavior.Init();
             BaseEquipmentMasterBehavior.Init();
             BaseItemMasterBehavior.Init();
-            EliteTierManager.Init();
+            EliteToTierCatalog.Init();
             EquipmentActionCatalog.Init();
-            OverlayManager.Init();
+            OverlayCatalog.Init();
 
         }
     }

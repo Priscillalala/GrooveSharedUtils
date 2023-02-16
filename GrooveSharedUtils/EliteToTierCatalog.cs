@@ -21,10 +21,10 @@ using UnityEngine.Networking;
 
 namespace GrooveSharedUtils
 {
-    public static class EliteTierManager
+    public static class EliteToTierCatalog
     {
         public static List<EliteDef>[] eliteDefsPerTier;
-        static EliteTierManager()
+        static EliteToTierCatalog()
         {
             eliteDefsPerTier = new List<EliteDef>[(int)EliteTier.Count];
             for(int i = 0; i < eliteDefsPerTier.Length; i++)

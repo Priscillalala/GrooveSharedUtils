@@ -157,11 +157,16 @@ namespace GrooveSharedUtils
             List<BepInDependency> bepInDependencies = new List<BepInDependency>();
             bepInDependencies.AddRange(from string hardDependency in HardDependencyStrings select new BepInDependency(hardDependency, BepInDependency.DependencyFlags.HardDependency));
             bepInDependencies.AddRange(from string softDependency in SoftDependencyStrings select new BepInDependency(softDependency, BepInDependency.DependencyFlags.SoftDependency));
+            bepInDependencies.AddRange(this.GetType().GetCustomAttributes<BepInDependency>());
             pluginInfo.Dependencies = bepInDependencies;
 
-            pluginInfo.Processes = (from string processName in OverrideProcessNames select new BepInProcess(processName));
+            List<BepInProcess> bepInProcesses = (from string processName in OverrideProcessNames select new BepInProcess(processName)).ToList();
+            bepInProcesses.AddRange(this.GetType().GetCustomAttributes<BepInProcess>());
+            pluginInfo.Processes = bepInProcesses;
 
-            pluginInfo.Incompatibilities = (from string incompat in IncompatabilityStrings select new BepInIncompatibility(incompat));
+            List<BepInIncompatibility> bepInIncompatibilities = (from string incompat in IncompatabilityStrings select new BepInIncompatibility(incompat)).ToList();
+            bepInIncompatibilities.AddRange(this.GetType().GetCustomAttributes<BepInIncompatibility>());
+            pluginInfo.Incompatibilities = bepInIncompatibilities;
 
             pluginInfo.TypeName = type.FullName;
 
@@ -329,7 +334,7 @@ namespace GrooveSharedUtils
             };
             map[typeof(AchievementDef)] = (object obj) =>
             {
-                EarlyAchievementManager.Add((AchievementDef)obj);
+                EarlyAchievementCatalog.Add((AchievementDef)obj);
             };
             if (GSUtil.ModLoaded("com.bepis.r2api.items"))
             {
@@ -476,7 +481,7 @@ namespace GrooveSharedUtils
                 }
                 AssetDisplayCaseAttribute.TryDisplayAsset(asset, plugin.GetAssetName(asset), plugin.assembly);
                 map.TryMapAsset(asset);
-                if (GSUtil.ModLoadedCached("com.bepis.r2api.content_management") && CheckForR2APISerializableContentPack(asset))
+                if (GSUtil.ModLoaded("com.bepis.r2api.content_management") && CheckForR2APISerializableContentPack(asset))
                 {
                     return;
                 }

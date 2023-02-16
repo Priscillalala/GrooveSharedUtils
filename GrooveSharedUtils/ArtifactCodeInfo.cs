@@ -18,6 +18,8 @@ using System.Collections;
 using RoR2.ContentManagement;
 using UnityEngine.Events;
 using BepInEx.Configuration;
+using RoR2;
+using ThreeEyedGames;
 
 namespace GrooveSharedUtils
 {
@@ -58,6 +60,29 @@ namespace GrooveSharedUtils
             artifactCode.middleRow = middleRow;
             artifactCode.bottomRow = bottomRow;
             return artifactCode;
+        }
+        public void CopyToFormulaDisplay(ArtifactFormulaDisplay formulaDisplay)
+        {
+            formulaDisplay.artifactCompoundDisplayInfos = new[]
+            {
+                GetDisplayInfo(formulaDisplay, topRow.x, "Slot 1,1"),
+                GetDisplayInfo(formulaDisplay, topRow.y, "Slot 1,2"),
+                GetDisplayInfo(formulaDisplay, topRow.z, "Slot 1,3"),
+                GetDisplayInfo(formulaDisplay, middleRow.x, "Slot 2,1"),
+                GetDisplayInfo(formulaDisplay, middleRow.y, "Slot 2,2"),
+                GetDisplayInfo(formulaDisplay, middleRow.z, "Slot 2,3"),
+                GetDisplayInfo(formulaDisplay, bottomRow.x, "Slot 3,1"),
+                GetDisplayInfo(formulaDisplay, bottomRow.y, "Slot 3,2"),
+                GetDisplayInfo(formulaDisplay, bottomRow.z, "Slot 3,3"),
+            };
+        }
+        private ArtifactFormulaDisplay.ArtifactCompoundDisplayInfo GetDisplayInfo(ArtifactFormulaDisplay formulaDisplay, int value, string decalPath)
+        {
+            return new ArtifactFormulaDisplay.ArtifactCompoundDisplayInfo
+            {
+                artifactCompoundDef = GSUtil.FindArtifactCompoundDef(value),
+                decal = formulaDisplay.transform.Find(decalPath)?.GetComponent<Decal>()
+            };
         }
     }
 }

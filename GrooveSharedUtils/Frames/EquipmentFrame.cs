@@ -33,7 +33,7 @@ namespace GrooveSharedUtils.Frames
         public string overrideLoreToken = null;
         public Sprite icon = null;
         public GameObject pickupModelPrefab = null;
-        public EquipmentActionCatalog.PerformEquipmentActionDelegate performEquipmentAction = null;
+        public Func<EquipmentSlot, bool> performEquipmentAction = null;
         public float cooldown = 60;
         public bool appearsInSingleplayer = true;
         public bool appearsInMultiplayer = true;

@@ -133,6 +133,37 @@ namespace GrooveSharedUtils
             public static ItemDisplayRuleSet EquipmentDrone => equipmentDrone.WaitForCompletion();
             static LazyAddressable<ItemDisplayRuleSet> equipmentDrone = new LazyAddressable<ItemDisplayRuleSet>("RoR2/Base/Drones/idrsEquipmentDrone.asset", false);
         }
+        public class ArtifactCompounds
+        {
+            ArtifactCompounds() { }
+            public const int Circle = 1;
+            public const int Triangle = 3;
+            public const int Diamond = 5;
+            public const int Square = 7;
+            public const int Empty = 11;
+            public static ArtifactCompoundDef CircleDef => acdCircle;
+            static LazyAddressable<ArtifactCompoundDef> acdCircle = new LazyAddressable<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdCircle.asset", false);
+            public static ArtifactCompoundDef TriangleDef => acdTriangle;
+            static LazyAddressable<ArtifactCompoundDef> acdTriangle = new LazyAddressable<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdTriangle.asset", false);
+            public static ArtifactCompoundDef DiamondDef => acdDiamond;
+            static LazyAddressable<ArtifactCompoundDef> acdDiamond = new LazyAddressable<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdDiamond.asset", false);
+            public static ArtifactCompoundDef SquareDef => acdSquare;
+            static LazyAddressable<ArtifactCompoundDef> acdSquare = new LazyAddressable<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdSquare.asset", false);
+            public static ArtifactCompoundDef EmptyDef => acdEmpty;
+            static LazyAddressable<ArtifactCompoundDef> acdEmpty = new LazyAddressable<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdEmpty.asset", false);
+        }
+        /*public class ArtifactCompoundDecals
+        {
+            ArtifactCompoundDecals() { }
+            public static Material Circle => matArtifactCompoundCircle;
+            static LazyAddressable<Material> matArtifactCompoundCircle = new LazyAddressable<Material>("RoR2/Base/ArtifactCompounds/matArtifactCompoundCircle.mat", false);
+            public static Material Triangle => matArtifactCompoundTriangle;
+            static LazyAddressable<Material> matArtifactCompoundTriangle = new LazyAddressable<Material>("RoR2/Base/ArtifactCompounds/matArtifactCompoundTriangle.mat", false);
+            public static Material Diamond => matArtifactCompoundDiamond;
+            static LazyAddressable<Material> matArtifactCompoundDiamond = new LazyAddressable<Material>("RoR2/Base/ArtifactCompounds/matArtifactCompoundDiamond.mat", false);
+            public static Material Square => matArtifactCompoundSquare;
+            static LazyAddressable<Material> matArtifactCompoundSquare = new LazyAddressable<Material>("RoR2/Base/ArtifactCompounds/matArtifactCompoundSquare.mat", false);
+        }*/
         /*public static class Shaders
         {
             public static Shader standard => Addressables.LoadAssetAsync<Shader>("48dca5b99d113b8d11006bab44295342").WaitForCompletion();

@@ -21,7 +21,7 @@ using UnityEngine.Networking;
 
 namespace GrooveSharedUtils
 {
-    public static class OverlayManager
+    public static class OverlayCatalog
     {
         public struct OverlayInfo
         {
@@ -63,7 +63,7 @@ namespace GrooveSharedUtils
             }
             else
             {
-                GroovyLogger.Log(BepInEx.Logging.LogLevel.Error, $"{nameof(OverlayManager)} IL hook failed!");
+                GroovyLogger.Log(BepInEx.Logging.LogLevel.Error, $"{nameof(OverlayCatalog)} IL hook failed!");
             }
         }
 

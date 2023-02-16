@@ -23,7 +23,7 @@ using BepInEx.Logging;
 
 namespace GrooveSharedUtils
 {
-    public static class EarlyAchievementManager
+    public static class EarlyAchievementCatalog
     {
         public static List<AchievementDef> earlyAchievementDefs = new List<AchievementDef>();
         internal static void Init()

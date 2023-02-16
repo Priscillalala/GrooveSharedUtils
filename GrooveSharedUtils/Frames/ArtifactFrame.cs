@@ -29,11 +29,13 @@ namespace GrooveSharedUtils.Frames
         public string name;
         public string overrideNameToken = null;
         public string overrideDescriptionToken = null;
-        public Sprite selectedIcon = null;
-        public Sprite deselectedIcon = null;
+        public Sprite enabledIcon = null;
+        public Sprite disabledIcon = null;
         public GameObject pickupModelPrefab = null;
         public UnlockableDef unlockableDef = null;
         public ExpansionDef requiredExpansion = null;
+        public Action<RunArtifactManager> enabledAction = null;
+        public Action<RunArtifactManager> disabledAction = null;
         public ArtifactCodeInfo? artifactCode = null;
         public TArtifactDef ArtifactDef { get; private set; }
         public TFrame SetArtifactCode(int topLeft, int topCenter, int topRight, int middleLeft, int middleCenter, int middleRight, int bottomLeft, int bottomCenter, int bottomRight)
@@ -48,20 +50,23 @@ namespace GrooveSharedUtils.Frames
         }
         public TFrame SetArtifactCodeTopRow(int left, int center, int right)
         {
-            artifactCode = artifactCode ?? default;
-            artifactCode.Value.SetTopRow(left, center, right);
+            ArtifactCodeInfo newArtifactCode = artifactCode ?? default;
+            newArtifactCode.SetTopRow(left, center, right);
+            artifactCode = newArtifactCode;
             return this as TFrame;
         }
         public TFrame SetArtifactCodeMiddleRow(int left, int center, int right)
         {
-            artifactCode = artifactCode ?? default;
-            artifactCode.Value.SetMiddleRow(left, center, right);
+            ArtifactCodeInfo newArtifactCode = artifactCode ?? default;
+            newArtifactCode.SetMiddleRow(left, center, right);
+            artifactCode = newArtifactCode;
             return this as TFrame;
         }
         public TFrame SetArtifactCodeBottomRow(int left, int center, int right)
         {
-            artifactCode = artifactCode ?? default;
-            artifactCode.Value.SetBottomRow(left, center, right);
+            ArtifactCodeInfo newArtifactCode = artifactCode ?? default;
+            newArtifactCode.SetBottomRow(left, center, right);
+            artifactCode = newArtifactCode;
             return this as TFrame;
         }
         protected override IEnumerator BuildIterator()
@@ -71,12 +76,20 @@ namespace GrooveSharedUtils.Frames
             ArtifactDef.cachedName = name;
             ArtifactDef.nameToken = overrideNameToken ?? $"{settings.generatedTokensPrefix}ARTIFACT_{token}_NAME";
             ArtifactDef.descriptionToken = overrideDescriptionToken ?? $"{settings.generatedTokensPrefix}ARTIFACT_{token}_DESCRIPTION";
-            ArtifactDef.smallIconSelectedSprite = selectedIcon;
-            ArtifactDef.smallIconDeselectedSprite = deselectedIcon;
+            ArtifactDef.smallIconSelectedSprite = enabledIcon;
+            ArtifactDef.smallIconDeselectedSprite = disabledIcon;
             ArtifactDef.pickupModelPrefab = pickupModelPrefab;
             ArtifactDef.unlockableDef = unlockableDef;
             ArtifactDef.requiredExpansion = requiredExpansion ?? defaultExpansionDef;
             yield return ArtifactDef;
+            if (enabledAction != null)
+            {
+                ArtifactActionCatalog.AddEnabledAction(ArtifactDef, enabledAction);
+            }
+            if (disabledAction != null)
+            {
+                ArtifactActionCatalog.AddDisabledAction(ArtifactDef, disabledAction);
+            }
             if (artifactCode != null && GSUtil.ModLoaded("com.bepis.r2api.artifactcode"))
             {
                 RegisterArtifactCode((ArtifactCodeInfo)artifactCode);

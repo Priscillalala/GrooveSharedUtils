@@ -23,9 +23,7 @@ namespace GrooveSharedUtils
 {
     public static class EquipmentActionCatalog
     {
-        public delegate bool PerformEquipmentActionDelegate(EquipmentSlot equipmentSlot);
-
-        internal static Dictionary<EquipmentDef, PerformEquipmentActionDelegate> equipmentToAction = new Dictionary<EquipmentDef, PerformEquipmentActionDelegate>();
+        internal static Dictionary<EquipmentDef, Func<EquipmentSlot, bool>> equipmentToAction = new Dictionary<EquipmentDef, Func<EquipmentSlot, bool>>();
         internal static void Init()
         {
             On.RoR2.EquipmentSlot.PerformEquipmentAction += EquipmentSlot_PerformEquipmentAction;  
@@ -33,14 +31,14 @@ namespace GrooveSharedUtils
 
         private static bool EquipmentSlot_PerformEquipmentAction(On.RoR2.EquipmentSlot.orig_PerformEquipmentAction orig, EquipmentSlot self, EquipmentDef equipmentDef)
         {
-            if(equipmentToAction.TryGetValue(equipmentDef, out PerformEquipmentActionDelegate performEquipmentAction))
+            if(equipmentToAction.TryGetValue(equipmentDef, out Func<EquipmentSlot, bool> performEquipmentAction))
             {
-                return performEquipmentAction.Invoke(self);
+                return performEquipmentAction(self);
             }
             return orig(self, equipmentDef);
         }
 
-        public static void Add(EquipmentDef equipmentDef, PerformEquipmentActionDelegate performEquipmentAction)
+        public static void Add(EquipmentDef equipmentDef, Func<EquipmentSlot, bool> performEquipmentAction)
         {
             equipmentToAction.Add(equipmentDef, performEquipmentAction);
         }

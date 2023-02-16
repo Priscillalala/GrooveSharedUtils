@@ -40,6 +40,7 @@ namespace GrooveSharedUtils.Frames
         public bool canRemove = true;
         public bool hidden = false;
         public ItemTag[] itemTags = Array.Empty<ItemTag>();
+        public ModelPanelParametersInfo? logbookModelParameters = null;
         public UnlockableDef unlockableDef = null;
         public ItemDef[] itemsToCorrupt = Array.Empty<ItemDef>();
         public ExpansionDef requiredExpansion = null;
@@ -48,6 +49,16 @@ namespace GrooveSharedUtils.Frames
         public TFrame SetItemTags(params ItemTag[] itemTags)
         {
             this.itemTags = itemTags;
+            return this as TFrame;
+        }
+        public TFrame SetLogbookModelParameters(Vector3 modelRotation, float minDistance, float maxDistance, Transform focusPoint = null, Transform cameraPosition = null)
+        {
+            logbookModelParameters = new ModelPanelParametersInfo(modelRotation, minDistance, maxDistance, focusPoint, cameraPosition);
+            return this as TFrame;
+        }
+        public TFrame SetLogbookModelParameters(Quaternion modelRotation, float minDistance, float maxDistance, Transform focusPoint = null, Transform cameraPosition = null)
+        {
+            logbookModelParameters = new ModelPanelParametersInfo(modelRotation, minDistance, maxDistance, focusPoint, cameraPosition);
             return this as TFrame;
         }
         public TFrame SetItemsToCorrupt(params ItemDef[] itemsToCorrupt)
@@ -80,6 +91,11 @@ namespace GrooveSharedUtils.Frames
             ItemDef.unlockableDef = unlockableDef;
             ItemDef.requiredExpansion = requiredExpansion ?? defaultExpansionDef;
             yield return ItemDef;
+
+            if (logbookModelParameters != null && pickupModelPrefab)
+            {
+                GSUtil.SetupModelPanelParameters(pickupModelPrefab, (ModelPanelParametersInfo)logbookModelParameters);
+            }
 
             ItemRelationshipProvider[] itemRelationships = Array.Empty<ItemRelationshipProvider>();
             if (itemsToCorrupt.Length > 0)

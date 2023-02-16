@@ -100,6 +100,44 @@ namespace GrooveSharedUtils
             }
             return null;
         }
+        public static ArtifactCompoundDef FindArtifactCompoundDef(int value)
+        {
+            switch (value)
+            {
+                case Common.ArtifactCompounds.Circle:
+                    return Common.ArtifactCompounds.CircleDef;
+                case Common.ArtifactCompounds.Triangle:
+                    return Common.ArtifactCompounds.TriangleDef;
+                case Common.ArtifactCompounds.Diamond:
+                    return Common.ArtifactCompounds.DiamondDef;
+                case Common.ArtifactCompounds.Square:
+                    return Common.ArtifactCompounds.SquareDef;
+                case Common.ArtifactCompounds.Empty:
+                    return Common.ArtifactCompounds.EmptyDef;
+                default:
+                    if (ModLoaded("com.bepis.r2api.artifactcode"))
+                    {
+                        return FindArtifactCompoundDefFromArtifactCodeAPI(value);
+                    }
+                    return null;
+            }
+        }
+        public static bool TryFindArtifactCompoundDef(int value, out ArtifactCompoundDef artifactCompoundDef)
+        {
+            return artifactCompoundDef = FindArtifactCompoundDef(value);
+        }
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        private static ArtifactCompoundDef FindArtifactCompoundDefFromArtifactCodeAPI(int value)
+        {
+            foreach (ArtifactCompoundDef artifactCompoundDef in ArtifactCodeAPI.artifactCompounds)
+            {
+                if (artifactCompoundDef.value == value)
+                {
+                    return artifactCompoundDef;
+                }
+            }
+            return null;
+        }
         public static float StackScaling(float baseValue, float stackValue, int stack)
         {
             if (stack > 0)
@@ -118,8 +156,16 @@ namespace GrooveSharedUtils
         }
         public static ModelPanelParameters SetupModelPanelParameters(GameObject model, Vector3 modelRotation, float minDistance, float maxDistance, Transform focusPoint = null, Transform cameraPosition = null)
         {
+            return SetupModelPanelParameters(model, Quaternion.Euler(modelRotation), minDistance, maxDistance, focusPoint, cameraPosition);
+        }
+        public static ModelPanelParameters SetupModelPanelParameters(GameObject model, ModelPanelParametersInfo info)
+        {
+            return SetupModelPanelParameters(model, info.modelRotation, info.minDistance, info.maxDistance, info.focusPoint, info.cameraPosition);
+        }
+        public static ModelPanelParameters SetupModelPanelParameters(GameObject model, Quaternion modelRotation, float minDistance, float maxDistance, Transform focusPoint = null, Transform cameraPosition = null)
+        {
             ModelPanelParameters parameters = model.AddComponent<ModelPanelParameters>();
-            parameters.modelRotation = Quaternion.Euler(modelRotation);// Util.QuaternionSafeLookRotation(Vector3. modelRotation);
+            parameters.modelRotation = modelRotation;
             parameters.minDistance = minDistance;
             parameters.maxDistance = maxDistance;
             parameters.focusPointTransform = focusPoint ?? model.transform.Find("FocusPoint") ?? model.transform.Find("Focus Point");
@@ -257,7 +303,7 @@ namespace GrooveSharedUtils
             }
             return Chainloader.PluginInfos.ContainsKey(guid);
         }
-        internal static Dictionary<string, bool> modLoadedCache = new Dictionary<string, bool>();
+        /*internal static Dictionary<string, bool> modLoadedCache = new Dictionary<string, bool>();
         public static bool ModLoadedCached(string guid)
         {
             if (!Chainloader._loaded)
@@ -266,7 +312,7 @@ namespace GrooveSharedUtils
                 return false;
             }
             return modLoadedCache.GetOrCreateValue(guid, () => Chainloader.PluginInfos.ContainsKey(guid));
-        }
+        }*/
         #endregion
         public static bool TryModifyFieldValue<T>(this EntityStateConfiguration entityStateConfiguration, string fieldName, T value)
         {

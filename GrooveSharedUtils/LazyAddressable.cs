@@ -47,7 +47,7 @@ namespace GrooveSharedUtils
         {
             return new LazyAddressable<T>(key);
         }
-        public LazyAddressable(string key, bool ensureCompletion = true)
+        public LazyAddressable(string key, bool ensureCompletion = false)
         {
             operation = default(AsyncOperationHandle<T>);
             try
