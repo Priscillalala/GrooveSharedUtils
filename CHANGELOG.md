@@ -14,6 +14,7 @@
 * Add `CopyToFormulaDisplay` method to `ArtifactCodeInfo` to setup a `ArtifactFormulaDisplay` component based on the code info
 * Remove `GSUtil.ModLoadedCached` because it really wasn't worth caching
 * Add support to `ModPlugin` for BepInEx incompatability, dependency, etc. attributes
+* Add `moddedDifficultyDefs` field to `ExtendedSerializableContentPack`
 
 ## 0.5.0
 * Early release

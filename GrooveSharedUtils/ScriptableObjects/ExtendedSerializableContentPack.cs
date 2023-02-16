@@ -23,6 +23,6 @@ namespace GrooveSharedUtils.ScriptableObjects
         public ModdedCatalogColorDef[] moddedColorCatalogEntries = Array.Empty<ModdedCatalogColorDef>();
         public ModdedDamageColorDef[] moddedDamageColors = Array.Empty<ModdedDamageColorDef>();
         public ModdedDotDef[] moddedDotDefs = Array.Empty<ModdedDotDef>();
-
+        public ModdedDifficultyDef[] moddedDifficultyDefs = Array.Empty<ModdedDifficultyDef>();
     }
 }
