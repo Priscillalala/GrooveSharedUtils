@@ -1,5 +1,5 @@
 ## 0.5.1
-* Add `ArtifactActionCatalog` to artifact actions on enable/disable
+* Add `ArtifactActionCatalog` to handle artifact actions on enable/disable
 * Add `enabledAction` and `disabledAction` to `ArtifactFrame`
 * Rename `selectedIcon` and `deselectedIcon` to `enabledIcon` and `disabledIcon` respectively in `ArtifactFrame`
 * Fix `ArtifactFrame.SetArtifactCode(Top/Middle/Bottom)Row` having no effect
