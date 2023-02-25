@@ -5,7 +5,7 @@
 * Make 'Quick Add' overload for `SingleItemDisplayFrame.Add` implicitly support Equipment Drones
 * Add `GSUtil.AllChildren` extension for transforms
 * Fix `GSUtil.SetupItemDisplay` setting material instead of shared material
-* Add `UpdateItemFollowerScaleDebug` to attach to item followers when creating item displays (`ItemFollower` only sets scale once when instantiating the follower`
+* Add `UpdateItemFollowerScaleDebug` to attach to item followers when creating item displays (`ItemFollower` only sets scale once when instantiating the follower)
 * Fix `Configurable` attributes not applying to fields when within a module lacking a `Configurable` attribute itself
 
 ## 0.5.1
