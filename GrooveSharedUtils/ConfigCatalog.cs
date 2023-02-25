@@ -21,7 +21,7 @@ using BepInEx.Logging;
 
 namespace GrooveSharedUtils
 {
-    public static class ConfigManager
+    public static class ConfigCatalog
     {
         public static Dictionary<string, ConfigFile> configFileByName = new Dictionary<string, ConfigFile>();
         public static Dictionary<ConfigFile, Version> previousConfigFileVersion = new Dictionary<ConfigFile, Version>();

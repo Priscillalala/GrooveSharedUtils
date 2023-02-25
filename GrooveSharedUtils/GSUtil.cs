@@ -42,6 +42,13 @@ namespace GrooveSharedUtils
         {
             return child = transform.Find(n);
         }
+        public static IEnumerable<Transform> AllChildren(this Transform transform)
+        {
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                yield return transform.GetChild(i);
+            }
+        }
         public static Type[] GetEntityStateTypes(Assembly assembly = null)
         {
             assembly = assembly ?? Assembly.GetCallingAssembly();
@@ -194,7 +201,7 @@ namespace GrooveSharedUtils
             {
                 itemDisplay.rendererInfos[i] = new CharacterModel.RendererInfo
                 {
-                    defaultMaterial = renderers[i].material,
+                    defaultMaterial = renderers[i].sharedMaterial,
                     renderer = renderers[i],
                     defaultShadowCastingMode = ShadowCastingMode.On,
                     ignoreOverlays = false,

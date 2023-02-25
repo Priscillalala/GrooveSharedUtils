@@ -50,7 +50,7 @@ namespace GrooveSharedUtils.Frames
             }));
             return this as TFrame;
         }
-        public TFrame Add(ItemDisplayRuleSet idrs) => Add(idrs, "Base", Vector3.zero, Vector3.zero, Vector3.one);
+        public TFrame Add(ItemDisplayRuleSet idrs) => Add(idrs, idrs == Common.Idrs.EquipmentDrone ? "GunBarrelBase" :  "Base", Vector3.zero, Vector3.zero, Vector3.one);
         public TFrame SetRules(params (ItemDisplayRuleSet target, ItemDisplayRule rule)[] rules)
         {
             this.rules = rules;

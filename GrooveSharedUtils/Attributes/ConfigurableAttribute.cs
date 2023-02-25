@@ -90,7 +90,7 @@ namespace GrooveSharedUtils.Attributes
         public void OnBound(ConfigEntryBase configEntry, Assembly assembly) 
         {
             AssetDisplayCaseAttribute.TryDisplayAsset(configEntry, assembly);
-            if (!string.IsNullOrEmpty(resetForVersion) && ConfigManager.TryGetPreviousConfigVersion(configEntry.ConfigFile, out Version prevVersion) && configEntry.ConfigFile._ownerMetadata != null)
+            if (!string.IsNullOrEmpty(resetForVersion) && ConfigCatalog.TryGetPreviousConfigVersion(configEntry.ConfigFile, out Version prevVersion) && configEntry.ConfigFile._ownerMetadata != null)
             {
                 Version resetVersion = new Version(resetForVersion);
                 Version currentVersion = configEntry.ConfigFile._ownerMetadata.Version;
@@ -106,19 +106,37 @@ namespace GrooveSharedUtils.Attributes
         
         internal static Dictionary<Assembly, SettingsAttribute> assemblyToSettings = new Dictionary<Assembly, SettingsAttribute>();
         internal static Dictionary<Assembly, List<ConfigurableAttribute>> attributesByAssemblyHolder = new Dictionary<Assembly, List<ConfigurableAttribute>>();
-        internal static Dictionary<Type, ConfigEntry<bool>> moduleToConfig = new Dictionary<Type, ConfigEntry<bool>>();
+        internal static Dictionary<Type, bool> moduleToConfigEnabled = new Dictionary<Type, bool>();
         internal static Dictionary<Type, List<ConfigurableAttribute>> configurableFieldsByModuleHolder = new Dictionary<Type, List<ConfigurableAttribute>>();
 
         internal static readonly SettingsAttribute defaultSettings = new SettingsAttribute();
         public static bool CheckModuleTypeEnabled(Type moduleType, PluginInfo pluginInfo)
         {
-            if (!moduleToConfig.TryGetValue(moduleType, out ConfigEntry<bool> config))
+            /*if (!moduleToConfigEnabled.TryGetValue(moduleType, out bool enabled))
             {
                 return true;
-            }
-            if (config == null)
+            }*/
+            return moduleToConfigEnabled.GetOrCreateValue(moduleType, () =>
             {
                 SettingsAttribute settings = GetSettings(moduleType.Assembly);
+                ConfigurableAttribute attribute = moduleType.GetCustomAttribute<ConfigurableAttribute>();
+                ConfigEntry<bool> config = null;
+                if (attribute != null)
+                {
+                    config = attribute.BindToModuleType(moduleType, pluginInfo, settings, moduleType.Assembly);
+                }
+                if (configurableFieldsByModuleHolder.TryFreeValue(moduleType, out List<ConfigurableAttribute> configurableFields))
+                {
+                    foreach (ConfigurableAttribute configurableField in configurableFields)
+                    {
+                        FieldInfo field = configurableField.target as FieldInfo;
+                        field.SetValue(null, configurableField.BindToField(field, pluginInfo, settings, moduleType.Assembly, config).BoxedValue);
+                    }
+                }
+                return config == null || config.Value;
+            });
+            /*if (config == null)
+            {
                 config = moduleType.GetCustomAttribute<ConfigurableAttribute>().BindToModuleType(moduleType, pluginInfo, settings, moduleType.Assembly);
                 if (configurableFieldsByModuleHolder.TryFreeValue(moduleType, out List<ConfigurableAttribute> configurableFields))
                 {
@@ -130,7 +148,7 @@ namespace GrooveSharedUtils.Attributes
                 }
                 moduleToConfig[moduleType] = config;
             }
-            return config.Value;
+            return config.Value;*/
         }
         internal static SettingsAttribute GetSettings(Assembly assembly) 
         {
@@ -138,7 +156,7 @@ namespace GrooveSharedUtils.Attributes
         }
         internal static ConfigFile GetConfigFile(PluginInfo pluginInfo, SettingsAttribute settings, Assembly assembly, ConfigurableAttribute attribute)
         {
-            return ConfigManager.GetOrCreate(attribute.configName ?? settings.defaultConfigName ?? pluginInfo.Metadata.GUID, assembly, pluginInfo.Metadata);
+            return ConfigCatalog.GetOrCreate(attribute.configName ?? settings.defaultConfigName ?? pluginInfo.Metadata.GUID, assembly, pluginInfo.Metadata);
         }
         internal static void PatcherInit()
         {
@@ -175,7 +193,7 @@ namespace GrooveSharedUtils.Attributes
                             GrooveSUPatcher.logger.LogWarning($"Configurable attribute targets type {typeTarget.Name} which does not inherit from {nameof(ModModule)}!");
                             continue;
                         }
-                        moduleToConfig.Add(typeTarget, null);
+                        //moduleToConfig.Add(typeTarget, null);
                         //attribute.BindToType(typeTarget, ConfigManager.GetOrCreate(configName, pluginInfo.Metadata), settings, assembly);
                     }
                     else if (attribute.targetsField)

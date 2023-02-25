@@ -33,7 +33,7 @@ namespace GrooveSharedUtils.Frames
         public string overrideLoreToken = null;
         public Sprite icon = null;
         public GameObject pickupModelPrefab = null;
-        public Func<EquipmentSlot, bool> performEquipmentAction = null;
+        public Func<EquipmentSlot, bool> performEquipmentActionServer = null;
         public float cooldown = 60;
         public bool appearsInSingleplayer = true;
         public bool appearsInMultiplayer = true;
@@ -44,9 +44,20 @@ namespace GrooveSharedUtils.Frames
         public BuffDef passiveBuffDef = null;
         public EquipmentType equipmentType = EquipmentType.Default;
         public ColorCatalog.ColorIndex? overrideColorIndex = null;
+        public ModelPanelParametersInfo? logbookModelParameters = null;
         public ExpansionDef requiredExpansion = null;
         public UnlockableDef unlockableDef = null;
         public TEquipmentDef EquipmentDef { get; private set; }
+        public TFrame SetLogbookModelParameters(Vector3 modelRotation, float minDistance, float maxDistance, Transform focusPoint = null, Transform cameraPosition = null)
+        {
+            logbookModelParameters = new ModelPanelParametersInfo(modelRotation, minDistance, maxDistance, focusPoint, cameraPosition);
+            return this as TFrame;
+        }
+        public TFrame SetLogbookModelParameters(Quaternion modelRotation, float minDistance, float maxDistance, Transform focusPoint = null, Transform cameraPosition = null)
+        {
+            logbookModelParameters = new ModelPanelParametersInfo(modelRotation, minDistance, maxDistance, focusPoint, cameraPosition);
+            return this as TFrame;
+        }
         protected override IEnumerator BuildIterator()
         {
             string token = name.ToUpperInvariant();
@@ -86,9 +97,14 @@ namespace GrooveSharedUtils.Frames
             EquipmentDef.unlockableDef = unlockableDef;
             yield return EquipmentDef;
 
-            if (performEquipmentAction != null)
+            if (performEquipmentActionServer != null)
             {
-                EquipmentActionCatalog.Add(EquipmentDef, performEquipmentAction);
+                EquipmentActionCatalog.Add(EquipmentDef, performEquipmentActionServer);
+            }
+
+            if (logbookModelParameters != null && pickupModelPrefab)
+            {
+                GSUtil.SetupModelPanelParameters(pickupModelPrefab, (ModelPanelParametersInfo)logbookModelParameters);
             }
         }
     }
